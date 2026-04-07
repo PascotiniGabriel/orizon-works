@@ -10,7 +10,7 @@ const ONBOARDING_ROUTES = ["/onboarding"];
 // Rotas que requerem auth + onboarding completo
 const APP_ROUTES = ["/escritorio", "/admin", "/super-admin"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Criar response mutável para permitir set de cookies
