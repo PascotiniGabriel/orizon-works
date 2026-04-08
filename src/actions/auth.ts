@@ -97,7 +97,6 @@ export async function signUp(
     if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("User already registered")) {
       return { success: false, message: "Este e-mail já está cadastrado." };
     }
-    // Expor erro real para diagnóstico
     return { success: false, message: `Erro ao criar conta: ${msg || "erro desconhecido"}` };
   }
 
@@ -106,6 +105,7 @@ export async function signUp(
   // Rastrear o que foi criado para rollback completo
   let companyId: string | null = null;
   let userInserted = false;
+  let checkoutUrl: string | null = null;
 
   try {
     // 2. Criar customer no Stripe
@@ -115,21 +115,9 @@ export async function signUp(
       metadata: { userId },
     });
 
-    // 3. Criar subscription com trial de 7 dias
+    // 3. Calcular trial e status inicial
     const trialEnd = Math.floor(Date.now() / 1000) + TRIAL_DAYS * 86400;
-
-    let stripeSubscriptionId: string | null = null;
-    if (planConfig.priceId) {
-      const subscription = await stripe.subscriptions.create({
-        customer: stripeCustomer.id,
-        items: [{ price: planConfig.priceId }],
-        trial_end: trialEnd,
-        payment_behavior: "default_incomplete",
-        payment_settings: { save_default_payment_method: "on_subscription" },
-        expand: ["latest_invoice.payment_intent"],
-      });
-      stripeSubscriptionId = subscription.id;
-    }
+    const initialStatus = "trialing";
 
     // 4. Criar empresa no banco
     const slug = companyName
@@ -144,10 +132,10 @@ export async function signUp(
       .values({
         name: companyName,
         slug: `${slug}-${userId.substring(0, 8)}`,
-        plan: "trial",
-        subscriptionStatus: "trialing",
+        plan: planConfig.priceId ? plan : "trial",
+        subscriptionStatus: initialStatus,
         stripeCustomerId: stripeCustomer.id,
-        stripeSubscriptionId,
+        stripeSubscriptionId: null,
         trialEndsAt: new Date(trialEnd * 1000),
         tokenBalance: planConfig.tokens,
         tokenLimit: planConfig.tokens,
@@ -172,6 +160,22 @@ export async function signUp(
     await adminSupabase.auth.admin.updateUserById(userId, {
       app_metadata: { role: "company_admin", company_id: company.id },
     });
+
+    // 7. Para planos pagos: criar Checkout Session no Stripe
+    if (planConfig.priceId) {
+      const session = await stripe.checkout.sessions.create({
+        customer: stripeCustomer.id,
+        mode: "subscription",
+        line_items: [{ price: planConfig.priceId, quantity: 1 }],
+        subscription_data: {
+          trial_period_days: TRIAL_DAYS,
+          metadata: { company_id: company.id },
+        },
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`,
+      });
+      checkoutUrl = session.url;
+    }
   } catch (err) {
     // Rollback completo: remover tudo que foi criado
     if (userInserted) await db.delete(users).where(eq(users.id, userId)).catch(() => {});
@@ -187,10 +191,14 @@ export async function signUp(
     };
   }
 
-  // 7. Fazer login automático
+  // 8. Fazer login automático
   const supabase = await createClient();
   await supabase.auth.signInWithPassword({ email, password });
 
+  // 9. Redirecionar: Checkout Stripe para planos pagos, onboarding para trial
+  if (checkoutUrl) {
+    redirect(checkoutUrl);
+  }
   redirect("/onboarding");
 }
 
