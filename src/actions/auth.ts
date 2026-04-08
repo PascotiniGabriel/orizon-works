@@ -170,10 +170,11 @@ export async function signUp(
   } catch (err) {
     // Rollback: deletar o usuário do Supabase Auth para evitar ghost user
     await adminSupabase.auth.admin.deleteUser(userId);
+    const errMsg = err instanceof Error ? err.message : String(err);
     console.error("signUp error:", err);
     return {
       success: false,
-      message: "Erro ao configurar conta. Tente novamente.",
+      message: `Erro ao configurar conta: ${errMsg}`,
     };
   }
 
