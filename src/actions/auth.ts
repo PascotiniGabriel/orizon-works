@@ -170,7 +170,9 @@ export async function signUp(
   } catch (err) {
     // Rollback: deletar o usuário do Supabase Auth para evitar ghost user
     await adminSupabase.auth.admin.deleteUser(userId);
-    const errMsg = err instanceof Error ? err.message : String(err);
+    const errMsg = err instanceof Error
+      ? `${err.message}${(err as any).cause?.message ? ` | ${(err as any).cause.message}` : ""}`
+      : String(err);
     console.error("signUp error:", err);
     return {
       success: false,
