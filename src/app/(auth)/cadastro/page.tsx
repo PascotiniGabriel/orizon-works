@@ -19,7 +19,7 @@ const PLANS = [
   {
     id: "trial",
     label: "Trial grátis",
-    description: "7 dias grátis, sem cartão",
+    description: "7 dias grátis, cartão obrigatório",
     badge: "Recomendado",
   },
   {
