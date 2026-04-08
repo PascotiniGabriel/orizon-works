@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { db } from "@/lib/db";
 import { companies, users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { stripe } from "@/lib/stripe/client";
 import { PLANS, TRIAL_DAYS } from "@/lib/stripe/plans";
 import {
@@ -102,6 +103,10 @@ export async function signUp(
 
   const userId = authData.user.id;
 
+  // Rastrear o que foi criado para rollback completo
+  let companyId: string | null = null;
+  let userInserted = false;
+
   try {
     // 2. Criar customer no Stripe
     const stripeCustomer = await stripe.customers.create({
@@ -113,8 +118,6 @@ export async function signUp(
     // 3. Criar subscription com trial de 7 dias
     const trialEnd = Math.floor(Date.now() / 1000) + TRIAL_DAYS * 86400;
 
-    // Para trial, usamos o price do plano starter mas com trial_period_days
-    // Se não tiver price configurado, criamos sem subscription (apenas trial interno)
     let stripeSubscriptionId: string | null = null;
     if (planConfig.priceId) {
       const subscription = await stripe.subscriptions.create({
@@ -153,6 +156,7 @@ export async function signUp(
         maxUsers: planConfig.users,
       })
       .returning();
+    companyId = company.id;
 
     // 5. Criar usuário na tabela pública
     await db.insert(users).values({
@@ -162,13 +166,16 @@ export async function signUp(
       fullName: name,
       role: "company_admin",
     });
+    userInserted = true;
 
     // 6. Atualizar app_metadata com role (para uso no JWT/middleware)
     await adminSupabase.auth.admin.updateUserById(userId, {
       app_metadata: { role: "company_admin", company_id: company.id },
     });
   } catch (err) {
-    // Rollback: deletar o usuário do Supabase Auth para evitar ghost user
+    // Rollback completo: remover tudo que foi criado
+    if (userInserted) await db.delete(users).where(eq(users.id, userId)).catch(() => {});
+    if (companyId) await db.delete(companies).where(eq(companies.id, companyId)).catch(() => {});
     await adminSupabase.auth.admin.deleteUser(userId);
     const errMsg = err instanceof Error
       ? `${err.message}${(err as any).cause?.message ? ` | ${(err as any).cause.message}` : ""}`
