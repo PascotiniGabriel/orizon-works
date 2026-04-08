@@ -118,6 +118,9 @@ export async function signUp(
         customer: stripeCustomer.id,
         items: [{ price: planConfig.priceId }],
         trial_end: trialEnd,
+        payment_behavior: "default_incomplete",
+        payment_settings: { save_default_payment_method: "on_subscription" },
+        expand: ["latest_invoice.payment_intent"],
       });
       stripeSubscriptionId = subscription.id;
     }
