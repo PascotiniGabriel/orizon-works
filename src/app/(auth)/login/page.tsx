@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { signIn } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(signIn, undefined);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <Card className="border-0 shadow-none">
@@ -57,14 +58,30 @@ export default function LoginPage() {
                 Esqueci a senha
               </Link>
             </div>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={-1}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                )}
+              </button>
+            </div>
             {state?.success === false && state.errors?.password && (
               <p className="text-sm text-destructive">
                 {state.errors.password[0]}

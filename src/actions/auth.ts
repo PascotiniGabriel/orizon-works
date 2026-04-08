@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -31,7 +32,7 @@ export async function signIn(
   if (!parsed.success) {
     return {
       success: false,
-      errors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      errors: z.flattenError(parsed.error).fieldErrors as Record<string, string[]>,
     };
   }
 
@@ -74,7 +75,7 @@ export async function signUp(
   if (!parsed.success) {
     return {
       success: false,
-      errors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      errors: z.flattenError(parsed.error).fieldErrors as Record<string, string[]>,
     };
   }
 
@@ -91,10 +92,12 @@ export async function signUp(
     });
 
   if (authError || !authData.user) {
-    if (authError?.message?.includes("already registered")) {
+    const msg = authError?.message ?? "";
+    if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("User already registered")) {
       return { success: false, message: "Este e-mail já está cadastrado." };
     }
-    return { success: false, message: "Erro ao criar conta. Tente novamente." };
+    // Expor erro real para diagnóstico
+    return { success: false, message: `Erro ao criar conta: ${msg || "erro desconhecido"}` };
   }
 
   const userId = authData.user.id;
@@ -207,7 +210,7 @@ export async function resetPassword(
   if (!parsed.success) {
     return {
       success: false,
-      errors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      errors: z.flattenError(parsed.error).fieldErrors as Record<string, string[]>,
     };
   }
 
