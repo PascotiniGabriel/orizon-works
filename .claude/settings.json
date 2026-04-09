@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"LEMBRETE: Se você acabou de fazer uma mudança significativa no código (novo arquivo, bugfix, feature, deploy), atualize o arquivo PROGRESSO.md em c:/Users/gabri/Desktop/works/PROGRESSO.md com um resumo do que foi feito na seção Bugs Corrigidos ou Histórico de Sessões. Data de hoje: 2026-04-08.\"}}'",
+            "statusMessage": "Verificando PROGRESSO.md..."
+          }
+        ]
+      }
+    ]
+  }
+}

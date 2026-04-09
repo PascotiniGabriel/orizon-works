@@ -184,37 +184,52 @@ export default async function ConfiguracoesPage() {
           {/* Usuários */}
           <section className="overflow-hidden rounded-2xl border bg-white shadow-sm">
             <div className="border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Usuários</h2>
-              <span className="text-xs text-gray-400">
-                {companyUsers.length} cadastrado(s)
-              </span>
+              <div>
+                <h2 className="font-semibold text-gray-900">Usuários</h2>
+                <p className="text-xs text-gray-400 mt-0.5">{companyUsers.length} cadastrado(s)</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white opacity-50 cursor-not-allowed select-none"
+                  style={{ backgroundColor: "#E8A020" }}
+                  title="Em breve — convite de funcionários via e-mail"
+                >
+                  + Convidar funcionário
+                </span>
+              </div>
             </div>
-            <div className="divide-y">
-              {companyUsers.map((u) => (
-                <div key={u.id} className="flex items-center gap-4 px-6 py-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-600">
-                    {(u.fullName ?? u.email)[0].toUpperCase()}
+            {companyUsers.length === 0 ? (
+              <div className="px-6 py-8 text-center text-sm text-gray-400">
+                Nenhum usuário cadastrado ainda.
+              </div>
+            ) : (
+              <div className="divide-y">
+                {companyUsers.map((u) => (
+                  <div key={u.id} className="flex items-center gap-4 px-6 py-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-600">
+                      {(u.fullName ?? u.email)[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-900">
+                        {u.fullName ?? u.email}
+                      </p>
+                      <p className="text-xs text-gray-400">{u.email}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs font-medium text-gray-600">
+                        {ROLE_LABELS[u.role] ?? u.role}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Último acesso: {formatDate(u.lastSeenAt)}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs text-gray-300">
+                      {u.sessionCount} sessões
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
-                      {u.fullName ?? u.email}
-                    </p>
-                    <p className="text-xs text-gray-400">{u.email}</p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-xs font-medium text-gray-600">
-                      {ROLE_LABELS[u.role] ?? u.role}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      Último acesso: {formatDate(u.lastSeenAt)}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-xs text-gray-300">
-                    {u.sessionCount} sessões
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
         </>
       )}
