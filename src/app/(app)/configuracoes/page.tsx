@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getCompanyStats, getCompanyUsers } from "@/lib/db/queries/admin";
 import { InviteUserModal } from "@/components/app/InviteUserModal";
+import { TokenPackButton } from "@/components/app/TokenPackButton";
 import {
   Users,
   Megaphone,
@@ -71,7 +72,12 @@ function formatDate(date: Date | null) {
   }).format(new Date(date));
 }
 
-export default async function ConfiguracoesPage() {
+interface ConfiguracoesPageProps {
+  searchParams: Promise<{ token_pack?: string }>;
+}
+
+export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesPageProps) {
+  const { token_pack } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -134,26 +140,36 @@ export default async function ConfiguracoesPage() {
             {formatNumber(info.tokenBalance)} tokens disponíveis ({100 - tokenPercent}% restante)
           </p>
 
-          {info.tokenBalance < info.tokenLimit * 0.2 && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+              {/* Banner de feedback pós-checkout */}
+          {token_pack === "success" && (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <span className="text-emerald-600 text-lg">✓</span>
               <div>
-                <p className="text-sm font-medium text-amber-800">
-                  Saldo abaixo de 20%
-                </p>
-                <p className="text-xs text-amber-600 mt-0.5">
-                  Adquira um Token Pack para continuar sem interrupção.
-                </p>
+                <p className="text-sm font-semibold text-emerald-800">Token Pack adquirido com sucesso!</p>
+                <p className="text-xs text-emerald-600">2.000.000 tokens foram adicionados ao seu saldo.</p>
               </div>
-              <button
-                className="shrink-0 ml-4 rounded-lg px-4 py-2 text-sm font-semibold text-white opacity-50 cursor-not-allowed"
-                style={{ backgroundColor: "#E8A020" }}
-                disabled
-                title="Em breve"
-              >
-                + 2M tokens — R$79
-              </button>
             </div>
           )}
+          {token_pack === "canceled" && (
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <p className="text-sm text-gray-600">Compra cancelada. Nenhum valor foi cobrado.</p>
+            </div>
+          )}
+
+          {/* Oferta de Token Pack — sempre visível na seção de tokens */}
+          <div className="mt-4 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-amber-800">
+                {info.tokenBalance < info.tokenLimit * 0.2
+                  ? "Saldo abaixo de 20% — recarregue agora"
+                  : "Precisa de mais tokens?"}
+              </p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                + 2.000.000 tokens adicionados imediatamente ao seu saldo.
+              </p>
+            </div>
+            <TokenPackButton />
+          </div>
         </div>
       </section>
 

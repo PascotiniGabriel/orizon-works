@@ -131,9 +131,9 @@ CREATE POLICY "service_role_all" ON invites
 ## Problemas Conhecidos / Pendências
 
 ### Alta Prioridade
-- [ ] Rodar SQL acima no Supabase para criar tabela `invites`
+- [x] Rodar SQL acima no Supabase para criar tabela `invites`
 - [ ] Super Admin não consegue editar/gerenciar empresas (só visualiza)
-- [ ] Compra de Token Pack (botão existe mas não funciona)
+- [x] Compra de Token Pack — Stripe Checkout one-time + webhook credita saldo imediatamente
 
 ### Média Prioridade
 - [ ] Supabase Storage bucket `company-documents` — pendente criação

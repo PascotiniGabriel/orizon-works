@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
 import { db } from "@/lib/db";
-import { companies } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { companies, tokenPacks } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 import type Stripe from "stripe";
+
+const TOKEN_PACK_AMOUNT = 2_000_000;
 
 // Desabilitar o body parser — Stripe precisa do raw body para verificar assinatura
 export const runtime = "nodejs";
@@ -74,6 +76,14 @@ export async function POST(request: NextRequest) {
         break;
       }
 
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.metadata?.type === "token_pack") {
+          await handleTokenPackPurchase(session);
+        }
+        break;
+      }
+
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = getSubscriptionId(invoice);
@@ -111,6 +121,39 @@ function getSubscriptionId(invoice: Stripe.Invoice): string | null {
     return typeof sub === "string" ? sub : sub.id;
   }
   return null;
+}
+
+async function handleTokenPackPurchase(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  const companyId = session.metadata?.companyId;
+  if (!companyId) return;
+
+  const tokens = parseInt(session.metadata?.tokens ?? TOKEN_PACK_AMOUNT.toString(), 10);
+  const amountPaid = session.amount_total ?? 7900; // centavos
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id ?? null;
+
+  // Credita tokens no saldo da empresa
+  await db
+    .update(companies)
+    .set({
+      tokenBalance: sql`${companies.tokenBalance} + ${tokens}`,
+      tokenLimit: sql`${companies.tokenLimit} + ${tokens}`,
+      updatedAt: new Date(),
+    })
+    .where(eq(companies.id, companyId));
+
+  // Registra a compra na tabela token_packs
+  await db.insert(tokenPacks).values({
+    companyId,
+    tokens,
+    amountPaid,
+    stripePaymentIntentId: paymentIntentId,
+    status: "paid",
+  });
 }
 
 async function handleSubscriptionChange(
