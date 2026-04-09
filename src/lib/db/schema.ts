@@ -250,6 +250,48 @@ export const users = pgTable(
 );
 
 // ============================================================
+// INVITES (Convite de funcionários por e-mail)
+// ============================================================
+
+export const inviteStatusEnum = pgEnum("invite_status", [
+  "pending",
+  "accepted",
+  "expired",
+]);
+
+export const invites = pgTable(
+  "invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    invitedByUserId: uuid("invited_by_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    email: varchar("email", { length: 255 }).notNull(),
+    role: userRoleEnum("role").notNull().default("employee"),
+    token: varchar("token", { length: 64 }).notNull().unique(),
+    status: inviteStatusEnum("status").notNull().default("pending"),
+
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("invites_company_idx").on(table.companyId),
+    index("invites_token_idx").on(table.token),
+  ]
+);
+
+export type Invite = typeof invites.$inferSelect;
+export type NewInvite = typeof invites.$inferInsert;
+
+// ============================================================
 // SESSIONS (Conversas com agentes)
 // ============================================================
 
