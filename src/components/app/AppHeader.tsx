@@ -2,7 +2,7 @@
 
 import { signOut } from "@/actions/auth";
 import { NotificationBell } from "@/components/app/NotificationBell";
-import { LogOut, Zap } from "lucide-react";
+import { LogOut, Zap, ChevronRight } from "lucide-react";
 
 interface AppNotification {
   id: string;
@@ -32,10 +32,10 @@ export function AppHeader({
 
   const tokenColor =
     percentRemaining <= 0
-      ? "#EF4444"
+      ? "#F87171"
       : percentRemaining <= 20
       ? "#E8A020"
-      : "#34D399";
+      : "#4EDBA4";
 
   const initials = (fullName ?? "U")
     .split(" ")
@@ -44,78 +44,104 @@ export function AppHeader({
     .join("")
     .toUpperCase();
 
+  function formatTokens(n: number) {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+    return String(n);
+  }
+
   return (
     <header
-      className="flex h-12 shrink-0 items-center justify-between px-5"
+      className="flex shrink-0 items-center justify-between px-6"
       style={{
-        background: "#09090E",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        height: "56px",
+        background: "#08080D",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      {/* Company name */}
-      <span
-        className="text-[13px] font-medium truncate"
-        style={{ color: "#F2F0EA", letterSpacing: "-0.01em" }}
-      >
-        {companyName}
-      </span>
+      {/* Breadcrumb / company */}
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className="text-[13px] font-medium truncate"
+          style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
+        >
+          {companyName}
+        </span>
+        <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: "#3E3E52" }} strokeWidth={2} />
+      </div>
 
-      <div className="flex items-center gap-4">
-        {/* Token indicator */}
-        <div className="hidden items-center gap-2 sm:flex">
-          <Zap className="h-3 w-3" style={{ color: tokenColor }} strokeWidth={2.5} />
-          <div
-            className="h-1 w-20 overflow-hidden rounded-full"
-            style={{ background: "rgba(255,255,255,0.08)" }}
-          >
+      <div className="flex items-center gap-5">
+        {/* Token meter */}
+        <div className="hidden items-center gap-2.5 sm:flex">
+          <Zap
+            className="h-3.5 w-3.5 shrink-0"
+            style={{ color: tokenColor }}
+            strokeWidth={2.5}
+            fill={tokenColor}
+          />
+          <div className="flex flex-col gap-1">
             <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${Math.max(percentRemaining, 0)}%`,
-                background: tokenColor,
-              }}
-            />
+              className="h-[3px] w-28 overflow-hidden rounded-full"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${Math.max(percentRemaining, 0)}%`,
+                  background: tokenColor,
+                  boxShadow: `0 0 6px ${tokenColor}60`,
+                }}
+              />
+            </div>
           </div>
           <span
-            className="text-[11px] tabular-nums"
+            className="text-[12px] font-medium tabular-nums"
             style={{ color: tokenColor, fontVariantNumeric: "tabular-nums" }}
           >
-            {tokenBalance >= 1_000_000
-              ? `${(tokenBalance / 1_000_000).toFixed(1)}M`
-              : tokenBalance >= 1_000
-              ? `${(tokenBalance / 1_000).toFixed(0)}k`
-              : tokenBalance}
+            {formatTokens(tokenBalance)}
           </span>
         </div>
 
-        {/* Notification bell */}
+        {/* Divider */}
+        <div
+          className="hidden h-5 w-px sm:block"
+          style={{ background: "rgba(255,255,255,0.08)" }}
+        />
+
+        {/* Notifications */}
         <NotificationBell initialNotifications={notifications} />
+
+        {/* Divider */}
+        <div
+          className="h-5 w-px"
+          style={{ background: "rgba(255,255,255,0.08)" }}
+        />
 
         {/* User */}
         <div className="flex items-center gap-2.5">
           <div
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
             style={{
-              background: "rgba(232,160,32,0.15)",
+              background: "rgba(232,160,32,0.12)",
               color: "#E8A020",
-              border: "1px solid rgba(232,160,32,0.2)",
+              border: "1.5px solid rgba(232,160,32,0.25)",
             }}
           >
             {initials}
           </div>
           <span
             className="hidden text-[13px] sm:inline truncate max-w-[120px]"
-            style={{ color: "#8A8994" }}
+            style={{ color: "#8888A0" }}
           >
             {fullName ?? "Usuário"}
           </span>
           <form action={signOut}>
             <button
               type="submit"
-              className="flex items-center gap-1 rounded-[5px] px-2 py-1 text-[11px] transition-all duration-150 hover:bg-white/[0.06]"
-              style={{ color: "#3D3D50" }}
+              className="flex items-center gap-1.5 rounded-[5px] px-2.5 py-1.5 text-[12px] transition-all duration-150 hover:bg-white/[0.05]"
+              style={{ color: "#5A5A72" }}
             >
-              <LogOut className="h-3 w-3" strokeWidth={2} />
+              <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} />
               <span className="hidden sm:inline">Sair</span>
             </button>
           </form>

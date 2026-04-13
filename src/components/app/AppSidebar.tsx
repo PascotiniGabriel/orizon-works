@@ -33,11 +33,19 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const AGENT_COLORS: Record<string, { bg: string; text: string }> = {
-  rh:            { bg: "rgba(167,139,250,0.12)", text: "#A78BFA" },
-  marketing:     { bg: "rgba(251,113,133,0.12)", text: "#FB7185" },
-  comercial:     { bg: "rgba(96,165,250,0.12)",  text: "#60A5FA" },
-  financeiro:    { bg: "rgba(52,211,153,0.12)",  text: "#34D399" },
-  administrativo:{ bg: "rgba(232,160,32,0.12)",  text: "#E8A020" },
+  rh:            { bg: "rgba(167,139,250,0.15)", text: "#B09EFC" },
+  marketing:     { bg: "rgba(251,113,133,0.15)", text: "#FC879A" },
+  comercial:     { bg: "rgba(96,165,250,0.15)",  text: "#74B4FB" },
+  financeiro:    { bg: "rgba(52,211,153,0.15)",  text: "#4EDBA4" },
+  administrativo:{ bg: "rgba(232,160,32,0.15)",  text: "#E8A020" },
+};
+
+const AGENT_STATUS_COLORS: Record<string, string> = {
+  rh:            "#B09EFC",
+  marketing:     "#FC879A",
+  comercial:     "#74B4FB",
+  financeiro:    "#4EDBA4",
+  administrativo:"#E8A020",
 };
 
 interface AppSidebarProps {
@@ -50,122 +58,145 @@ export function AppSidebar({ agents, role }: AppSidebarProps) {
 
   return (
     <aside
-      className="flex h-full w-[220px] shrink-0 flex-col"
-      style={{ background: "#09090E", borderRight: "1px solid rgba(255,255,255,0.07)" }}
+      className="flex h-full w-[248px] shrink-0 flex-col"
+      style={{
+        background: "#08080D",
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+      }}
     >
-      {/* Logo */}
+      {/* Logo / Brand */}
       <div
-        className="flex items-center gap-3 px-5 py-[18px]"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        className="flex items-center gap-3 px-5"
+        style={{
+          height: "56px",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+        }}
       >
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-bold"
+          className="flex h-9 w-9 shrink-0 items-center justify-center text-[17px] font-bold"
           style={{
             border: "1.5px solid #E8A020",
-            borderRadius: "4px",
+            borderRadius: "6px",
             color: "#E8A020",
-            letterSpacing: "-0.04em",
-            fontSize: "16px",
+            letterSpacing: "-0.06em",
+            background: "rgba(232,160,32,0.07)",
           }}
         >
           O
         </div>
         <div className="min-w-0">
           <p
-            className="text-[13px] font-semibold leading-tight truncate"
-            style={{ color: "#F2F0EA", letterSpacing: "-0.025em" }}
+            className="text-[14px] font-semibold leading-tight truncate"
+            style={{ color: "#EEECE6", letterSpacing: "-0.03em" }}
           >
             OrizonWorks
           </p>
-          <p className="text-[10px] leading-tight" style={{ color: "#2D2D3A" }}>
+          <p
+            className="text-[11px] leading-tight mt-0.5"
+            style={{ color: "#3E3E52" }}
+          >
             Central de Agentes
           </p>
         </div>
       </div>
 
-      {/* Nav principal */}
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
-        <SideNavItem
-          href="/escritorio"
-          icon={LayoutGrid}
-          label="Início"
-          active={pathname === "/escritorio"}
-        />
-        <SideNavItem
-          href="/escritorio/historico"
-          icon={History}
-          label="Histórico"
-          active={pathname.startsWith("/escritorio/historico")}
-        />
+      {/* Nav */}
+      <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-4">
+        {/* Seção principal */}
+        <SectionLabel>Navegação</SectionLabel>
 
+        <div className="mt-1.5 space-y-0.5">
+          <SideNavItem
+            href="/escritorio"
+            icon={LayoutGrid}
+            label="Início"
+            active={pathname === "/escritorio"}
+          />
+          <SideNavItem
+            href="/escritorio/historico"
+            icon={History}
+            label="Histórico"
+            active={pathname.startsWith("/escritorio/historico")}
+          />
+        </div>
+
+        {/* Agentes */}
         {agents.length > 0 && (
-          <>
-            <div className="mt-5 mb-2 px-3">
-              <p
-                className="text-[9px] font-semibold uppercase"
-                style={{ color: "#2D2D3A", letterSpacing: "0.14em" }}
-              >
-                Agentes
-              </p>
-            </div>
+          <div className="mt-6">
+            <SectionLabel>Agentes</SectionLabel>
+            <div className="mt-1.5 space-y-0.5">
+              {agents.map((agent) => {
+                const href = `/escritorio/chat/${agent.id}`;
+                const isActive = pathname.startsWith(`/escritorio/chat/${agent.id}`);
+                const label = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
+                const Icon = AGENT_TYPE_ICONS[agent.type] ?? Bot;
+                const colors = AGENT_COLORS[agent.type] ?? { bg: "rgba(255,255,255,0.08)", text: "#9999AA" };
+                const statusColor = AGENT_STATUS_COLORS[agent.type] ?? "#9999AA";
 
-            {agents.map((agent) => {
-              const href = `/escritorio/chat/${agent.id}`;
-              const isActive = pathname.startsWith(`/escritorio/chat/${agent.id}`);
-              const label = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
-              const Icon = AGENT_TYPE_ICONS[agent.type] ?? Bot;
-              const colors = AGENT_COLORS[agent.type] ?? { bg: "rgba(255,255,255,0.06)", text: "#64636E" };
-
-              return (
-                <Link
-                  key={agent.id}
-                  href={href}
-                  className="group relative flex items-center gap-2.5 rounded-[6px] py-2 pr-3 text-[13px] transition-all duration-150 hover:bg-white/[0.04]"
-                  style={{
-                    paddingLeft: isActive ? "10px" : "12px",
-                    borderLeft: isActive ? "2px solid #E8A020" : "2px solid transparent",
-                    color: isActive ? "#F2F0EA" : "#64636E",
-                    fontWeight: isActive ? 500 : 400,
-                    background: isActive ? "rgba(232,160,32,0.07)" : undefined,
-                  }}
-                >
-                  {agent.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={agent.avatarUrl}
-                      alt={label}
-                      className="h-[22px] w-[22px] shrink-0 rounded-[3px] object-cover"
+                return (
+                  <Link
+                    key={agent.id}
+                    href={href}
+                    className="group relative flex items-center gap-3 rounded-[6px] px-3 py-2.5 text-[13px] transition-all duration-150"
+                    style={{
+                      borderLeft: isActive ? "2px solid #E8A020" : "2px solid transparent",
+                      paddingLeft: isActive ? "10px" : "12px",
+                      color: isActive ? "#EEECE6" : "#8888A0",
+                      fontWeight: isActive ? 500 : 400,
+                      background: isActive ? "rgba(232,160,32,0.08)" : undefined,
+                    }}
+                  >
+                    {/* Hover overlay */}
+                    <span
+                      className="pointer-events-none absolute inset-0 rounded-[6px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                      style={{ background: "rgba(255,255,255,0.03)" }}
                     />
-                  ) : (
-                    <div
-                      className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[3px]"
-                      style={{ background: colors.bg }}
-                    >
-                      <Icon
-                        className="h-3 w-3"
-                        style={{ color: colors.text }}
-                        strokeWidth={2}
+
+                    {/* Icon */}
+                    {agent.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={agent.avatarUrl}
+                        alt={label}
+                        className="relative z-10 h-[24px] w-[24px] shrink-0 rounded-[4px] object-cover"
                       />
-                    </div>
-                  )}
-                  <span className="flex-1 truncate group-hover:text-[#C0BFC9]">{label}</span>
-                  {isActive && (
+                    ) : (
+                      <div
+                        className="relative z-10 flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-[4px]"
+                        style={{ background: colors.bg }}
+                      >
+                        <Icon
+                          className="h-3.5 w-3.5"
+                          style={{ color: colors.text }}
+                          strokeWidth={2}
+                        />
+                      </div>
+                    )}
+
+                    <span className="relative z-10 flex-1 truncate group-hover:text-[#C8C6C0]">
+                      {label}
+                    </span>
+
+                    {/* Status dot */}
                     <div
-                      className="h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ background: "#E8A020" }}
+                      className="relative z-10 h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{
+                        background: agent.briefingComplete ? statusColor : "rgba(255,255,255,0.15)",
+                        boxShadow: agent.briefingComplete ? `0 0 5px ${statusColor}80` : "none",
+                      }}
                     />
-                  )}
-                </Link>
-              );
-            })}
-          </>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         )}
       </nav>
 
       {/* Footer */}
       <div
-        className="space-y-0.5 px-2 py-3"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        className="px-3 py-3 space-y-0.5"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
       >
         {role === "super_admin" && (
           <SideNavItem
@@ -186,6 +217,27 @@ export function AppSidebar({ agents, role }: AppSidebarProps) {
   );
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 px-1">
+      <div
+        className="h-px flex-1"
+        style={{ background: "rgba(255,255,255,0.07)" }}
+      />
+      <span
+        className="text-[10px] font-semibold uppercase"
+        style={{ color: "#3E3E52", letterSpacing: "0.12em" }}
+      >
+        {children}
+      </span>
+      <div
+        className="h-px flex-1"
+        style={{ background: "rgba(255,255,255,0.07)" }}
+      />
+    </div>
+  );
+}
+
 function SideNavItem({
   href,
   icon: Icon,
@@ -200,21 +252,25 @@ function SideNavItem({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-[6px] py-[7px] pr-3 text-[13px] transition-all duration-150 hover:bg-white/[0.04] hover:text-[#C0BFC9]"
+      className="group relative flex items-center gap-3 rounded-[6px] px-3 py-2.5 text-[13px] transition-all duration-150"
       style={{
-        paddingLeft: active ? "10px" : "12px",
         borderLeft: active ? "2px solid #E8A020" : "2px solid transparent",
-        color: active ? "#F2F0EA" : "#64636E",
+        paddingLeft: active ? "10px" : "12px",
+        color: active ? "#EEECE6" : "#8888A0",
         fontWeight: active ? 500 : 400,
-        background: active ? "rgba(232,160,32,0.07)" : undefined,
+        background: active ? "rgba(232,160,32,0.08)" : undefined,
       }}
     >
+      <span
+        className="pointer-events-none absolute inset-0 rounded-[6px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+        style={{ background: "rgba(255,255,255,0.03)" }}
+      />
       <Icon
-        className="h-[15px] w-[15px] shrink-0"
-        style={{ color: active ? "#E8A020" : undefined }}
+        className="relative z-10 h-[16px] w-[16px] shrink-0"
+        style={{ color: active ? "#E8A020" : "#5A5A72" }}
         strokeWidth={active ? 2.5 : 1.75}
       />
-      {label}
+      <span className="relative z-10 flex-1 group-hover:text-[#C8C6C0]">{label}</span>
     </Link>
   );
 }

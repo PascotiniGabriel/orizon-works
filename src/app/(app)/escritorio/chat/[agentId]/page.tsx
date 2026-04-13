@@ -39,7 +39,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
     agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 56px - 48px)" }}>
+    <div className="flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
       {/* Barra de ações extra por tipo de agente */}
       {agent.type === "rh" && (
         <div

@@ -38,12 +38,12 @@ const AGENT_TYPE_DESCRIPTIONS: Record<string, string> = {
   administrativo: "Documentos, e-mails e organização interna",
 };
 
-const AGENT_COLORS: Record<string, { bg: string; text: string; badge: string }> = {
-  rh:            { bg: "rgba(167,139,250,0.12)", text: "#A78BFA", badge: "rgba(167,139,250,0.15)" },
-  marketing:     { bg: "rgba(251,113,133,0.12)", text: "#FB7185", badge: "rgba(251,113,133,0.15)" },
-  comercial:     { bg: "rgba(96,165,250,0.12)",  text: "#60A5FA", badge: "rgba(96,165,250,0.15)"  },
-  financeiro:    { bg: "rgba(52,211,153,0.12)",  text: "#34D399", badge: "rgba(52,211,153,0.15)"  },
-  administrativo:{ bg: "rgba(232,160,32,0.12)",  text: "#E8A020", badge: "rgba(232,160,32,0.15)"  },
+const AGENT_COLORS: Record<string, { bg: string; text: string; badge: string; glow: string }> = {
+  rh:            { bg: "rgba(167,139,250,0.12)", text: "#B09EFC", badge: "rgba(167,139,250,0.15)", glow: "rgba(167,139,250,0.3)" },
+  marketing:     { bg: "rgba(251,113,133,0.12)", text: "#FC879A", badge: "rgba(251,113,133,0.15)", glow: "rgba(251,113,133,0.3)" },
+  comercial:     { bg: "rgba(96,165,250,0.12)",  text: "#74B4FB", badge: "rgba(96,165,250,0.15)",  glow: "rgba(96,165,250,0.3)"  },
+  financeiro:    { bg: "rgba(52,211,153,0.12)",  text: "#4EDBA4", badge: "rgba(52,211,153,0.15)",  glow: "rgba(52,211,153,0.3)"  },
+  administrativo:{ bg: "rgba(232,160,32,0.12)",  text: "#E8A020", badge: "rgba(232,160,32,0.15)",  glow: "rgba(232,160,32,0.3)"  },
 };
 
 interface AgentCommandListProps {
@@ -53,8 +53,8 @@ interface AgentCommandListProps {
 export function AgentCommandList({ agents }: AgentCommandListProps) {
   return (
     <div
-      className="overflow-hidden rounded-xl"
-      style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+      className="overflow-hidden rounded-[10px]"
+      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
     >
       {agents.map((agent, index) => {
         const label = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
@@ -62,8 +62,9 @@ export function AgentCommandList({ agents }: AgentCommandListProps) {
         const Icon = AGENT_TYPE_ICONS[agent.type] ?? Bot;
         const colors = AGENT_COLORS[agent.type] ?? {
           bg: "rgba(255,255,255,0.06)",
-          text: "#64636E",
+          text: "#8888A0",
           badge: "rgba(255,255,255,0.1)",
+          glow: "rgba(255,255,255,0.2)",
         };
 
         return (
@@ -94,60 +95,69 @@ function AgentRow({
   label: string;
   description: string;
   Icon: React.ElementType;
-  colors: { bg: string; text: string; badge: string };
+  colors: { bg: string; text: string; badge: string; glow: string };
   isFirst: boolean;
 }) {
   return (
     <Link
       href={`/escritorio/chat/${agent.id}`}
-      className="group relative flex items-center gap-5 px-5 py-4 transition-all duration-150 cursor-pointer"
+      className="group relative flex items-center gap-5 px-6 py-5 transition-all duration-200 cursor-pointer"
       style={{
-        borderTop: !isFirst ? "1px solid rgba(255,255,255,0.05)" : undefined,
+        borderTop: !isFirst ? "1px solid rgba(255,255,255,0.06)" : undefined,
       }}
     >
-      {/* Hover indicator via box-shadow (no layout shift) */}
-      <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" style={{ boxShadow: "inset 3px 0 0 0 rgba(232,160,32,0.6)", background: "rgba(232,160,32,0.035)" }} />
+      {/* Hover overlay — left amber accent + subtle bg */}
+      <span
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        style={{
+          boxShadow: "inset 4px 0 0 0 rgba(232,160,32,0.7)",
+          background: "rgba(232,160,32,0.03)",
+        }}
+      />
 
       {/* Status dot */}
       <div
         className="relative z-10 h-2 w-2 shrink-0 rounded-full"
         style={{
-          background: agent.briefingComplete ? "#34D399" : "#2D2D3A",
-          boxShadow: agent.briefingComplete ? "0 0 6px rgba(52,211,153,0.5)" : "none",
+          background: agent.briefingComplete ? "#4EDBA4" : "#2D2D40",
+          boxShadow: agent.briefingComplete ? "0 0 7px rgba(78,219,164,0.6)" : "none",
         }}
       />
 
-      {/* Icon */}
+      {/* Agent icon */}
       <div className="relative z-10 shrink-0">
         {agent.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={agent.avatarUrl}
             alt={label}
-            className="h-10 w-10 rounded-[6px] object-cover"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            className="h-11 w-11 rounded-[8px] object-cover"
+            style={{ border: "1px solid rgba(255,255,255,0.1)" }}
           />
         ) : (
           <div
-            className="flex h-10 w-10 items-center justify-center rounded-[6px]"
-            style={{ background: colors.bg, border: "1px solid rgba(255,255,255,0.05)" }}
+            className="flex h-11 w-11 items-center justify-center rounded-[8px]"
+            style={{
+              background: colors.bg,
+              border: `1px solid ${colors.glow}`,
+            }}
           >
-            <Icon className="h-5 w-5" style={{ color: colors.text }} strokeWidth={1.75} />
+            <Icon className="h-[22px] w-[22px]" style={{ color: colors.text }} strokeWidth={1.75} />
           </div>
         )}
       </div>
 
       {/* Content */}
       <div className="relative z-10 flex-1 min-w-0">
-        <div className="flex items-center gap-2.5 mb-0.5">
+        <div className="flex items-center gap-2.5 mb-1">
           <p
-            className="text-[14px] font-medium truncate"
-            style={{ color: "#F2F0EA", letterSpacing: "-0.01em" }}
+            className="text-[15px] font-semibold truncate"
+            style={{ color: "#EEECE6", letterSpacing: "-0.02em" }}
           >
             {label}
           </p>
           <span
-            className="shrink-0 rounded-[3px] px-1.5 py-[1px] text-[9px] font-bold uppercase"
+            className="shrink-0 rounded-[3px] px-1.5 py-[2px] text-[9px] font-bold uppercase"
             style={{
               background: colors.badge,
               color: colors.text,
@@ -157,18 +167,18 @@ function AgentRow({
             {AGENT_TYPE_LABELS[agent.type] ?? agent.type}
           </span>
         </div>
-        <p className="text-[12px] truncate" style={{ color: "#64636E" }}>
+        <p className="text-[13px] truncate" style={{ color: "#5A5A72" }}>
           {description}
         </p>
       </div>
 
-      {/* Status */}
+      {/* Status badge */}
       <div
-        className="relative z-10 hidden sm:flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+        className="relative z-10 hidden sm:flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
         style={
           agent.briefingComplete
-            ? { background: "rgba(52,211,153,0.08)", color: "#34D399" }
-            : { background: "rgba(255,255,255,0.04)", color: "#3D3D50" }
+            ? { background: "rgba(78,219,164,0.08)", color: "#4EDBA4" }
+            : { background: "rgba(255,255,255,0.04)", color: "#4A4A60" }
         }
       >
         {agent.briefingComplete ? (
@@ -181,7 +191,7 @@ function AgentRow({
 
       {/* Arrow */}
       <ArrowRight
-        className="relative z-10 h-4 w-4 shrink-0 -translate-x-1 opacity-0 transition-all duration-150 group-hover:translate-x-0 group-hover:opacity-100"
+        className="relative z-10 h-4 w-4 shrink-0 -translate-x-2 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
         style={{ color: "#E8A020" }}
         strokeWidth={2}
       />

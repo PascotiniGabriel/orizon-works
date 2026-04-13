@@ -11,6 +11,9 @@ import {
   DollarSign,
   FolderOpen,
   Bot,
+  CheckCircle2,
+  XCircle,
+  Zap,
 } from "lucide-react";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -28,11 +31,11 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
 };
 
-const ROLE_COLORS: Record<string, string> = {
-  company_admin: "bg-violet-50 text-violet-700 border-violet-200",
-  sector_manager: "bg-blue-50 text-blue-700 border-blue-200",
-  employee: "bg-gray-50 text-gray-600 border-gray-200",
-  super_admin: "bg-red-50 text-red-700 border-red-200",
+const ROLE_BADGE: Record<string, { bg: string; color: string; border: string }> = {
+  company_admin: { bg: "rgba(167,139,250,0.12)", color: "#B09EFC", border: "rgba(167,139,250,0.25)" },
+  sector_manager:{ bg: "rgba(96,165,250,0.12)",  color: "#74B4FB", border: "rgba(96,165,250,0.25)"  },
+  employee:      { bg: "rgba(255,255,255,0.06)", color: "#8888A0", border: "rgba(255,255,255,0.1)"  },
+  super_admin:   { bg: "rgba(239,68,68,0.12)",   color: "#F87171", border: "rgba(239,68,68,0.25)"   },
 };
 
 const AGENT_ICONS: Record<string, React.ElementType> = {
@@ -51,12 +54,12 @@ const AGENT_LABELS: Record<string, string> = {
   administrativo: "Administrativo",
 };
 
-const AGENT_COLORS: Record<string, string> = {
-  rh: "bg-violet-50 text-violet-600 border-violet-100",
-  marketing: "bg-pink-50 text-pink-600 border-pink-100",
-  comercial: "bg-blue-50 text-blue-600 border-blue-100",
-  financeiro: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  administrativo: "bg-amber-50 text-amber-600 border-amber-100",
+const AGENT_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  rh:            { bg: "rgba(167,139,250,0.12)", text: "#B09EFC", border: "rgba(167,139,250,0.2)" },
+  marketing:     { bg: "rgba(251,113,133,0.12)", text: "#FC879A", border: "rgba(251,113,133,0.2)" },
+  comercial:     { bg: "rgba(96,165,250,0.12)",  text: "#74B4FB", border: "rgba(96,165,250,0.2)"  },
+  financeiro:    { bg: "rgba(52,211,153,0.12)",  text: "#4EDBA4", border: "rgba(52,211,153,0.2)"  },
+  administrativo:{ bg: "rgba(232,160,32,0.12)",  text: "#E8A020", border: "rgba(232,160,32,0.2)"  },
 };
 
 function formatNumber(n: number) {
@@ -71,6 +74,14 @@ function formatDate(date: Date | null) {
     year: "numeric",
   }).format(new Date(date));
 }
+
+const CARD_STYLE = {
+  background: "#111118",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "10px",
+} as const;
+
+const DIVIDER = { borderTop: "1px solid rgba(255,255,255,0.06)" } as const;
 
 interface ConfiguracoesPageProps {
   searchParams: Promise<{ token_pack?: string }>;
@@ -96,76 +107,136 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
       ])
     : [null, []];
 
-  const tokenPercent = stats
-    ? Math.round(((info.tokenLimit - info.tokenBalance) / info.tokenLimit) * 100)
+  const tokensUsed = info.tokenLimit - info.tokenBalance;
+  const tokenPercent = info.tokenLimit > 0
+    ? Math.round((tokensUsed / info.tokenLimit) * 100)
     : 0;
+  const percentRemaining = 100 - tokenPercent;
+
+  const barColor =
+    tokenPercent > 80 ? "#F87171" : tokenPercent > 60 ? "#E8A020" : "#4EDBA4";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
-        <p className="mt-1 text-sm text-gray-500">{info.companyName}</p>
+    <div className="mx-auto max-w-4xl space-y-8">
+      {/* Page header */}
+      <div className="pt-2">
+        <p
+          className="text-[11px] font-semibold uppercase mb-3"
+          style={{ color: "#3E3E52", letterSpacing: "0.16em" }}
+        >
+          Painel
+        </p>
+        <h1
+          className="font-bold leading-none"
+          style={{ color: "#EEECE6", fontSize: "40px", letterSpacing: "-0.04em" }}
+        >
+          Configurações
+        </h1>
+        <p className="mt-2 text-[14px]" style={{ color: "#5A5A72" }}>
+          {info.companyName}
+        </p>
       </div>
 
-      {/* Tokens */}
-      <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-6 py-4">
-          <h2 className="font-semibold text-gray-900">Consumo de Tokens</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Período atual</p>
+      {/* === Token consumption === */}
+      <section style={CARD_STYLE} className="overflow-hidden">
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+        >
+          <div>
+            <h2
+              className="text-[15px] font-semibold"
+              style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
+            >
+              Consumo de Tokens
+            </h2>
+            <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
+              Período atual
+            </p>
+          </div>
+          <Zap className="h-4 w-4" style={{ color: barColor }} strokeWidth={2.5} fill={barColor} />
         </div>
-        <div className="p-6">
-          <div className="mb-3 flex items-center justify-between text-sm">
-            <span className="font-medium text-gray-700">
-              {formatNumber(info.tokenLimit - info.tokenBalance)} usados
-            </span>
-            <span className="text-gray-400 text-xs">
-              limite: {formatNumber(info.tokenLimit)}
-            </span>
-          </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${Math.min(tokenPercent, 100)}%`,
-                backgroundColor:
-                  tokenPercent > 80
-                    ? "#ef4444"
-                    : tokenPercent > 60
-                    ? "#f59e0b"
-                    : "#22c55e",
-              }}
-            />
-          </div>
-          <p className="mt-2 text-xs text-gray-400">
-            {formatNumber(info.tokenBalance)} tokens disponíveis ({100 - tokenPercent}% restante)
-          </p>
 
-              {/* Banner de feedback pós-checkout */}
+        <div className="px-6 py-5 space-y-4">
+          {/* Bar */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[13px] font-medium" style={{ color: "#EEECE6" }}>
+                {formatNumber(tokensUsed)} usados
+              </span>
+              <span className="text-[12px]" style={{ color: "#4A4A60" }}>
+                limite: {formatNumber(info.tokenLimit)}
+              </span>
+            </div>
+            <div
+              className="h-2 w-full overflow-hidden rounded-full"
+              style={{ background: "rgba(255,255,255,0.07)" }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${Math.min(tokenPercent, 100)}%`,
+                  background: barColor,
+                  boxShadow: `0 0 8px ${barColor}50`,
+                }}
+              />
+            </div>
+            <p className="mt-2 text-[12px]" style={{ color: "#4A4A60" }}>
+              {formatNumber(info.tokenBalance)} tokens disponíveis ({percentRemaining}% restante)
+            </p>
+          </div>
+
+          {/* Checkout feedback */}
           {token_pack === "success" && (
-            <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-              <span className="text-emerald-600 text-lg">✓</span>
+            <div
+              className="flex items-center gap-3 rounded-[8px] px-4 py-3"
+              style={{
+                background: "rgba(78,219,164,0.08)",
+                border: "1px solid rgba(78,219,164,0.2)",
+              }}
+            >
+              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#4EDBA4" }} strokeWidth={2} />
               <div>
-                <p className="text-sm font-semibold text-emerald-800">Token Pack adquirido com sucesso!</p>
-                <p className="text-xs text-emerald-600">2.000.000 tokens foram adicionados ao seu saldo.</p>
+                <p className="text-[13px] font-semibold" style={{ color: "#4EDBA4" }}>
+                  Token Pack adquirido com sucesso!
+                </p>
+                <p className="text-[12px] mt-0.5" style={{ color: "#3A8A6A" }}>
+                  2.000.000 tokens foram adicionados ao seu saldo.
+                </p>
               </div>
             </div>
           )}
           {token_pack === "canceled" && (
-            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-              <p className="text-sm text-gray-600">Compra cancelada. Nenhum valor foi cobrado.</p>
+            <div
+              className="flex items-center gap-3 rounded-[8px] px-4 py-3"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <XCircle className="h-4 w-4 shrink-0" style={{ color: "#5A5A72" }} strokeWidth={2} />
+              <p className="text-[13px]" style={{ color: "#5A5A72" }}>
+                Compra cancelada. Nenhum valor foi cobrado.
+              </p>
             </div>
           )}
 
-          {/* Oferta de Token Pack — sempre visível na seção de tokens */}
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+          {/* Token pack offer */}
+          <div
+            className="flex items-center justify-between rounded-[8px] px-4 py-3"
+            style={{
+              background: "rgba(232,160,32,0.07)",
+              border: "1px solid rgba(232,160,32,0.18)",
+            }}
+          >
             <div>
-              <p className="text-sm font-medium text-amber-800">
+              <p className="text-[13px] font-semibold" style={{ color: "#E8A020" }}>
                 {info.tokenBalance < info.tokenLimit * 0.2
                   ? "Saldo abaixo de 20% — recarregue agora"
                   : "Precisa de mais tokens?"}
               </p>
-              <p className="text-xs text-amber-600 mt-0.5">
-                + 2.000.000 tokens adicionados imediatamente ao seu saldo.
+              <p className="text-[12px] mt-0.5" style={{ color: "#9A7020" }}>
+                +2.000.000 tokens adicionados imediatamente ao seu saldo.
               </p>
             </div>
             <TokenPackButton />
@@ -175,9 +246,14 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
 
       {isAdmin && stats && (
         <>
-          {/* Estatísticas */}
+          {/* === Monthly stats === */}
           <section>
-            <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">Resumo do mês</h2>
+            <p
+              className="text-[11px] font-semibold uppercase mb-4"
+              style={{ color: "#3E3E52", letterSpacing: "0.14em" }}
+            >
+              Resumo do Mês
+            </p>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {[
                 { label: "Sessões", value: formatNumber(stats.totalSessions) },
@@ -187,41 +263,76 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
               ].map((card) => (
                 <div
                   key={card.label}
-                  className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+                  className="p-5"
+                  style={CARD_STYLE}
                 >
-                  <p className="text-xs text-gray-400">{card.label}</p>
-                  <p className="mt-1 text-2xl font-bold text-gray-900">{card.value}</p>
+                  <p className="text-[11px] mb-2" style={{ color: "#4A4A60" }}>
+                    {card.label}
+                  </p>
+                  <p
+                    className="font-bold"
+                    style={{ color: "#EEECE6", fontSize: "28px", letterSpacing: "-0.04em", lineHeight: 1 }}
+                  >
+                    {card.value}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Por agente */}
+          {/* === Por agente === */}
           {stats.agentStats.length > 0 && (
-            <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-              <div className="border-b border-gray-100 px-6 py-4">
-                <h2 className="font-semibold text-gray-900">Uso por Agente</h2>
+            <section style={CARD_STYLE} className="overflow-hidden">
+              <div
+                className="px-6 py-4"
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <h2
+                  className="text-[15px] font-semibold"
+                  style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
+                >
+                  Uso por Agente
+                </h2>
               </div>
-              <div className="divide-y divide-gray-50">
-                {stats.agentStats.map((a) => {
+              <div>
+                {stats.agentStats.map((a, i) => {
                   const Icon = AGENT_ICONS[a.agentType] ?? Bot;
-                  const colorClass = AGENT_COLORS[a.agentType] ?? "bg-gray-50 text-gray-500 border-gray-100";
+                  const agentStyle = AGENT_COLORS[a.agentType] ?? {
+                    bg: "rgba(255,255,255,0.07)",
+                    text: "#8888A0",
+                    border: "rgba(255,255,255,0.1)",
+                  };
                   return (
-                    <div key={a.agentType} className="flex items-center gap-4 px-6 py-4">
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${colorClass}`}>
-                        <Icon className="h-4 w-4" strokeWidth={1.75} />
+                    <div
+                      key={a.agentType}
+                      className="flex items-center gap-4 px-6 py-4"
+                      style={i > 0 ? DIVIDER : undefined}
+                    >
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px]"
+                        style={{
+                          background: agentStyle.bg,
+                          border: `1px solid ${agentStyle.border}`,
+                        }}
+                      >
+                        <Icon className="h-5 w-5" style={{ color: agentStyle.text }} strokeWidth={1.75} />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">{a.agentName}</p>
-                        <p className="text-xs text-gray-400">
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-[14px] font-medium truncate"
+                          style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
+                        >
+                          {a.agentName}
+                        </p>
+                        <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
                           {AGENT_LABELS[a.agentType] ?? a.agentType}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-gray-900">
+                      <div className="text-right shrink-0">
+                        <p className="text-[13px] font-semibold" style={{ color: "#EEECE6" }}>
                           {a.sessions} sessões
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
                           {formatNumber(a.tokens)} tokens
                         </p>
                       </div>
@@ -232,54 +343,114 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
             </section>
           )}
 
-          {/* Usuários */}
-          <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-            <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          {/* === Users === */}
+          <section style={CARD_STYLE} className="overflow-hidden">
+            <div
+              className="flex items-center justify-between px-6 py-4"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+            >
               <div>
-                <h2 className="font-semibold text-gray-900">Usuários</h2>
-                <p className="text-xs text-gray-400 mt-0.5">{companyUsers.length} cadastrado(s)</p>
+                <h2
+                  className="text-[15px] font-semibold"
+                  style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
+                >
+                  Usuários
+                </h2>
+                <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
+                  {companyUsers.length} cadastrado(s)
+                </p>
               </div>
               <InviteUserModal />
             </div>
+
             {companyUsers.length === 0 ? (
-              <div className="px-6 py-10 text-center">
-                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50">
-                  <Users className="h-5 w-5 text-gray-400" />
+              <div className="px-6 py-12 text-center">
+                <div
+                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-[8px]"
+                  style={{ background: "rgba(255,255,255,0.06)" }}
+                >
+                  <Users className="h-6 w-6" style={{ color: "#4A4A60" }} strokeWidth={1.5} />
                 </div>
-                <p className="text-sm text-gray-500">Nenhum usuário cadastrado ainda.</p>
-                <p className="text-xs text-gray-400 mt-1">Convide funcionários usando o botão acima.</p>
+                <p className="text-[14px] font-medium" style={{ color: "#8888A0" }}>
+                  Nenhum usuário cadastrado ainda.
+                </p>
+                <p className="text-[12px] mt-1" style={{ color: "#4A4A60" }}>
+                  Convide funcionários usando o botão acima.
+                </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-50">
-                {companyUsers.map((u) => (
-                  <div key={u.id} className="flex items-center gap-4 px-6 py-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-600">
-                      {(u.fullName ?? u.email)[0].toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900">
-                        {u.fullName ?? u.email}
-                      </p>
-                      <p className="text-xs text-gray-400">{u.email}</p>
-                    </div>
-                    <div className="shrink-0 text-right space-y-1">
-                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold ${ROLE_COLORS[u.role] ?? "bg-gray-50 text-gray-500 border-gray-200"}`}>
-                        {ROLE_LABELS[u.role] ?? u.role}
+              <div>
+                {companyUsers.map((u, i) => {
+                  const badge = ROLE_BADGE[u.role] ?? ROLE_BADGE.employee;
+                  const nameInitial = (u.fullName ?? u.email)[0].toUpperCase();
+                  return (
+                    <div
+                      key={u.id}
+                      className="flex items-center gap-4 px-6 py-4"
+                      style={i > 0 ? DIVIDER : undefined}
+                    >
+                      {/* Avatar */}
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[14px] font-bold"
+                        style={{
+                          background: "rgba(255,255,255,0.07)",
+                          color: "#8888A0",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                      >
+                        {nameInitial}
+                      </div>
+
+                      {/* Info */}
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="truncate text-[14px] font-medium"
+                          style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
+                        >
+                          {u.fullName ?? u.email}
+                        </p>
+                        <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
+                          {u.email}
+                        </p>
+                      </div>
+
+                      {/* Role + last access */}
+                      <div className="shrink-0 text-right space-y-1.5">
+                        <span
+                          className="inline-flex items-center rounded-[4px] px-2 py-[3px] text-[10px] font-bold uppercase"
+                          style={{
+                            background: badge.bg,
+                            color: badge.color,
+                            border: `1px solid ${badge.border}`,
+                            letterSpacing: "0.07em",
+                          }}
+                        >
+                          {ROLE_LABELS[u.role] ?? u.role}
+                        </span>
+                        <p className="text-[11px]" style={{ color: "#3A3A50" }}>
+                          {formatDate(u.lastSeenAt)}
+                        </p>
+                      </div>
+
+                      {/* Sessions */}
+                      <span
+                        className="shrink-0 text-[12px] tabular-nums"
+                        style={{ color: "#3A3A50" }}
+                      >
+                        {u.sessionCount}
+                        <span className="ml-1" style={{ color: "#2A2A38" }}>sess.</span>
                       </span>
-                      <p className="text-xs text-gray-400">
-                        Último acesso: {formatDate(u.lastSeenAt)}
-                      </p>
                     </div>
-                    <span className="shrink-0 text-xs text-gray-300 tabular-nums">
-                      {u.sessionCount} sessões
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
         </>
       )}
+
+      {/* Bottom spacing */}
+      <div className="h-4" />
     </div>
   );
 }

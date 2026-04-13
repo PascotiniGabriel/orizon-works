@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo, getCompanyAgents } from "@/lib/db/queries/company";
-import { Bot, ArrowRight, Clock, Settings } from "lucide-react";
+import { Bot, ArrowRight, Settings, Clock, Zap } from "lucide-react";
 import { AgentCommandList } from "@/components/app/AgentCommandList";
 
 export default async function EscritorioPage() {
@@ -25,23 +25,30 @@ export default async function EscritorioPage() {
   const readyCount = agents.filter((a) => a.briefingComplete).length;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      {/* Header */}
-      <div className="space-y-1 pt-2">
+    <div className="mx-auto max-w-4xl">
+      {/* Header / Greeting */}
+      <div className="pt-2 pb-10">
         <p
-          className="text-[11px] font-semibold uppercase"
-          style={{ color: "#2D2D3A", letterSpacing: "0.14em" }}
+          className="text-[11px] font-semibold uppercase mb-3"
+          style={{ color: "#3E3E52", letterSpacing: "0.16em" }}
         >
           {greeting}
         </p>
         <h1
-          className="text-[28px] font-semibold leading-tight"
-          style={{ color: "#F2F0EA", letterSpacing: "-0.04em" }}
+          className="font-bold leading-none"
+          style={{
+            color: "#EEECE6",
+            fontSize: "52px",
+            letterSpacing: "-0.04em",
+          }}
         >
           {firstName}
         </h1>
         {agents.length > 0 && (
-          <p className="text-[13px]" style={{ color: "#64636E" }}>
+          <p
+            className="mt-3 text-[15px]"
+            style={{ color: "#64636E", letterSpacing: "-0.01em" }}
+          >
             {readyCount === agents.length
               ? `${agents.length} agente${agents.length > 1 ? "s" : ""} pronto${agents.length > 1 ? "s" : ""} para trabalhar.`
               : `${readyCount} de ${agents.length} agentes configurados.`}
@@ -51,59 +58,79 @@ export default async function EscritorioPage() {
 
       {/* Agent command list */}
       {agents.length > 0 ? (
-        <AgentCommandList agents={agents} />
+        <>
+          <div className="mb-4">
+            <p
+              className="text-[11px] font-semibold uppercase"
+              style={{ color: "#3E3E52", letterSpacing: "0.14em" }}
+            >
+              Seus Agentes
+            </p>
+          </div>
+          <AgentCommandList agents={agents} />
+
+          {/* Quick links */}
+          <div className="mt-6 flex items-center gap-2.5">
+            <Link
+              href="/configuracoes"
+              className="flex items-center gap-2 rounded-[6px] px-4 py-2 text-[12px] font-medium transition-all duration-150 hover:bg-white/[0.05]"
+              style={{
+                color: "#666680",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <Settings className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Configurações
+            </Link>
+            <Link
+              href="/escritorio/historico"
+              className="flex items-center gap-2 rounded-[6px] px-4 py-2 text-[12px] font-medium transition-all duration-150 hover:bg-white/[0.05]"
+              style={{
+                color: "#666680",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Histórico
+            </Link>
+          </div>
+        </>
       ) : (
+        /* Empty state */
         <div
-          className="flex flex-col items-center justify-center rounded-xl py-20 text-center"
-          style={{ border: "1px dashed rgba(255,255,255,0.07)" }}
+          className="flex flex-col items-center justify-center py-24 text-center"
+          style={{ border: "1px dashed rgba(255,255,255,0.08)", borderRadius: "12px" }}
         >
           <div
-            className="mb-5 flex h-14 w-14 items-center justify-center rounded-[8px]"
+            className="mb-6 flex h-16 w-16 items-center justify-center"
             style={{
               background: "rgba(232,160,32,0.08)",
-              border: "1px solid rgba(232,160,32,0.18)",
+              border: "1px solid rgba(232,160,32,0.2)",
+              borderRadius: "8px",
             }}
           >
-            <Bot className="h-7 w-7" style={{ color: "#E8A020" }} strokeWidth={1.5} />
+            <Bot className="h-8 w-8" style={{ color: "#E8A020" }} strokeWidth={1.5} />
           </div>
           <p
-            className="text-[15px] font-medium"
-            style={{ color: "#F2F0EA", letterSpacing: "-0.01em" }}
+            className="text-[18px] font-semibold"
+            style={{ color: "#EEECE6", letterSpacing: "-0.02em" }}
           >
             Nenhum agente configurado
           </p>
-          <p className="mt-1.5 max-w-xs text-[13px]" style={{ color: "#3D3D50" }}>
+          <p
+            className="mt-2 max-w-xs text-[14px] leading-relaxed"
+            style={{ color: "#4A4A60" }}
+          >
             Configure seu primeiro agente de IA para começar a automatizar seu negócio.
           </p>
           <Link
             href="/onboarding/setor"
-            className="mt-6 inline-flex items-center gap-2 rounded-[6px] px-5 py-2.5 text-[13px] font-semibold transition-opacity hover:opacity-90"
-            style={{ background: "#E8A020", color: "#09090E" }}
+            className="mt-8 inline-flex items-center gap-2 rounded-[6px] px-6 py-3 text-[14px] font-semibold transition-opacity hover:opacity-90"
+            style={{ background: "#E8A020", color: "#07070C" }}
           >
+            <Zap className="h-4 w-4" strokeWidth={2.5} />
             Criar primeiro agente
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-          </Link>
-        </div>
-      )}
-
-      {/* Quick links */}
-      {agents.length > 0 && (
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/configuracoes"
-            className="flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] transition-all duration-150 hover:bg-white/[0.05]"
-            style={{ color: "#3D3D50", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            <Settings className="h-3 w-3" strokeWidth={1.75} />
-            Configurações
-          </Link>
-          <Link
-            href="/escritorio/historico"
-            className="flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] transition-all duration-150 hover:bg-white/[0.05]"
-            style={{ color: "#3D3D50", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            <Clock className="h-3 w-3" strokeWidth={1.75} />
-            Histórico
+            <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
           </Link>
         </div>
       )}
