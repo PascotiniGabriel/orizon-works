@@ -2,57 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo, getCompanyAgents } from "@/lib/db/queries/company";
-import {
-  Users,
-  Megaphone,
-  TrendingUp,
-  DollarSign,
-  FolderOpen,
-  Bot,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-} from "lucide-react";
-
-const AGENT_TYPE_ICONS: Record<string, React.ElementType> = {
-  rh: Users,
-  marketing: Megaphone,
-  comercial: TrendingUp,
-  financeiro: DollarSign,
-  administrativo: FolderOpen,
-};
-
-const AGENT_TYPE_LABELS: Record<string, string> = {
-  rh: "RH",
-  marketing: "Marketing",
-  comercial: "Comercial",
-  financeiro: "Financeiro",
-  administrativo: "Administrativo",
-};
-
-const AGENT_TYPE_DESCRIPTIONS: Record<string, string> = {
-  rh: "Recrutamento, avaliação de currículos e entrevistas",
-  marketing: "Conteúdo, campanhas e estratégia de marca",
-  comercial: "Scripts de vendas, propostas e follow-up",
-  financeiro: "Relatórios, análises e controle financeiro",
-  administrativo: "Documentos, e-mails e organização",
-};
-
-const AGENT_TYPE_GRADIENTS: Record<string, string> = {
-  rh: "from-violet-500 to-purple-600",
-  marketing: "from-pink-500 to-rose-600",
-  comercial: "from-blue-500 to-indigo-600",
-  financeiro: "from-emerald-500 to-teal-600",
-  administrativo: "from-amber-500 to-orange-600",
-};
-
-const AGENT_TYPE_LIGHT: Record<string, string> = {
-  rh: "bg-violet-50 border-violet-100 text-violet-600",
-  marketing: "bg-pink-50 border-pink-100 text-pink-600",
-  comercial: "bg-blue-50 border-blue-100 text-blue-600",
-  financeiro: "bg-emerald-50 border-emerald-100 text-emerald-600",
-  administrativo: "bg-amber-50 border-amber-100 text-amber-600",
-};
+import { Bot, ArrowRight, Clock, Settings } from "lucide-react";
+import { AgentCommandList } from "@/components/app/AgentCommandList";
 
 export default async function EscritorioPage() {
   const supabase = await createClient();
@@ -66,112 +17,93 @@ export default async function EscritorioPage() {
   if (!info) redirect("/login");
 
   const agents = await getCompanyAgents(info.companyId);
-  const firstName = info.fullName?.split(" ")[0] ?? "por aqui";
+  const firstName = info.fullName?.split(" ")[0] ?? "você";
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const greeting =
+    hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+
+  const readyCount = agents.filter((a) => a.briefingComplete).length;
 
   return (
-    <div className="space-y-8">
-      {/* Boas-vindas */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {greeting}, {firstName}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {agents.length > 0
-              ? "Selecione um agente para começar a trabalhar."
-              : "Configure seus agentes para começar."}
+    <div className="mx-auto max-w-4xl space-y-8">
+      {/* Header */}
+      <div className="space-y-1 pt-2">
+        <p
+          className="text-[11px] font-semibold uppercase"
+          style={{ color: "#2D2D3A", letterSpacing: "0.14em" }}
+        >
+          {greeting}
+        </p>
+        <h1
+          className="text-[28px] font-semibold leading-tight"
+          style={{ color: "#F2F0EA", letterSpacing: "-0.04em" }}
+        >
+          {firstName}
+        </h1>
+        {agents.length > 0 && (
+          <p className="text-[13px]" style={{ color: "#64636E" }}>
+            {readyCount === agents.length
+              ? `${agents.length} agente${agents.length > 1 ? "s" : ""} pronto${agents.length > 1 ? "s" : ""} para trabalhar.`
+              : `${readyCount} de ${agents.length} agentes configurados.`}
           </p>
-        </div>
+        )}
       </div>
 
-      {/* Grid de agentes */}
+      {/* Agent command list */}
       {agents.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {agents.map((agent) => {
-            const label = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
-            const description = AGENT_TYPE_DESCRIPTIONS[agent.type] ?? "Agente especializado";
-            const Icon = AGENT_TYPE_ICONS[agent.type] ?? Bot;
-            const gradient = AGENT_TYPE_GRADIENTS[agent.type] ?? "from-gray-400 to-gray-600";
-            const lightClass = AGENT_TYPE_LIGHT[agent.type] ?? "bg-gray-50 border-gray-100 text-gray-500";
-
-            return (
-              <Link
-                key={agent.id}
-                href={`/escritorio/chat/${agent.id}`}
-                className="group relative flex flex-col gap-5 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
-              >
-                {/* Ícone */}
-                <div className="flex items-start justify-between">
-                  {agent.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={agent.avatarUrl}
-                      alt={label}
-                      className="h-12 w-12 rounded-xl border border-gray-100 object-cover"
-                    />
-                  ) : (
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-sm`}
-                    >
-                      <Icon className="h-6 w-6 text-white" strokeWidth={1.75} />
-                    </div>
-                  )}
-
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                      agent.briefingComplete
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border-gray-200 bg-gray-50 text-gray-500"
-                    }`}
-                  >
-                    {agent.briefingComplete ? (
-                      <CheckCircle2 className="h-3 w-3" />
-                    ) : (
-                      <Clock className="h-3 w-3" />
-                    )}
-                    {agent.briefingComplete ? "Pronto" : "Configurando"}
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-gray-900">{label}</p>
-                    <span className={`rounded-md border px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wide ${lightClass}`}>
-                      {AGENT_TYPE_LABELS[agent.type] ?? agent.type}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
-                </div>
-
-                {/* CTA */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <span className="text-xs text-gray-400">Clique para conversar</span>
-                  <span className="flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:gap-1.5">
-                    Abrir <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <AgentCommandList agents={agents} />
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 border border-amber-100">
-            <Bot className="h-8 w-8 text-amber-500" strokeWidth={1.5} />
+        <div
+          className="flex flex-col items-center justify-center rounded-xl py-20 text-center"
+          style={{ border: "1px dashed rgba(255,255,255,0.07)" }}
+        >
+          <div
+            className="mb-5 flex h-14 w-14 items-center justify-center rounded-[8px]"
+            style={{
+              background: "rgba(232,160,32,0.08)",
+              border: "1px solid rgba(232,160,32,0.18)",
+            }}
+          >
+            <Bot className="h-7 w-7" style={{ color: "#E8A020" }} strokeWidth={1.5} />
           </div>
-          <p className="font-semibold text-gray-800">Nenhum agente configurado</p>
-          <p className="mt-1 text-sm text-gray-400 max-w-xs">
-            Configure seu primeiro agente para começar a automatizar tarefas com IA.
+          <p
+            className="text-[15px] font-medium"
+            style={{ color: "#F2F0EA", letterSpacing: "-0.01em" }}
+          >
+            Nenhum agente configurado
+          </p>
+          <p className="mt-1.5 max-w-xs text-[13px]" style={{ color: "#3D3D50" }}>
+            Configure seu primeiro agente de IA para começar a automatizar seu negócio.
           </p>
           <Link
             href="/onboarding/setor"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "#E8A020" }}
+            className="mt-6 inline-flex items-center gap-2 rounded-[6px] px-5 py-2.5 text-[13px] font-semibold transition-opacity hover:opacity-90"
+            style={{ background: "#E8A020", color: "#09090E" }}
           >
-            Criar primeiro agente <ArrowRight className="h-4 w-4" />
+            Criar primeiro agente
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </Link>
+        </div>
+      )}
+
+      {/* Quick links */}
+      {agents.length > 0 && (
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/configuracoes"
+            className="flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] transition-all duration-150 hover:bg-white/[0.05]"
+            style={{ color: "#3D3D50", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <Settings className="h-3 w-3" strokeWidth={1.75} />
+            Configurações
+          </Link>
+          <Link
+            href="/escritorio/historico"
+            className="flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] transition-all duration-150 hover:bg-white/[0.05]"
+            style={{ color: "#3D3D50", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <Clock className="h-3 w-3" strokeWidth={1.75} />
+            Histórico
           </Link>
         </div>
       )}

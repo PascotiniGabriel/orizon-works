@@ -8,6 +8,26 @@ import { Button } from "@/components/ui/button";
 import { exportToPDF, exportToWord } from "@/lib/export";
 import { PromptBuilderModal } from "@/components/app/PromptBuilderModal";
 import { FileUploadButton, type UploadedFile } from "@/components/app/FileUploadButton";
+import {
+  Bot,
+  Sparkles,
+  Paperclip,
+  X,
+  ClipboardList,
+  Search,
+  MessageCircle,
+  Calendar,
+  Smartphone,
+  Mail,
+  FileText,
+  Target,
+  Phone,
+  BarChart2,
+  Lightbulb,
+  TrendingUp,
+  Calculator,
+  FolderOpen,
+} from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -29,111 +49,129 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   administrativo: "Administrativo",
 };
 
-const SUGGESTED_PROMPTS: Record<string, { icon: string; text: string }[]> = {
+type PromptItem = { icon: React.ElementType; text: string };
+
+const SUGGESTED_PROMPTS: Record<string, PromptItem[]> = {
   rh: [
-    { icon: "📋", text: "Crie uma descrição de vaga para [cargo] com os requisitos principais" },
-    { icon: "🔍", text: "Analise este currículo para a vaga de [cargo]: [cole o currículo]" },
-    { icon: "💬", text: "Sugira 5 perguntas de entrevista para avaliar [competência]" },
-    { icon: "📅", text: "Monte um plano de onboarding de 30 dias para [cargo]" },
+    { icon: ClipboardList, text: "Crie uma descrição de vaga para [cargo] com os requisitos principais" },
+    { icon: Search,        text: "Analise este currículo para a vaga de [cargo]: [cole o currículo]" },
+    { icon: MessageCircle, text: "Sugira 5 perguntas de entrevista para avaliar [competência]" },
+    { icon: Calendar,      text: "Monte um plano de onboarding de 30 dias para [cargo]" },
   ],
   marketing: [
-    { icon: "📱", text: "Crie um post para Instagram sobre [tema] com chamada para ação" },
-    { icon: "📧", text: "Escreva um e-mail marketing para [produto/serviço] para [público]" },
-    { icon: "📝", text: "Sugira 10 ideias de conteúdo para [canal] sobre [tema]" },
-    { icon: "🎯", text: "Monte uma estratégia de lançamento para [produto/evento]" },
+    { icon: Smartphone,   text: "Crie um post para Instagram sobre [tema] com chamada para ação" },
+    { icon: Mail,         text: "Escreva um e-mail marketing para [produto/serviço] para [público]" },
+    { icon: FileText,     text: "Sugira 10 ideias de conteúdo para [canal] sobre [tema]" },
+    { icon: Target,       text: "Monte uma estratégia de lançamento para [produto/evento]" },
   ],
   comercial: [
-    { icon: "📞", text: "Crie um script de abordagem para [tipo de cliente]" },
-    { icon: "📊", text: "Monte uma proposta comercial para [produto/serviço]" },
-    { icon: "💡", text: "Sugira argumentos para superar a objeção de [objeção]" },
-    { icon: "✉️", text: "Escreva um e-mail de follow-up após reunião com [cliente]" },
+    { icon: Phone,        text: "Crie um script de abordagem para [tipo de cliente]" },
+    { icon: BarChart2,    text: "Monte uma proposta comercial para [produto/serviço]" },
+    { icon: Lightbulb,    text: "Sugira argumentos para superar a objeção de [objeção]" },
+    { icon: Mail,         text: "Escreva um e-mail de follow-up após reunião com [cliente]" },
   ],
   financeiro: [
-    { icon: "📊", text: "Explique [conceito financeiro] de forma simples" },
-    { icon: "📈", text: "Monte um relatório de despesas para o mês de [mês]" },
-    { icon: "🧮", text: "Calcule o ponto de equilíbrio para [produto/serviço]" },
-    { icon: "📋", text: "Crie um modelo de planilha para controle de [receitas/despesas]" },
+    { icon: BarChart2,    text: "Explique [conceito financeiro] de forma simples" },
+    { icon: TrendingUp,   text: "Monte um relatório de despesas para o mês de [mês]" },
+    { icon: Calculator,   text: "Calcule o ponto de equilíbrio para [produto/serviço]" },
+    { icon: ClipboardList,text: "Crie um modelo de planilha para controle de [receitas/despesas]" },
   ],
   administrativo: [
-    { icon: "📝", text: "Redija um e-mail formal para [destinatário] sobre [assunto]" },
-    { icon: "📋", text: "Monte uma ata de reunião com os pontos: [pontos discutidos]" },
-    { icon: "📅", text: "Crie um cronograma para [projeto/evento] com prazo em [data]" },
-    { icon: "🗂️", text: "Organize estes documentos por [critério]: [lista de itens]" },
+    { icon: Mail,         text: "Redija um e-mail formal para [destinatário] sobre [assunto]" },
+    { icon: ClipboardList,text: "Monte uma ata de reunião com os pontos: [pontos discutidos]" },
+    { icon: Calendar,     text: "Crie um cronograma para [projeto/evento] com prazo em [data]" },
+    { icon: FolderOpen,   text: "Organize estes documentos por [critério]: [lista de itens]" },
   ],
 };
 
-const DEFAULT_PROMPTS = [
-  { icon: "💬", text: "Como você pode me ajudar?" },
-  { icon: "📋", text: "Quais são suas principais capacidades?" },
-  { icon: "🚀", text: "Me dê um exemplo do que você faz" },
-  { icon: "🎯", text: "Qual tarefa mais comum você resolve?" },
+const DEFAULT_PROMPTS: PromptItem[] = [
+  { icon: MessageCircle, text: "Como você pode me ajudar?" },
+  { icon: ClipboardList, text: "Quais são suas principais capacidades?" },
+  { icon: Target,        text: "Me dê um exemplo do que você faz" },
+  { icon: Lightbulb,     text: "Qual tarefa mais comum você resolve?" },
 ];
 
-// Renderiza markdown do assistente com estilos humanizados
 function AssistantMessage({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
         h1: ({ children }) => (
-          <p className="mt-3 mb-1 text-base font-bold text-gray-900 first:mt-0">{children}</p>
+          <p className="mt-3 mb-1 text-sm font-bold first:mt-0" style={{ color: "#F2F0EA" }}>{children}</p>
         ),
         h2: ({ children }) => (
-          <p className="mt-3 mb-1 text-sm font-bold text-gray-900 first:mt-0">{children}</p>
+          <p className="mt-3 mb-1 text-sm font-bold first:mt-0" style={{ color: "#F2F0EA" }}>{children}</p>
         ),
         h3: ({ children }) => (
-          <p className="mt-2 mb-0.5 text-sm font-semibold text-gray-800 first:mt-0">{children}</p>
+          <p className="mt-2 mb-0.5 text-sm font-semibold first:mt-0" style={{ color: "#E0DFDA" }}>{children}</p>
         ),
-        p: ({ children }) => <p className="mb-2 leading-relaxed last:mb-0">{children}</p>,
+        p: ({ children }) => (
+          <p className="mb-2 leading-relaxed last:mb-0" style={{ color: "#C0BFC9" }}>{children}</p>
+        ),
         ul: ({ children }) => (
-          <ul className="mb-2 space-y-1 pl-4 last:mb-0" style={{ listStyleType: "disc" }}>
+          <ul className="mb-2 space-y-1 pl-4 last:mb-0" style={{ listStyleType: "disc", color: "#C0BFC9" }}>
             {children}
           </ul>
         ),
         ol: ({ children }) => (
-          <ol className="mb-2 space-y-1 pl-4 last:mb-0" style={{ listStyleType: "decimal" }}>
+          <ol className="mb-2 space-y-1 pl-4 last:mb-0" style={{ listStyleType: "decimal", color: "#C0BFC9" }}>
             {children}
           </ol>
         ),
         li: ({ children }) => <li className="leading-relaxed">{children}</li>,
         strong: ({ children }) => (
-          <strong className="font-semibold text-gray-900">{children}</strong>
+          <strong className="font-semibold" style={{ color: "#F2F0EA" }}>{children}</strong>
         ),
-        em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+        em: ({ children }) => <em className="italic" style={{ color: "#A0A0AA" }}>{children}</em>,
         code: ({ children, className }) => {
           const isBlock = className?.includes("language-");
           if (isBlock) {
             return (
-              <code className="block overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs font-mono text-green-300 whitespace-pre">
+              <code
+                className="block overflow-x-auto rounded-[6px] p-3 text-xs font-mono whitespace-pre"
+                style={{ background: "#0A0A0F", color: "#34D399", border: "1px solid rgba(52,211,153,0.15)" }}
+              >
                 {children}
               </code>
             );
           }
           return (
-            <code className="rounded bg-amber-50 border border-amber-100 px-1 py-0.5 text-xs font-mono text-amber-800">
+            <code
+              className="rounded-[3px] px-1.5 py-0.5 text-xs font-mono"
+              style={{ background: "rgba(232,160,32,0.1)", color: "#E8A020", border: "1px solid rgba(232,160,32,0.2)" }}
+            >
               {children}
             </code>
           );
         },
         pre: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
-        hr: () => <hr className="my-3 border-gray-200" />,
+        hr: () => <hr className="my-3" style={{ borderColor: "rgba(255,255,255,0.08)" }} />,
         blockquote: ({ children }) => (
-          <blockquote className="mb-2 border-l-2 border-amber-300 pl-3 text-gray-600 italic">
+          <blockquote
+            className="mb-2 pl-3 italic"
+            style={{ borderLeft: "2px solid rgba(232,160,32,0.4)", color: "#8A8994" }}
+          >
             {children}
           </blockquote>
         ),
         table: ({ children }) => (
-          <div className="mb-2 overflow-x-auto rounded-lg border border-gray-200 last:mb-0">
+          <div className="mb-2 overflow-x-auto rounded-[6px] last:mb-0" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
             <table className="w-full border-collapse text-sm">{children}</table>
           </div>
         ),
         th: ({ children }) => (
-          <th className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-left text-xs font-semibold text-gray-700">
+          <th
+            className="px-3 py-2 text-left text-[11px] font-semibold"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#8A8994" }}
+          >
             {children}
           </th>
         ),
         td: ({ children }) => (
-          <td className="border-b border-gray-100 px-3 py-2 text-xs text-gray-700 last:border-b-0">
+          <td
+            className="px-3 py-2 text-xs"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#C0BFC9" }}
+          >
             {children}
           </td>
         ),
@@ -144,7 +182,6 @@ function AssistantMessage({ content }: { content: string }) {
   );
 }
 
-// Tela inicial quando não há mensagens
 function EmptyState({
   agentName,
   agentType,
@@ -156,52 +193,61 @@ function EmptyState({
   onSuggest: (text: string) => void;
   onGuided: () => void;
 }) {
-  const prompts = SUGGESTED_PROMPTS[agentType] ?? DEFAULT_PROMPTS;
+  const prompts: PromptItem[] = SUGGESTED_PROMPTS[agentType] ?? DEFAULT_PROMPTS;
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 py-8">
-      <div className="w-full max-w-2xl space-y-6">
-        {/* Saudação */}
+      <div className="w-full max-w-2xl space-y-5">
         <div className="text-center">
-          <p className="text-lg font-semibold text-gray-800">
-            Como posso ajudar você hoje?
+          <p className="text-[15px] font-semibold" style={{ color: "#F2F0EA", letterSpacing: "-0.02em" }}>
+            Como posso ajudar, hoje?
           </p>
-          <p className="mt-1 text-sm text-gray-500">
-            Clique em uma sugestão abaixo ou escreva diretamente no campo de mensagem.
+          <p className="mt-1 text-[13px]" style={{ color: "#64636E" }}>
+            Selecione uma sugestão ou escreva diretamente.
           </p>
         </div>
 
-        {/* Sugestões de prompts */}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {prompts.map((p, i) => (
-            <button
-              key={i}
-              onClick={() => onSuggest(p.text)}
-              className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm text-gray-700 transition-all hover:border-amber-300 hover:bg-amber-50 hover:shadow-sm cursor-pointer"
-            >
-              <span className="mt-0.5 shrink-0 text-base">{p.icon}</span>
-              <span className="leading-snug">{p.text}</span>
-            </button>
-          ))}
+          {prompts.map((p, i) => {
+            const Icon = p.icon;
+            return (
+              <button
+                key={i}
+                onClick={() => onSuggest(p.text)}
+                className="group flex items-start gap-3 rounded-[8px] px-4 py-3 text-left text-[13px] transition-all duration-150 hover:bg-white/[0.04] cursor-pointer"
+                style={{ border: "1px solid rgba(255,255,255,0.07)", color: "#8A8994" }}
+              >
+                <Icon
+                  className="mt-0.5 h-4 w-4 shrink-0 transition-colors group-hover:text-[#E8A020]"
+                  style={{ color: "#3D3D50" }}
+                  strokeWidth={1.75}
+                />
+                <span className="leading-snug group-hover:text-[#C0BFC9]">{p.text}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Modo Guiado em destaque */}
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+        <div
+          className="rounded-[8px] px-5 py-4"
+          style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.18)" }}
+        >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-amber-900">
+              <p className="text-[13px] font-semibold" style={{ color: "#E8A020" }}>
                 Nunca usou IA antes?
               </p>
-              <p className="mt-0.5 text-xs text-amber-700">
-                O <strong>Modo Guiado</strong> te ajuda a montar um pedido perfeito passo a passo — sem precisar saber escrever prompts.
+              <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: "#8A6A30" }}>
+                O <strong style={{ color: "#E8A020" }}>Modo Guiado</strong> monta seu pedido passo a passo — sem precisar saber escrever prompts.
               </p>
             </div>
             <button
               onClick={onGuided}
-              className="shrink-0 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#E8A020" }}
+              className="shrink-0 flex items-center gap-1.5 rounded-[6px] px-4 py-2 text-[12px] font-semibold transition-opacity hover:opacity-90 cursor-pointer"
+              style={{ background: "#E8A020", color: "#09090E" }}
             >
-              Usar Modo Guiado
+              <Sparkles className="h-3 w-3" strokeWidth={2.5} />
+              Modo Guiado
             </button>
           </div>
         </div>
@@ -232,7 +278,6 @@ export function ChatInterface({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streaming]);
 
-  // Auto-resize do textarea conforme o usuário digita
   function autoResize() {
     const ta = textareaRef.current;
     if (!ta) return;
@@ -240,7 +285,6 @@ export function ChatInterface({
     ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
   }
 
-  // Função unificada de streaming — usada pelo envio normal e pelo Modo Guiado
   const streamMessage = useCallback(
     async (fullContent: string, displayContent: string, currentMessages: Message[]) => {
       const userMsg: Message = { role: "user", content: displayContent };
@@ -267,8 +311,7 @@ export function ChatInterface({
             const updated = [...prev];
             updated[updated.length - 1] = {
               role: "assistant",
-              content:
-                "Tokens esgotados. Entre em contato com o administrador para adquirir um Token Pack e retomar o uso dos agentes.",
+              content: "Tokens esgotados. Entre em contato com o administrador para adquirir um Token Pack.",
             };
             return updated;
           });
@@ -293,7 +336,6 @@ export function ChatInterface({
           });
         }
 
-        // Atualiza contador de tokens no header sem recarregar a página
         router.refresh();
       } catch {
         setMessages((prev) => {
@@ -322,16 +364,12 @@ export function ChatInterface({
     } else if (pendingFile?.isAudio && pendingFile.transcriptionStatus === "completed" && pendingFile.extractedText) {
       fullContent = `${text}\n\n---\nTranscrição do áudio "${pendingFile.fileName}":\n${pendingFile.extractedText.slice(0, 20000)}`;
     } else if (pendingFile) {
-      fullContent = `${text}\n\n[Arquivo anexado: ${pendingFile.fileName} — sem conteúdo extraído ainda]`;
+      fullContent = `${text}\n\n[Arquivo: ${pendingFile.fileName}]`;
     }
 
     setInput("");
     setPendingFile(null);
-
-    // Reset textarea height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     await streamMessage(fullContent, text, messages);
   }
@@ -380,54 +418,72 @@ export function ChatInterface({
         />
       )}
 
-      <div className="flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm">
+      <div
+        className="flex h-full flex-col overflow-hidden"
+        style={{
+          background: "#111118",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: "12px",
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center gap-3 border-b px-5 py-3.5">
+        <div
+          className="flex items-center gap-3 px-5 py-3.5"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
           {agentAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={agentAvatarUrl}
               alt={agentDisplayName}
-              className="h-9 w-9 rounded-xl border border-gray-100"
+              className="h-9 w-9 rounded-[6px] object-cover"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
             />
           ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-lg border border-amber-100">
-              🤖
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-[6px]"
+              style={{ background: "rgba(232,160,32,0.1)", border: "1px solid rgba(232,160,32,0.2)" }}
+            >
+              <Bot className="h-5 w-5" style={{ color: "#E8A020" }} strokeWidth={1.75} />
             </div>
           )}
           <div>
-            <p className="text-sm font-semibold text-gray-900">{agentDisplayName}</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-[13px] font-semibold" style={{ color: "#F2F0EA", letterSpacing: "-0.01em" }}>
+              {agentDisplayName}
+            </p>
+            <p className="text-[11px]" style={{ color: "#3D3D50" }}>
               Agente de {AGENT_TYPE_LABELS[agentType] ?? agentType}
             </p>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-3">
             {messages.length > 0 && (
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleExport("pdf")}
                   disabled={exporting}
-                  title="Exportar PDF"
-                  className="rounded-lg px-2 py-1 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 cursor-pointer"
+                  className="rounded-[5px] px-2 py-1 text-[11px] transition-all duration-150 hover:bg-white/[0.06] disabled:opacity-40 cursor-pointer"
+                  style={{ color: "#3D3D50" }}
                 >
                   PDF
                 </button>
                 <button
                   onClick={() => handleExport("word")}
                   disabled={exporting}
-                  title="Exportar Word"
-                  className="rounded-lg px-2 py-1 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 cursor-pointer"
+                  className="rounded-[5px] px-2 py-1 text-[11px] transition-all duration-150 hover:bg-white/[0.06] disabled:opacity-40 cursor-pointer"
+                  style={{ color: "#3D3D50" }}
                 >
                   Word
                 </button>
               </div>
             )}
-            <span className="h-2 w-2 rounded-full bg-green-400" />
-            <span className="text-xs text-gray-400">Online</span>
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#34D399]" style={{ boxShadow: "0 0 4px rgba(52,211,153,0.6)" }} />
+              <span className="text-[11px]" style={{ color: "#3D3D50" }}>Online</span>
+            </div>
           </div>
         </div>
 
-        {/* Área de mensagens / estado vazio */}
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto">
           {isEmpty ? (
             <EmptyState
@@ -450,39 +506,49 @@ export function ChatInterface({
                         <img
                           src={agentAvatarUrl}
                           alt={agentDisplayName}
-                          className="h-7 w-7 rounded-lg border border-gray-100"
+                          className="h-6 w-6 rounded-[4px] object-cover"
+                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
                         />
                       ) : (
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-sm border border-amber-100">
-                          🤖
+                        <div
+                          className="flex h-6 w-6 items-center justify-center rounded-[4px]"
+                          style={{ background: "rgba(232,160,32,0.1)", border: "1px solid rgba(232,160,32,0.15)" }}
+                        >
+                          <Bot className="h-3.5 w-3.5" style={{ color: "#E8A020" }} strokeWidth={2} />
                         </div>
                       )}
                     </div>
                   )}
 
                   <div
-                    className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm ${
-                      msg.role === "user"
-                        ? "text-white rounded-tr-sm"
-                        : "bg-gray-50 text-gray-800 border border-gray-100 rounded-tl-sm"
-                    }`}
+                    className="max-w-[78%] rounded-[10px] px-4 py-3 text-[13px]"
                     style={
-                      msg.role === "user" ? { backgroundColor: "#E8A020" } : undefined
+                      msg.role === "user"
+                        ? {
+                            background: "#E8A020",
+                            color: "#0D0B00",
+                            borderBottomRightRadius: "3px",
+                          }
+                        : {
+                            background: "#18181F",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                            borderBottomLeftRadius: "3px",
+                          }
                     }
                   >
                     {msg.role === "assistant" ? (
                       <>
                         {msg.content === "" && streaming && i === messages.length - 1 ? (
                           <span className="inline-flex gap-1 py-0.5">
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "0ms" }} />
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "150ms" }} />
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "300ms" }} />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full" style={{ background: "#3D3D50", animationDelay: "0ms" }} />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full" style={{ background: "#3D3D50", animationDelay: "150ms" }} />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full" style={{ background: "#3D3D50", animationDelay: "300ms" }} />
                           </span>
                         ) : (
                           <AssistantMessage content={msg.content} />
                         )}
                         {streaming && i === messages.length - 1 && msg.content !== "" && (
-                          <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-gray-400" />
+                          <span className="ml-0.5 inline-block h-3 w-0.5 animate-pulse rounded-full" style={{ background: "#E8A020" }} />
                         )}
                       </>
                     ) : (
@@ -497,25 +563,37 @@ export function ChatInterface({
         </div>
 
         {/* Input */}
-        <div className="border-t px-4 py-3">
+        <div
+          className="px-4 py-3"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        >
           {tokenBlocked ? (
-            <div className="flex items-center justify-center rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div
+              className="flex items-center justify-center rounded-[8px] px-4 py-3 text-[13px]"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444" }}
+            >
               Tokens esgotados — contate o administrador para continuar
             </div>
           ) : (
             <div className="space-y-2">
               {pendingFile && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
-                  <span className="text-sm">📎</span>
-                  <span className="flex-1 truncate text-xs text-amber-800">{pendingFile.fileName}</span>
+                <div
+                  className="flex items-center gap-2 rounded-[6px] px-3 py-2"
+                  style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.18)" }}
+                >
+                  <Paperclip className="h-3.5 w-3.5 shrink-0" style={{ color: "#E8A020" }} strokeWidth={2} />
+                  <span className="flex-1 truncate text-[12px]" style={{ color: "#C8962A" }}>
+                    {pendingFile.fileName}
+                  </span>
                   {pendingFile.isAudio && pendingFile.transcriptionStatus === "pending" && (
-                    <span className="text-xs text-amber-600">aguardando transcrição...</span>
+                    <span className="text-[11px]" style={{ color: "#8A6A30" }}>transcrevendo...</span>
                   )}
                   <button
                     onClick={() => setPendingFile(null)}
-                    className="text-xs text-amber-400 hover:text-amber-700 cursor-pointer"
+                    className="transition-opacity hover:opacity-70 cursor-pointer"
+                    style={{ color: "#8A6A30" }}
                   >
-                    ✕
+                    <X className="h-3.5 w-3.5" strokeWidth={2} />
                   </button>
                 </div>
               )}
@@ -532,19 +610,31 @@ export function ChatInterface({
                   placeholder={
                     pendingFile
                       ? `Diga o que fazer com "${pendingFile.fileName}"...`
-                      : `Mensagem para ${agentDisplayName}... (Enter para enviar, Shift+Enter para nova linha)`
+                      : `Mensagem... (Enter para enviar)`
                   }
                   disabled={streaming}
                   rows={1}
-                  className="flex-1 resize-none overflow-hidden rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 transition-colors focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-100 disabled:opacity-60"
-                  style={{ minHeight: "42px", maxHeight: "200px" }}
+                  className="flex-1 resize-none overflow-hidden rounded-[8px] px-4 py-2.5 text-[13px] placeholder-[#3D3D50] transition-all duration-150 outline-none disabled:opacity-50"
+                  style={{
+                    background: "#0D0D14",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    color: "#F2F0EA",
+                    minHeight: "42px",
+                    maxHeight: "200px",
+                  }}
+                  onFocus={(e) => {
+                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(232,160,32,0.4)";
+                  }}
+                  onBlur={(e) => {
+                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(255,255,255,0.09)";
+                  }}
                   autoFocus
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={streaming || !input.trim()}
-                  className="shrink-0 self-end font-semibold text-white cursor-pointer"
-                  style={{ backgroundColor: "#E8A020" }}
+                  className="shrink-0 self-end rounded-[8px] text-[13px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-40 cursor-pointer"
+                  style={{ background: "#E8A020", color: "#09090E", border: "none" }}
                 >
                   Enviar
                 </Button>
@@ -560,9 +650,10 @@ export function ChatInterface({
                 <button
                   onClick={() => setShowGuided(true)}
                   disabled={streaming}
-                  className="flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-amber-600 disabled:opacity-40 cursor-pointer"
+                  className="flex items-center gap-1 text-[11px] transition-colors hover:text-[#E8A020] disabled:opacity-40 cursor-pointer"
+                  style={{ color: "#3D3D50" }}
                 >
-                  <span>✨</span>
+                  <Sparkles className="h-3 w-3" strokeWidth={2} />
                   Modo Guiado
                 </button>
               </div>

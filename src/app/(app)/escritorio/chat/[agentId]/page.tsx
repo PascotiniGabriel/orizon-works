@@ -42,12 +42,20 @@ export default async function ChatPage({ params }: ChatPageProps) {
     <div className="flex flex-col" style={{ height: "calc(100vh - 56px - 48px)" }}>
       {/* Barra de ações extra por tipo de agente */}
       {agent.type === "rh" && (
-        <div className="flex shrink-0 items-center justify-end gap-2 border-b border-gray-100 bg-white px-4 py-2">
+        <div
+          className="flex shrink-0 items-center justify-end gap-2 px-4 py-2"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+        >
           <Link
             href={`/escritorio/chat/${agent.id}/avaliar`}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+            className="inline-flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] font-semibold transition-all duration-150 hover:opacity-90"
+            style={{
+              background: "rgba(232,160,32,0.1)",
+              border: "1px solid rgba(232,160,32,0.25)",
+              color: "#E8A020",
+            }}
           >
-            <Trophy className="h-3.5 w-3.5" />
+            <Trophy className="h-3.5 w-3.5" strokeWidth={2} />
             Ranking de Currículos
           </Link>
         </div>

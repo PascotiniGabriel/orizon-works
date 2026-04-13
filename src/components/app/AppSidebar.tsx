@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
+  LayoutGrid,
   History,
   Users,
   Megaphone,
@@ -29,15 +29,15 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   marketing: "Marketing",
   comercial: "Comercial",
   financeiro: "Financeiro",
-  administrativo: "Administrativo",
+  administrativo: "Adm.",
 };
 
-const AGENT_TYPE_COLORS: Record<string, string> = {
-  rh: "bg-violet-50 text-violet-600 border-violet-100",
-  marketing: "bg-pink-50 text-pink-600 border-pink-100",
-  comercial: "bg-blue-50 text-blue-600 border-blue-100",
-  financeiro: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  administrativo: "bg-amber-50 text-amber-600 border-amber-100",
+const AGENT_COLORS: Record<string, { bg: string; text: string }> = {
+  rh:            { bg: "rgba(167,139,250,0.12)", text: "#A78BFA" },
+  marketing:     { bg: "rgba(251,113,133,0.12)", text: "#FB7185" },
+  comercial:     { bg: "rgba(96,165,250,0.12)",  text: "#60A5FA" },
+  financeiro:    { bg: "rgba(52,211,153,0.12)",  text: "#34D399" },
+  administrativo:{ bg: "rgba(232,160,32,0.12)",  text: "#E8A020" },
 };
 
 interface AppSidebarProps {
@@ -49,27 +49,49 @@ export function AppSidebar({ agents, role }: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-gray-100 bg-white">
+    <aside
+      className="flex h-full w-[220px] shrink-0 flex-col"
+      style={{ background: "#09090E", borderRight: "1px solid rgba(255,255,255,0.07)" }}
+    >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100">
+      <div
+        className="flex items-center gap-3 px-5 py-[18px]"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+      >
         <div
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm"
-          style={{ background: "linear-gradient(135deg, #E8A020, #f5c55a)" }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-bold"
+          style={{
+            border: "1.5px solid #E8A020",
+            borderRadius: "4px",
+            color: "#E8A020",
+            letterSpacing: "-0.04em",
+            fontSize: "16px",
+          }}
         >
           O
         </div>
-        <span className="font-bold text-gray-900 tracking-tight">OrizonWorks</span>
+        <div className="min-w-0">
+          <p
+            className="text-[13px] font-semibold leading-tight truncate"
+            style={{ color: "#F2F0EA", letterSpacing: "-0.025em" }}
+          >
+            OrizonWorks
+          </p>
+          <p className="text-[10px] leading-tight" style={{ color: "#2D2D3A" }}>
+            Central de Agentes
+          </p>
+        </div>
       </div>
 
-      {/* Navegação principal */}
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3">
-        <NavItem
+      {/* Nav principal */}
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
+        <SideNavItem
           href="/escritorio"
-          icon={Home}
+          icon={LayoutGrid}
           label="Início"
           active={pathname === "/escritorio"}
         />
-        <NavItem
+        <SideNavItem
           href="/escritorio/historico"
           icon={History}
           label="Histórico"
@@ -78,43 +100,60 @@ export function AppSidebar({ agents, role }: AppSidebarProps) {
 
         {agents.length > 0 && (
           <>
-            <div className="mt-4 mb-1.5 px-2">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+            <div className="mt-5 mb-2 px-3">
+              <p
+                className="text-[9px] font-semibold uppercase"
+                style={{ color: "#2D2D3A", letterSpacing: "0.14em" }}
+              >
                 Agentes
               </p>
             </div>
+
             {agents.map((agent) => {
               const href = `/escritorio/chat/${agent.id}`;
               const isActive = pathname.startsWith(`/escritorio/chat/${agent.id}`);
               const label = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
               const Icon = AGENT_TYPE_ICONS[agent.type] ?? Bot;
-              const colorClass = AGENT_TYPE_COLORS[agent.type] ?? "bg-gray-50 text-gray-500 border-gray-100";
+              const colors = AGENT_COLORS[agent.type] ?? { bg: "rgba(255,255,255,0.06)", text: "#64636E" };
 
               return (
                 <Link
                   key={agent.id}
                   href={href}
-                  className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm transition-all duration-150 ${
-                    isActive
-                      ? "bg-amber-50 text-amber-800 font-medium"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                  className="group relative flex items-center gap-2.5 rounded-[6px] py-2 pr-3 text-[13px] transition-all duration-150 hover:bg-white/[0.04]"
+                  style={{
+                    paddingLeft: isActive ? "10px" : "12px",
+                    borderLeft: isActive ? "2px solid #E8A020" : "2px solid transparent",
+                    color: isActive ? "#F2F0EA" : "#64636E",
+                    fontWeight: isActive ? 500 : 400,
+                    background: isActive ? "rgba(232,160,32,0.07)" : undefined,
+                  }}
                 >
                   {agent.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={agent.avatarUrl}
                       alt={label}
-                      className="h-6 w-6 rounded-lg border border-gray-100 object-cover"
+                      className="h-[22px] w-[22px] shrink-0 rounded-[3px] object-cover"
                     />
                   ) : (
-                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border ${colorClass}`}>
-                      <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+                    <div
+                      className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[3px]"
+                      style={{ background: colors.bg }}
+                    >
+                      <Icon
+                        className="h-3 w-3"
+                        style={{ color: colors.text }}
+                        strokeWidth={2}
+                      />
                     </div>
                   )}
-                  <span className="truncate">{label}</span>
+                  <span className="flex-1 truncate group-hover:text-[#C0BFC9]">{label}</span>
                   {isActive && (
-                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    <div
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ background: "#E8A020" }}
+                    />
                   )}
                 </Link>
               );
@@ -124,60 +163,58 @@ export function AppSidebar({ agents, role }: AppSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 px-3 py-3 space-y-0.5">
+      <div
+        className="space-y-0.5 px-2 py-3"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      >
         {role === "super_admin" && (
-          <NavItem
+          <SideNavItem
             href="/admin"
             icon={Shield}
             label="Super Admin"
             active={pathname === "/admin"}
-            muted
           />
         )}
-        <NavItem
+        <SideNavItem
           href="/configuracoes"
           icon={Settings}
           label="Configurações"
           active={pathname === "/configuracoes"}
-          muted
         />
       </div>
     </aside>
   );
 }
 
-function NavItem({
+function SideNavItem({
   href,
   icon: Icon,
   label,
   active,
-  muted,
 }: {
   href: string;
   icon: React.ElementType;
   label: string;
   active: boolean;
-  muted?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm transition-all duration-150 ${
-        active
-          ? "bg-amber-50 font-medium text-amber-800"
-          : muted
-          ? "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-      }`}
+      className="flex items-center gap-2.5 rounded-[6px] py-[7px] pr-3 text-[13px] transition-all duration-150 hover:bg-white/[0.04] hover:text-[#C0BFC9]"
+      style={{
+        paddingLeft: active ? "10px" : "12px",
+        borderLeft: active ? "2px solid #E8A020" : "2px solid transparent",
+        color: active ? "#F2F0EA" : "#64636E",
+        fontWeight: active ? 500 : 400,
+        background: active ? "rgba(232,160,32,0.07)" : undefined,
+      }}
     >
-      <div
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${
-          active ? "bg-amber-100 text-amber-700" : "text-gray-400"
-        }`}
-      >
-        <Icon className="h-4 w-4" strokeWidth={active ? 2.5 : 2} />
-      </div>
-      <span>{label}</span>
+      <Icon
+        className="h-[15px] w-[15px] shrink-0"
+        style={{ color: active ? "#E8A020" : undefined }}
+        strokeWidth={active ? 2.5 : 1.75}
+      />
+      {label}
     </Link>
   );
 }
