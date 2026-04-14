@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo, getCompanyAgents } from "@/lib/db/queries/company";
-import { Bot, ArrowRight, Settings, Clock, Zap } from "lucide-react";
-import { AgentCommandList } from "@/components/app/AgentCommandList";
+import { Bot, ArrowRight, Settings, Zap } from "lucide-react";
+import { AgentCardGrid } from "@/components/app/AgentCommandList";
 
 export default async function EscritorioPage() {
   const supabase = await createClient();
@@ -24,113 +24,186 @@ export default async function EscritorioPage() {
 
   const readyCount = agents.filter((a) => a.briefingComplete).length;
 
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
-    <div className="mx-auto max-w-4xl">
-      {/* Header / Greeting */}
-      <div className="pt-2 pb-10">
-        <p
-          className="text-[11px] font-semibold uppercase mb-3"
-          style={{ color: "#3E3E52", letterSpacing: "0.16em" }}
-        >
-          {greeting}
-        </p>
-        <h1
-          className="font-bold leading-none"
-          style={{
-            color: "#EEECE6",
-            fontSize: "52px",
-            letterSpacing: "-0.04em",
-          }}
-        >
-          {firstName}
-        </h1>
-        {agents.length > 0 && (
-          <p
-            className="mt-3 text-[15px]"
-            style={{ color: "#64636E", letterSpacing: "-0.01em" }}
-          >
-            {readyCount === agents.length
-              ? `${agents.length} agente${agents.length > 1 ? "s" : ""} pronto${agents.length > 1 ? "s" : ""} para trabalhar.`
-              : `${readyCount} de ${agents.length} agentes configurados.`}
-          </p>
-        )}
-      </div>
-
-      {/* Agent command list */}
-      {agents.length > 0 ? (
-        <>
-          <div className="mb-4">
+    <div style={{ padding: "40px 48px", maxWidth: "1200px" }}>
+      {/* Page header */}
+      <div style={{ marginBottom: "48px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
+          <div>
             <p
-              className="text-[11px] font-semibold uppercase"
-              style={{ color: "#3E3E52", letterSpacing: "0.14em" }}
-            >
-              Seus Agentes
-            </p>
-          </div>
-          <AgentCommandList agents={agents} />
-
-          {/* Quick links */}
-          <div className="mt-6 flex items-center gap-2.5">
-            <Link
-              href="/configuracoes"
-              className="flex items-center gap-2 rounded-[6px] px-4 py-2 text-[12px] font-medium transition-all duration-150 hover:bg-white/[0.05]"
               style={{
-                color: "#666680",
-                border: "1px solid rgba(255,255,255,0.08)",
+                color: "#2C2C3A",
+                fontSize: "10px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.18em",
+                marginBottom: "10px",
               }}
             >
-              <Settings className="h-3.5 w-3.5" strokeWidth={1.75} />
+              {greeting}
+            </p>
+            <h1
+              style={{
+                color: "#F0EDE8",
+                fontSize: "64px",
+                fontWeight: 800,
+                letterSpacing: "-0.04em",
+                lineHeight: 1,
+              }}
+            >
+              {firstName}
+            </h1>
+            {agents.length > 0 && (
+              <p style={{ color: "#3C3C52", fontSize: "14px", marginTop: "12px", letterSpacing: "-0.01em" }}>
+                {readyCount === agents.length
+                  ? `${agents.length} agente${agents.length > 1 ? "s" : ""} pronto${agents.length > 1 ? "s" : ""} para trabalhar`
+                  : `${readyCount} de ${agents.length} agentes configurados`}
+              </p>
+            )}
+          </div>
+          <div
+            style={{
+              color: "#2C2C3A",
+              fontSize: "11px",
+              fontFamily: "var(--font-geist-mono)",
+              paddingTop: "4px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {dateLabel}
+          </div>
+        </div>
+      </div>
+
+      {/* Agent cards or empty state */}
+      {agents.length > 0 ? (
+        <div>
+          <p
+            style={{
+              color: "#2C2C3A",
+              fontSize: "10px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.16em",
+              marginBottom: "16px",
+            }}
+          >
+            Seus Agentes
+          </p>
+
+          <AgentCardGrid agents={agents} />
+
+          {/* Quick links */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "32px" }}>
+            <Link
+              href="/configuracoes"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                padding: "8px 14px",
+                borderRadius: "7px",
+                border: "1px solid rgba(255,255,255,0.07)",
+                color: "#4C4C64",
+                fontSize: "12px",
+                fontWeight: 500,
+                textDecoration: "none",
+                transition: "all 0.15s",
+              }}
+            >
+              <Settings style={{ width: "13px", height: "13px" }} />
               Configurações
             </Link>
             <Link
               href="/escritorio/historico"
-              className="flex items-center gap-2 rounded-[6px] px-4 py-2 text-[12px] font-medium transition-all duration-150 hover:bg-white/[0.05]"
               style={{
-                color: "#666680",
-                border: "1px solid rgba(255,255,255,0.08)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                padding: "8px 14px",
+                borderRadius: "7px",
+                border: "1px solid rgba(255,255,255,0.07)",
+                color: "#4C4C64",
+                fontSize: "12px",
+                fontWeight: 500,
+                textDecoration: "none",
+                transition: "all 0.15s",
               }}
             >
-              <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
+              <ArrowRight style={{ width: "13px", height: "13px" }} />
               Histórico
             </Link>
           </div>
-        </>
+        </div>
       ) : (
         /* Empty state */
         <div
-          className="flex flex-col items-center justify-center py-24 text-center"
-          style={{ border: "1px dashed rgba(255,255,255,0.08)", borderRadius: "12px" }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "80px 40px",
+            textAlign: "center",
+            border: "1px dashed rgba(255,255,255,0.07)",
+            borderRadius: "12px",
+          }}
         >
           <div
-            className="mb-6 flex h-16 w-16 items-center justify-center"
             style={{
-              background: "rgba(232,160,32,0.08)",
-              border: "1px solid rgba(232,160,32,0.2)",
-              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "56px",
+              height: "56px",
+              background: "rgba(232,160,32,0.07)",
+              border: "1px solid rgba(232,160,32,0.18)",
+              borderRadius: "10px",
+              marginBottom: "20px",
             }}
           >
-            <Bot className="h-8 w-8" style={{ color: "#E8A020" }} strokeWidth={1.5} />
+            <Bot style={{ width: "28px", height: "28px", color: "#E8A020" }} strokeWidth={1.5} />
           </div>
           <p
-            className="text-[18px] font-semibold"
-            style={{ color: "#EEECE6", letterSpacing: "-0.02em" }}
+            style={{
+              color: "#F0EDE8",
+              fontSize: "20px",
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              marginBottom: "8px",
+            }}
           >
             Nenhum agente configurado
           </p>
-          <p
-            className="mt-2 max-w-xs text-[14px] leading-relaxed"
-            style={{ color: "#4A4A60" }}
-          >
+          <p style={{ color: "#3C3C52", fontSize: "14px", lineHeight: "1.6", maxWidth: "280px" }}>
             Configure seu primeiro agente de IA para começar a automatizar seu negócio.
           </p>
           <Link
             href="/onboarding/setor"
-            className="mt-8 inline-flex items-center gap-2 rounded-[6px] px-6 py-3 text-[14px] font-semibold transition-opacity hover:opacity-90"
-            style={{ background: "#E8A020", color: "#07070C" }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "28px",
+              padding: "10px 20px",
+              background: "#E8A020",
+              color: "#1A0E00",
+              fontWeight: 700,
+              fontSize: "14px",
+              letterSpacing: "-0.01em",
+              borderRadius: "8px",
+              textDecoration: "none",
+            }}
           >
-            <Zap className="h-4 w-4" strokeWidth={2.5} />
+            <Zap style={{ width: "15px", height: "15px" }} />
             Criar primeiro agente
-            <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
           </Link>
         </div>
       )}

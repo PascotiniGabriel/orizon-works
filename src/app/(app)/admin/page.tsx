@@ -4,19 +4,19 @@ import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getPlatformStats, getAllCompanies } from "@/lib/db/queries/admin";
 
 const PLAN_LABELS: Record<string, string> = {
-  trial: "Trial",
-  starter: "Starter",
-  growth: "Growth",
-  business: "Business",
+  trial:      "Trial",
+  starter:    "Starter",
+  growth:     "Growth",
+  business:   "Business",
   enterprise: "Enterprise",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  trialing: "bg-blue-100 text-blue-700",
-  active: "bg-green-100 text-green-700",
-  past_due: "bg-amber-100 text-amber-700",
-  canceled: "bg-gray-100 text-gray-500",
-  unpaid: "bg-red-100 text-red-700",
+const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  trialing: { bg: "rgba(96,165,250,0.12)",  color: "#74B4FB" },
+  active:   { bg: "rgba(52,211,153,0.12)",  color: "#4EDBA4" },
+  past_due: { bg: "rgba(232,160,32,0.12)",  color: "#E8A020" },
+  canceled: { bg: "rgba(255,255,255,0.06)", color: "#4C4C64" },
+  unpaid:   { bg: "rgba(248,113,113,0.12)", color: "#F87171" },
 };
 
 function formatNumber(n: number) {
@@ -48,7 +48,6 @@ export default async function SuperAdminPage() {
   const info = await getUserCompanyInfo(user.id);
   if (!info) redirect("/login");
 
-  // Apenas Super Admin
   if (info.role !== "super_admin") redirect("/escritorio");
 
   const [stats, companiesList] = await Promise.all([
@@ -56,99 +55,197 @@ export default async function SuperAdminPage() {
     getAllCompanies(),
   ]);
 
+  const KPI_CARDS = [
+    { label: "Empresas",          value: formatNumber(stats.totalCompanies)       },
+    { label: "Ativas",            value: formatNumber(stats.totalActiveCompanies) },
+    { label: "Em Trial",          value: formatNumber(stats.totalTrialCompanies)  },
+    { label: "Usuários",          value: formatNumber(stats.totalUsers)           },
+    { label: "MRR",               value: formatCurrency(stats.mrr)               },
+    { label: "Tokens consumidos", value: formatNumber(stats.totalTokensConsumed)  },
+  ];
+
+  const TABLE_HEADER: React.CSSProperties = {
+    padding: "10px 16px",
+    textAlign: "left",
+    color: "#2C2C3A",
+    fontSize: "10px",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.12em",
+  };
+
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Painel Super Admin</h1>
-        <p className="mt-1 text-sm text-gray-500">Visão geral da plataforma Orizon Works</p>
+    <div style={{ padding: "40px 48px", maxWidth: "1200px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "36px" }}>
+        <p
+          style={{
+            color: "#2C2C3A",
+            fontSize: "10px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.18em",
+            marginBottom: "10px",
+          }}
+        >
+          Administração
+        </p>
+        <h1
+          style={{
+            color: "#F0EDE8",
+            fontSize: "40px",
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+          }}
+        >
+          Super Admin
+        </h1>
+        <p style={{ color: "#3C3C52", fontSize: "14px", marginTop: "10px" }}>
+          Visão geral da plataforma Orizon Works
+        </p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {[
-          { label: "Empresas", value: formatNumber(stats.totalCompanies) },
-          { label: "Ativas", value: formatNumber(stats.totalActiveCompanies) },
-          { label: "Em Trial", value: formatNumber(stats.totalTrialCompanies) },
-          { label: "Usuários", value: formatNumber(stats.totalUsers) },
-          { label: "MRR", value: formatCurrency(stats.mrr) },
-          { label: "Tokens consumidos", value: formatNumber(stats.totalTokensConsumed) },
-        ].map((card) => (
-          <div key={card.label} className="rounded-2xl border bg-white p-5 shadow-sm">
-            <p className="text-xs text-gray-400">{card.label}</p>
-            <p className="mt-1 text-xl font-bold text-gray-900">{card.value}</p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "10px",
+          marginBottom: "32px",
+        }}
+      >
+        {KPI_CARDS.map((card) => (
+          <div
+            key={card.label}
+            style={{
+              background: "#111118",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: "10px",
+              padding: "18px 20px",
+            }}
+          >
+            <p style={{ color: "#3C3C52", fontSize: "11px", marginBottom: "6px" }}>
+              {card.label}
+            </p>
+            <p
+              style={{
+                color: "#F0EDE8",
+                fontSize: "24px",
+                fontWeight: 700,
+                letterSpacing: "-0.04em",
+                lineHeight: 1,
+                fontFamily: "var(--font-geist-mono)",
+              }}
+            >
+              {card.value}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Lista de empresas */}
-      <section className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-        <div className="border-b px-6 py-4">
-          <h2 className="font-semibold text-gray-900">Todas as Empresas</h2>
+      {/* Companies table */}
+      <div
+        style={{
+          background: "#111118",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: "10px",
+          overflow: "hidden",
+        }}
+      >
+        {/* Table header */}
+        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <h2 style={{ color: "#F0EDE8", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.01em" }}>
+            Todas as Empresas
+          </h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Empresa
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Plano
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Tokens
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Usuários
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Cadastro
-                </th>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+                <th style={TABLE_HEADER}>Empresa</th>
+                <th style={TABLE_HEADER}>Plano</th>
+                <th style={TABLE_HEADER}>Status</th>
+                <th style={{ ...TABLE_HEADER, textAlign: "right" }}>Tokens</th>
+                <th style={{ ...TABLE_HEADER, textAlign: "right" }}>Usuários</th>
+                <th style={TABLE_HEADER}>Cadastro</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
-              {companiesList.map((c) => {
+            <tbody>
+              {companiesList.map((c, i) => {
                 const usedPercent =
                   c.tokenLimit > 0
                     ? Math.round(((c.tokenLimit - c.tokenBalance) / c.tokenLimit) * 100)
                     : 0;
+                const statusStyle = STATUS_STYLES[c.subscriptionStatus] ?? STATUS_STYLES.canceled;
                 return (
-                  <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
-                    <td className="px-4 py-4 text-gray-600">
+                  <tr
+                    key={c.id}
+                    style={{
+                      borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : undefined,
+                      transition: "background 0.1s",
+                    }}
+                  >
+                    <td style={{ padding: "12px 16px", color: "#F0EDE8", fontWeight: 500 }}>
+                      {c.name}
+                    </td>
+                    <td style={{ padding: "12px 16px", color: "#6B6B84" }}>
                       {PLAN_LABELS[c.plan] ?? c.plan}
                     </td>
-                    <td className="px-4 py-4">
+                    <td style={{ padding: "12px 16px" }}>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          STATUS_COLORS[c.subscriptionStatus] ?? "bg-gray-100 text-gray-500"
-                        }`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          padding: "2px 8px",
+                          borderRadius: "20px",
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          background: statusStyle.bg,
+                          color: statusStyle.color,
+                        }}
                       >
                         {c.subscriptionStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+                        <div
+                          style={{
+                            width: "56px",
+                            height: "4px",
+                            borderRadius: "2px",
+                            background: "rgba(255,255,255,0.07)",
+                            overflow: "hidden",
+                          }}
+                        >
                           <div
-                            className={`h-full rounded-full ${
-                              usedPercent > 80 ? "bg-red-400" : "bg-green-400"
-                            }`}
-                            style={{ width: `${Math.min(usedPercent, 100)}%` }}
+                            style={{
+                              height: "100%",
+                              width: `${Math.min(usedPercent, 100)}%`,
+                              background: usedPercent > 80 ? "#F87171" : "#4EDBA4",
+                              borderRadius: "2px",
+                            }}
                           />
                         </div>
-                        <span className="text-xs tabular-nums text-gray-500">
+                        <span
+                          style={{
+                            color: "#4C4C64",
+                            fontSize: "11px",
+                            fontFamily: "var(--font-geist-mono)",
+                            minWidth: "28px",
+                            textAlign: "right",
+                          }}
+                        >
                           {usedPercent}%
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-right text-gray-600">
+                    <td style={{ padding: "12px 16px", color: "#6B6B84", textAlign: "right", fontFamily: "var(--font-geist-mono)" }}>
                       {c.userCount}
                     </td>
-                    <td className="px-4 py-4 text-gray-400">
+                    <td style={{ padding: "12px 16px", color: "#3C3C52", fontFamily: "var(--font-geist-mono)" }}>
                       {formatDate(c.createdAt)}
                     </td>
                   </tr>
@@ -156,7 +253,15 @@ export default async function SuperAdminPage() {
               })}
               {companiesList.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-400">
+                  <td
+                    colSpan={6}
+                    style={{
+                      padding: "40px 20px",
+                      textAlign: "center",
+                      color: "#3C3C52",
+                      fontSize: "13px",
+                    }}
+                  >
                     Nenhuma empresa cadastrada ainda.
                   </td>
                 </tr>
@@ -164,7 +269,7 @@ export default async function SuperAdminPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
