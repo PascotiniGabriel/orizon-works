@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getSessionsHistory } from "@/lib/db/queries/sessions";
-import { Clock, Bot, ArrowRight } from "lucide-react";
+import { Clock, Bot, ChevronRight } from "lucide-react";
 
 const AGENT_TYPE_LABELS: Record<string, string> = {
   rh:             "RH",
@@ -11,6 +11,14 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   comercial:      "Comercial",
   financeiro:     "Financeiro",
   administrativo: "Administrativo",
+};
+
+const AGENT_DOT: Record<string, string> = {
+  rh:             "#A78BFA",
+  marketing:      "#FB7185",
+  comercial:      "#60A5FA",
+  financeiro:     "#10B981",
+  administrativo: "#FBBF24",
 };
 
 function formatDate(date: Date) {
@@ -36,201 +44,206 @@ export default async function HistoricoPage() {
   const sessoes = await getSessionsHistory(info.companyId, info.userId, info.role);
 
   return (
-    <div style={{ padding: "40px 48px", maxWidth: "900px" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "36px" }}>
-        <p
-          style={{
-            color: "#2C2C3A",
-            fontSize: "10px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.18em",
-            marginBottom: "10px",
-          }}
-        >
-          Workspace
-        </p>
-        <h1
-          style={{
-            color: "#F0EDE8",
-            fontSize: "40px",
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-            lineHeight: 1,
-          }}
-        >
-          Histórico
-        </h1>
-        <p style={{ color: "#3C3C52", fontSize: "14px", marginTop: "10px" }}>
-          {info.role === "employee"
-            ? "Suas conversas dos últimos 30 dias."
-            : "Todas as conversas da empresa dos últimos 30 dias."}
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+
+      {/* ── Page header ── */}
+      <div
+        style={{
+          padding: "18px 28px 16px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <h1
+            style={{
+              color: "#EBEBEB",
+              fontSize: "15px",
+              fontWeight: 600,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Histórico
+          </h1>
+          {sessoes.length > 0 && (
+            <span
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                color: "#888",
+                fontSize: "11px",
+                fontWeight: 600,
+                padding: "2px 7px",
+                borderRadius: "4px",
+              }}
+            >
+              {sessoes.length}
+            </span>
+          )}
+        </div>
+        <p style={{ color: "#3A3A3A", fontSize: "12px" }}>
+          {info.role === "employee" ? "Suas conversas · 30 dias" : "Toda a empresa · 30 dias"}
         </p>
       </div>
 
-      {sessoes.length === 0 ? (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "80px 40px",
-            textAlign: "center",
-            border: "1px dashed rgba(255,255,255,0.07)",
-            borderRadius: "12px",
-          }}
-        >
-          <Clock
-            style={{ width: "36px", height: "36px", color: "#2C2C3A", marginBottom: "16px" }}
-            strokeWidth={1}
-          />
-          <p style={{ color: "#8888A4", fontSize: "15px", fontWeight: 500, marginBottom: "6px" }}>
-            Nenhuma conversa ainda
-          </p>
-          <p style={{ color: "#3C3C52", fontSize: "13px" }}>
-            As conversas com os agentes aparecerão aqui.
-          </p>
-          <Link
-            href="/escritorio"
+      {/* ── Content ── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+        {sessoes.length === 0 ? (
+          <div
             style={{
-              display: "inline-block",
-              marginTop: "24px",
-              padding: "8px 18px",
-              background: "#E8A020",
-              color: "#1A0E00",
-              fontWeight: 600,
-              fontSize: "13px",
-              borderRadius: "7px",
-              textDecoration: "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "80px 40px",
+              textAlign: "center",
+              border: "1px dashed rgba(255,255,255,0.07)",
+              borderRadius: "8px",
             }}
           >
-            Ir ao Escritório
-          </Link>
-        </div>
-      ) : (
-        <div
-          style={{
-            border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: "10px",
-            overflow: "hidden",
-          }}
-        >
-          {sessoes.map((s, i) => {
-            const agentLabel = s.agentName ?? AGENT_TYPE_LABELS[s.agentType] ?? s.agentType;
-            return (
-              <Link
-                key={s.id}
-                href={`/escritorio/historico/${s.id}`}
-                className="group flex items-center hover:bg-white/[0.02] transition-colors"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  padding: "14px 20px",
-                  textDecoration: "none",
-                  borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined,
-                }}
-              >
-                {/* Agent avatar */}
-                {s.agentAvatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={s.agentAvatarUrl}
-                    alt={agentLabel}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "8px",
-                      objectFit: "cover",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      flexShrink: 0,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "8px",
-                      background: "rgba(232,160,32,0.07)",
-                      border: "1px solid rgba(232,160,32,0.14)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Bot style={{ width: "18px", height: "18px", color: "#E8A020" }} strokeWidth={1.5} />
-                  </div>
-                )}
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
-                    <span
-                      style={{
-                        color: "#F0EDE8",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      {agentLabel}
-                    </span>
-                    <span
-                      style={{
-                        background: "rgba(255,255,255,0.06)",
-                        color: "#4C4C64",
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        padding: "1px 6px",
-                        borderRadius: "3px",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      {AGENT_TYPE_LABELS[s.agentType] ?? s.agentType}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      color: "#3C3C52",
-                      fontSize: "12px",
-                      fontFamily: "var(--font-geist-mono)",
-                    }}
-                  >
-                    {formatDate(s.updatedAt)}
-                    <span style={{ margin: "0 6px" }}>·</span>
-                    {s.messageCount} msgs
-                    <span style={{ margin: "0 6px" }}>·</span>
-                    {s.tokensUsed.toLocaleString("pt-BR")} tokens
-                    {info.role !== "employee" && s.userName && (
-                      <>
-                        <span style={{ margin: "0 6px" }}>·</span>
-                        {s.userName}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Arrow */}
-                <ArrowRight
+            <Clock
+              style={{ width: "32px", height: "32px", color: "#2A2A2A", marginBottom: "16px" }}
+              strokeWidth={1.25}
+            />
+            <p style={{ color: "#888", fontSize: "14px", fontWeight: 500, marginBottom: "6px" }}>
+              Nenhuma conversa ainda
+            </p>
+            <p style={{ color: "#3A3A3A", fontSize: "12px" }}>
+              As conversas com os agentes aparecerão aqui.
+            </p>
+            <Link
+              href="/escritorio"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                marginTop: "24px",
+                padding: "8px 16px",
+                background: "#10B981",
+                color: "#000",
+                fontWeight: 600,
+                fontSize: "12px",
+                borderRadius: "6px",
+                textDecoration: "none",
+              }}
+            >
+              Ir ao Escritório
+            </Link>
+          </div>
+        ) : (
+          <div
+            style={{
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: "8px",
+              overflow: "hidden",
+            }}
+          >
+            {sessoes.map((s, i) => {
+              const agentLabel = s.agentName ?? AGENT_TYPE_LABELS[s.agentType] ?? s.agentType;
+              const dot = AGENT_DOT[s.agentType] ?? "#555";
+              return (
+                <Link
+                  key={s.id}
+                  href={`/escritorio/historico/${s.id}`}
+                  className="ow-row"
                   style={{
-                    width: "15px",
-                    height: "15px",
-                    color: "#2C2C3A",
-                    flexShrink: 0,
-                    transition: "color 0.15s, transform 0.15s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                    padding: "14px 18px",
+                    textDecoration: "none",
+                    borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined,
+                    transition: "background 0.12s",
                   }}
-                  strokeWidth={2}
-                />
-              </Link>
-            );
-          })}
-        </div>
-      )}
+                >
+                  {/* Agent avatar */}
+                  {s.agentAvatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s.agentAvatarUrl}
+                      alt={agentLabel}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "7px",
+                        objectFit: "cover",
+                        border: "1px solid rgba(255,255,255,0.07)",
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "7px",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.07)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Bot style={{ width: "16px", height: "16px", color: dot }} strokeWidth={1.5} />
+                    </div>
+                  )}
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                      <span style={{ color: "#EBEBEB", fontSize: "13px", fontWeight: 500, letterSpacing: "-0.01em" }}>
+                        {agentLabel}
+                      </span>
+                      <span
+                        style={{
+                          background: "rgba(255,255,255,0.05)",
+                          color: "#555",
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          padding: "1px 6px",
+                          borderRadius: "3px",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                        }}
+                      >
+                        {AGENT_TYPE_LABELS[s.agentType] ?? s.agentType}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        color: "#3A3A3A",
+                        fontSize: "11px",
+                        fontFamily: "var(--font-geist-mono)",
+                      }}
+                    >
+                      {formatDate(s.updatedAt)}
+                      <span style={{ margin: "0 5px", color: "#2A2A2A" }}>·</span>
+                      {s.messageCount} msgs
+                      <span style={{ margin: "0 5px", color: "#2A2A2A" }}>·</span>
+                      {s.tokensUsed.toLocaleString("pt-BR")} tokens
+                      {info.role !== "employee" && s.userName && (
+                        <>
+                          <span style={{ margin: "0 5px", color: "#2A2A2A" }}>·</span>
+                          {s.userName}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Arrow */}
+                  <ChevronRight
+                    style={{ width: "14px", height: "14px", color: "#2A2A2A", flexShrink: 0 }}
+                    strokeWidth={2}
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

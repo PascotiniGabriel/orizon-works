@@ -12,11 +12,11 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  trialing: { bg: "rgba(96,165,250,0.12)",  color: "#74B4FB" },
-  active:   { bg: "rgba(52,211,153,0.12)",  color: "#4EDBA4" },
-  past_due: { bg: "rgba(232,160,32,0.12)",  color: "#E8A020" },
-  canceled: { bg: "rgba(255,255,255,0.06)", color: "#4C4C64" },
-  unpaid:   { bg: "rgba(248,113,113,0.12)", color: "#F87171" },
+  trialing: { bg: "rgba(96,165,250,0.1)",   color: "#60A5FA" },
+  active:   { bg: "rgba(16,185,129,0.1)",   color: "#10B981" },
+  past_due: { bg: "rgba(251,191,36,0.1)",   color: "#FBBF24" },
+  canceled: { bg: "rgba(255,255,255,0.05)", color: "#555"    },
+  unpaid:   { bg: "rgba(248,113,113,0.1)",  color: "#F87171" },
 };
 
 function formatNumber(n: number) {
@@ -67,7 +67,7 @@ export default async function SuperAdminPage() {
   const TABLE_HEADER: React.CSSProperties = {
     padding: "10px 16px",
     textAlign: "left",
-    color: "#2C2C3A",
+    color: "#3A3A3A",
     fontSize: "10px",
     fontWeight: 600,
     textTransform: "uppercase",
@@ -75,36 +75,38 @@ export default async function SuperAdminPage() {
   };
 
   return (
-    <div style={{ padding: "40px 48px", maxWidth: "1200px" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "36px" }}>
-        <p
-          style={{
-            color: "#2C2C3A",
-            fontSize: "10px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.18em",
-            marginBottom: "10px",
-          }}
-        >
-          Administração
-        </p>
-        <h1
-          style={{
-            color: "#F0EDE8",
-            fontSize: "40px",
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-            lineHeight: 1,
-          }}
-        >
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Page header */}
+      <div
+        style={{
+          padding: "18px 28px 16px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          flexShrink: 0,
+        }}
+      >
+        <h1 style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.02em" }}>
           Super Admin
         </h1>
-        <p style={{ color: "#3C3C52", fontSize: "14px", marginTop: "10px" }}>
-          Visão geral da plataforma Orizon Works
-        </p>
+        <span
+          style={{
+            background: "rgba(16,185,129,0.1)",
+            color: "#10B981",
+            fontSize: "9px",
+            fontWeight: 700,
+            padding: "1px 6px",
+            borderRadius: "3px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Admin
+        </span>
       </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px", maxWidth: "1100px" }}>
 
       {/* KPIs */}
       <div
@@ -119,21 +121,21 @@ export default async function SuperAdminPage() {
           <div
             key={card.label}
             style={{
-              background: "#111118",
+              background: "#161616",
               border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "10px",
-              padding: "18px 20px",
+              borderRadius: "7px",
+              padding: "16px",
             }}
           >
-            <p style={{ color: "#3C3C52", fontSize: "11px", marginBottom: "6px" }}>
+            <p style={{ color: "#3A3A3A", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>
               {card.label}
             </p>
             <p
               style={{
-                color: "#F0EDE8",
-                fontSize: "24px",
+                color: "#EBEBEB",
+                fontSize: "22px",
                 fontWeight: 700,
-                letterSpacing: "-0.04em",
+                letterSpacing: "-0.03em",
                 lineHeight: 1,
                 fontFamily: "var(--font-geist-mono)",
               }}
@@ -147,15 +149,15 @@ export default async function SuperAdminPage() {
       {/* Companies table */}
       <div
         style={{
-          background: "#111118",
+          background: "#161616",
           border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: "10px",
+          borderRadius: "8px",
           overflow: "hidden",
         }}
       >
         {/* Table header */}
-        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <h2 style={{ color: "#F0EDE8", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.01em" }}>
+        <div style={{ padding: "13px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <h2 style={{ color: "#EBEBEB", fontSize: "13px", fontWeight: 600, letterSpacing: "-0.01em" }}>
             Todas as Empresas
           </h2>
         </div>
@@ -187,10 +189,10 @@ export default async function SuperAdminPage() {
                       transition: "background 0.1s",
                     }}
                   >
-                    <td style={{ padding: "12px 16px", color: "#F0EDE8", fontWeight: 500 }}>
+                    <td style={{ padding: "12px 16px", color: "#EBEBEB", fontWeight: 500 }}>
                       {c.name}
                     </td>
-                    <td style={{ padding: "12px 16px", color: "#6B6B84" }}>
+                    <td style={{ padding: "12px 16px", color: "#888" }}>
                       {PLAN_LABELS[c.plan] ?? c.plan}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
@@ -231,7 +233,7 @@ export default async function SuperAdminPage() {
                         </div>
                         <span
                           style={{
-                            color: "#4C4C64",
+                            color: "#555",
                             fontSize: "11px",
                             fontFamily: "var(--font-geist-mono)",
                             minWidth: "28px",
@@ -242,10 +244,10 @@ export default async function SuperAdminPage() {
                         </span>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 16px", color: "#6B6B84", textAlign: "right", fontFamily: "var(--font-geist-mono)" }}>
+                    <td style={{ padding: "12px 16px", color: "#888", textAlign: "right", fontFamily: "var(--font-geist-mono)" }}>
                       {c.userCount}
                     </td>
-                    <td style={{ padding: "12px 16px", color: "#3C3C52", fontFamily: "var(--font-geist-mono)" }}>
+                    <td style={{ padding: "12px 16px", color: "#3A3A3A", fontFamily: "var(--font-geist-mono)" }}>
                       {formatDate(c.createdAt)}
                     </td>
                   </tr>
@@ -258,7 +260,7 @@ export default async function SuperAdminPage() {
                     style={{
                       padding: "40px 20px",
                       textAlign: "center",
-                      color: "#3C3C52",
+                      color: "#3A3A3A",
                       fontSize: "13px",
                     }}
                   >
@@ -269,6 +271,7 @@ export default async function SuperAdminPage() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

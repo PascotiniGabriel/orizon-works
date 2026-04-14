@@ -27,7 +27,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }));
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#000008" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "#0A0A0A" }}>
       <AppSidebar
         agents={agents}
         role={info.role}
@@ -38,7 +38,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       />
       <main
         className="flex-1 overflow-y-auto"
-        style={{ background: "#0B0B12" }}
+        style={{ background: "#111111" }}
       >
         {children}
       </main>

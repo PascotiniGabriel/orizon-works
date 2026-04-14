@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OrizonWorks",
+  title: "Orizon Works",
   description: "Agentes de IA para a sua empresa",
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col" style={{ background: "#000008" }}>
+      <body className="min-h-full flex flex-col" style={{ background: "#0A0A0A" }}>
         {children}
       </body>
     </html>

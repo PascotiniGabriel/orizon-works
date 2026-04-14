@@ -44,15 +44,15 @@ export default async function ChatPage({ params }: ChatPageProps) {
       {agent.type === "rh" && (
         <div
           className="flex shrink-0 items-center justify-end gap-2 px-4 py-2"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#000008" }}
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#111111" }}
         >
           <Link
             href={`/escritorio/chat/${agent.id}/avaliar`}
             className="inline-flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] font-semibold transition-all duration-150 hover:opacity-90"
             style={{
-              background: "rgba(232,160,32,0.1)",
-              border: "1px solid rgba(232,160,32,0.25)",
-              color: "#E8A020",
+              background: "rgba(16,185,129,0.1)",
+              border: "1px solid rgba(16,185,129,0.25)",
+              color: "#10B981",
             }}
           >
             <Trophy className="h-3.5 w-3.5" strokeWidth={2} />

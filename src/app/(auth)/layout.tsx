@@ -1,90 +1,113 @@
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen" style={{ background: "#000008" }}>
-      {/* Left panel — brand */}
+    <div style={{ display: "flex", height: "100vh", background: "#0A0A0A" }}>
+
+      {/* ── Left brand panel ── */}
       <div
-        className="hidden lg:flex lg:w-[55%] flex-col px-16 py-12 justify-between"
-        style={{ borderRight: "1px solid rgba(255,255,255,0.07)" }}
+        className="hidden lg:flex lg:w-[400px] shrink-0 flex-col"
+        style={{
+          padding: "28px 32px",
+          borderRight: "1px solid rgba(255,255,255,0.07)",
+        }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
           <div
-            className="flex h-9 w-9 items-center justify-center text-[17px] font-bold"
             style={{
-              border: "1.5px solid #E8A020",
-              borderRadius: "7px",
-              color: "#E8A020",
-              background: "rgba(232,160,32,0.07)",
-              letterSpacing: "-0.06em",
+              width: "26px",
+              height: "26px",
+              background: "#10B981",
+              borderRadius: "6px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
             }}
           >
-            O
+            <span style={{ color: "#000", fontSize: "12px", fontWeight: 800, letterSpacing: "-0.04em" }}>O</span>
           </div>
           <span
             style={{
-              color: "#F0EDE8",
-              fontSize: "15px",
+              color: "#EBEBEB",
+              fontSize: "14px",
               fontWeight: 600,
-              letterSpacing: "-0.03em",
+              letterSpacing: "-0.025em",
             }}
           >
-            Orizon<span style={{ color: "#E8A020" }}>Works</span>
+            Orizon Works
           </span>
         </div>
 
-        {/* Main statement */}
-        <div>
-          <h1
+        {/* Center content */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <p
             style={{
-              color: "#F0EDE8",
-              fontSize: "52px",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              lineHeight: "1.08",
-              marginBottom: "24px",
+              color: "#10B981",
+              fontSize: "10px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.14em",
+              marginBottom: "16px",
             }}
           >
-            Seus agentes<br />
-            trabalham<br />
-            <span style={{ color: "#E8A020" }}>enquanto você</span><br />
-            cresce.
-          </h1>
-          <p style={{ color: "#5A5A72", fontSize: "15px", lineHeight: "1.7" }}>
-            IA empresarial com o contexto real<br />da sua empresa.
+            Plataforma de IA Empresarial
           </p>
-          <div style={{ marginTop: "28px", display: "flex", flexDirection: "column", gap: "10px" }}>
+
+          <h2
+            style={{
+              color: "#EBEBEB",
+              fontSize: "26px",
+              fontWeight: 700,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.25,
+              marginBottom: "28px",
+            }}
+          >
+            Agentes de IA prontos<br />para o seu negócio.
+          </h2>
+
+          {/* Feature bullets */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {[
-              "Múltiplos departamentos com IA dedicada",
-              "Briefings que lembram o DNA da sua empresa",
-              "Histórico e análise de todas as interações",
+              "Agentes especializados por departamento",
+              "Briefing completo do DNA da empresa",
+              "Histórico e análise de todas as sessões",
+              "Múltiplos usuários com controle de acesso",
             ].map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div
                   style={{
-                    width: "4px",
-                    height: "4px",
+                    width: "5px",
+                    height: "5px",
                     borderRadius: "50%",
-                    background: "#E8A020",
+                    background: "#10B981",
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ color: "#6B6B84", fontSize: "13px" }}>{item}</span>
+                <span style={{ color: "#555", fontSize: "13px", lineHeight: 1.4 }}>{item}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p style={{ color: "#252532", fontSize: "12px" }}>
+        <p style={{ color: "#2A2A2A", fontSize: "11px" }}>
           © {new Date().getFullYear()} Orizon Works · Todos os direitos reservados
         </p>
       </div>
 
-      {/* Right panel — form */}
+      {/* ── Right form panel ── */}
       <div
-        className="flex flex-1 items-center justify-center px-8 py-12 overflow-y-auto"
-        style={{ background: "#0B0B12" }}
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "32px 24px",
+          background: "#111111",
+          overflowY: "auto",
+        }}
       >
-        <div className="w-full max-w-sm">{children}</div>
+        <div style={{ width: "100%", maxWidth: "360px" }}>{children}</div>
       </div>
     </div>
   );

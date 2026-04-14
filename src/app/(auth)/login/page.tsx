@@ -4,133 +4,136 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { signIn } from "@/actions/auth";
 
-const INPUT_STYLE: React.CSSProperties = {
+const INPUT: React.CSSProperties = {
   width: "100%",
-  height: "44px",
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.09)",
-  borderRadius: "8px",
-  padding: "0 14px",
-  color: "#F0EDE8",
-  fontSize: "14px",
+  height: "40px",
+  background: "#1A1A1A",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "6px",
+  padding: "0 12px",
+  color: "#EBEBEB",
+  fontSize: "13px",
   outline: "none",
-  transition: "border-color 0.15s",
   fontFamily: "inherit",
+  transition: "border-color 0.15s",
 };
 
-const LABEL_STYLE: React.CSSProperties = {
+const LABEL: React.CSSProperties = {
   display: "block",
-  color: "#4C4C64",
-  fontSize: "10px",
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.12em",
-  marginBottom: "7px",
+  color: "#666",
+  fontSize: "12px",
+  fontWeight: 500,
+  marginBottom: "6px",
 };
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(signIn, undefined);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   return (
     <div>
       {/* Mobile logo */}
-      <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+      <div className="flex items-center gap-2 mb-8 lg:hidden">
         <div
-          className="flex h-8 w-8 items-center justify-center text-[15px] font-bold"
           style={{
-            border: "1.5px solid #E8A020",
-            borderRadius: "6px",
-            color: "#E8A020",
-            background: "rgba(232,160,32,0.07)",
-            letterSpacing: "-0.06em",
+            width: "24px",
+            height: "24px",
+            background: "#10B981",
+            borderRadius: "5px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          O
+          <span style={{ color: "#000", fontSize: "11px", fontWeight: 800 }}>O</span>
         </div>
-        <span style={{ color: "#F0EDE8", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.03em" }}>
-          Orizon<span style={{ color: "#E8A020" }}>Works</span>
+        <span style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.02em" }}>
+          Orizon Works
         </span>
       </div>
 
       <h1
         style={{
-          color: "#F0EDE8",
-          fontSize: "26px",
+          color: "#EBEBEB",
+          fontSize: "22px",
           fontWeight: 700,
           letterSpacing: "-0.03em",
           lineHeight: 1.2,
+          marginBottom: "6px",
         }}
       >
-        Entrar na plataforma
+        Bem-vindo de volta
       </h1>
-      <p style={{ color: "#5A5A72", fontSize: "13px", marginTop: "6px" }}>
-        Digite seu e-mail e senha para acessar
+      <p style={{ color: "#555", fontSize: "13px", marginBottom: "28px" }}>
+        Acesse sua conta para continuar
       </p>
 
-      <form action={action} style={{ marginTop: "28px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        {/* Email */}
+      <form action={action} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* E-mail */}
         <div>
-          <label style={LABEL_STYLE}>E-mail</label>
+          <label style={LABEL}>E-mail</label>
           <input
             name="email"
             type="email"
             placeholder="voce@empresa.com"
             autoComplete="email"
             required
-            style={INPUT_STYLE}
+            style={INPUT}
           />
           {state?.success === false && state.errors?.email && (
-            <p style={{ color: "#F87171", fontSize: "12px", marginTop: "5px" }}>
+            <p style={{ color: "#F87171", fontSize: "11px", marginTop: "4px" }}>
               {state.errors.email[0]}
             </p>
           )}
         </div>
 
-        {/* Password */}
+        {/* Senha */}
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
-            <label style={{ ...LABEL_STYLE, marginBottom: 0 }}>Senha</label>
-            <Link href="/recuperar-senha" style={{ color: "#E8A020", fontSize: "12px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+            <label style={{ ...LABEL, marginBottom: 0 }}>Senha</label>
+            <Link
+              href="/recuperar-senha"
+              style={{ color: "#10B981", fontSize: "12px", textDecoration: "none" }}
+            >
               Esqueci a senha
             </Link>
           </div>
           <div style={{ position: "relative" }}>
             <input
               name="password"
-              type={showPassword ? "text" : "password"}
+              type={showPw ? "text" : "password"}
               placeholder="••••••••"
               autoComplete="current-password"
               required
-              style={{ ...INPUT_STYLE, paddingRight: "44px" }}
+              style={{ ...INPUT, paddingRight: "40px" }}
             />
             <button
               type="button"
-              onClick={() => setShowPassword((v) => !v)}
+              onClick={() => setShowPw((v) => !v)}
               tabIndex={-1}
               style={{
                 position: "absolute",
-                right: "14px",
+                right: "12px",
                 top: "50%",
                 transform: "translateY(-50%)",
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#4C4C64",
+                color: "#555",
                 padding: 0,
                 display: "flex",
                 alignItems: "center",
               }}
-              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
             >
-              {showPassword ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {showPw ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                   <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
                   <line x1="1" y1="1" x2="23" y2="23"/>
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                   <circle cx="12" cy="12" r="3"/>
                 </svg>
@@ -138,22 +141,22 @@ export default function LoginPage() {
             </button>
           </div>
           {state?.success === false && state.errors?.password && (
-            <p style={{ color: "#F87171", fontSize: "12px", marginTop: "5px" }}>
+            <p style={{ color: "#F87171", fontSize: "11px", marginTop: "4px" }}>
               {state.errors.password[0]}
             </p>
           )}
         </div>
 
-        {/* Global error */}
+        {/* Error global */}
         {state?.success === false && state.message && (
           <div
             style={{
-              background: "rgba(248,113,113,0.08)",
-              border: "1px solid rgba(248,113,113,0.18)",
-              borderRadius: "8px",
-              padding: "11px 14px",
+              background: "rgba(248,113,113,0.06)",
+              border: "1px solid rgba(248,113,113,0.15)",
+              borderRadius: "6px",
+              padding: "10px 12px",
               color: "#F87171",
-              fontSize: "13px",
+              fontSize: "12px",
             }}
           >
             {state.message}
@@ -166,27 +169,26 @@ export default function LoginPage() {
           disabled={pending}
           style={{
             width: "100%",
-            height: "44px",
-            background: pending ? "rgba(232,160,32,0.6)" : "#E8A020",
-            color: "#1A0E00",
-            fontWeight: 700,
-            fontSize: "14px",
-            letterSpacing: "-0.01em",
+            height: "40px",
+            background: pending ? "rgba(16,185,129,0.6)" : "#10B981",
+            color: "#000",
+            fontWeight: 600,
+            fontSize: "13px",
             border: "none",
-            borderRadius: "8px",
+            borderRadius: "6px",
             cursor: pending ? "not-allowed" : "pointer",
-            transition: "background 0.15s",
             fontFamily: "inherit",
-            marginTop: "4px",
+            letterSpacing: "-0.01em",
+            transition: "opacity 0.15s",
           }}
         >
           {pending ? "Entrando..." : "Entrar"}
         </button>
       </form>
 
-      <p style={{ color: "#4C4C64", fontSize: "13px", textAlign: "center", marginTop: "24px" }}>
+      <p style={{ color: "#444", fontSize: "12px", textAlign: "center", marginTop: "24px" }}>
         Não tem conta?{" "}
-        <Link href="/cadastro" style={{ color: "#E8A020", fontWeight: 500 }}>
+        <Link href="/cadastro" style={{ color: "#10B981", fontWeight: 500, textDecoration: "none" }}>
           Criar conta grátis
         </Link>
       </p>

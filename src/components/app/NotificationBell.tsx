@@ -25,9 +25,9 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  token_warning:         "#E8A020",
+  token_warning:         "#FBBF24",
   token_blocked:         "#F87171",
-  subscription_expiring: "#74B4FB",
+  subscription_expiring: "#60A5FA",
   subscription_canceled: "#F87171",
   payment_failed:        "#F87171",
 };
@@ -59,21 +59,48 @@ export function NotificationBell({ initialNotifications }: NotificationBellProps
   }
 
   return (
-    <div className="relative">
+    <div style={{ position: "relative" }}>
       <button
         onClick={() => {
           setOpen((v) => !v);
           if (!open && unread > 0) markAllRead();
         }}
-        className="relative flex h-7 w-7 items-center justify-center rounded-[6px] transition-all duration-150 hover:bg-white/[0.05]"
-        style={{ color: unread > 0 ? "#E8A020" : "#3C3C52" }}
         title="Notificações"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "28px",
+          height: "28px",
+          borderRadius: "5px",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: unread > 0 ? "#10B981" : "#3A3A3A",
+          position: "relative",
+          transition: "background 0.12s",
+        }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "none"; }}
       >
-        <Bell className="h-[14px] w-[14px]" strokeWidth={unread > 0 ? 2.5 : 1.75} />
+        <Bell style={{ width: "14px", height: "14px" }} strokeWidth={unread > 0 ? 2.5 : 1.75} />
         {unread > 0 && (
           <span
-            className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[8px] font-bold"
-            style={{ background: "#E8A020", color: "#000008" }}
+            style={{
+              position: "absolute",
+              top: "-1px",
+              right: "-1px",
+              width: "14px",
+              height: "14px",
+              borderRadius: "50%",
+              background: "#10B981",
+              color: "#000",
+              fontSize: "8px",
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             {unread > 9 ? "9+" : unread}
           </span>
@@ -82,31 +109,49 @@ export function NotificationBell({ initialNotifications }: NotificationBellProps
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          {/* Dropdown opens to the right and upward */}
           <div
-            className="fixed z-50 w-72 overflow-hidden shadow-2xl"
+            style={{ position: "fixed", inset: 0, zIndex: 40 }}
+            onClick={() => setOpen(false)}
+          />
+          {/* Dropdown opens right of sidebar, upward */}
+          <div
             style={{
-              background: "#111118",
+              position: "fixed",
+              zIndex: 50,
+              width: "280px",
+              background: "#161616",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "10px",
-              left: "264px",
-              bottom: "80px",
+              borderRadius: "8px",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+              left: "228px",
+              bottom: "70px",
+              overflow: "hidden",
             }}
           >
             {/* Header */}
             <div
-              className="flex items-center justify-between px-4 py-3"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+              }}
             >
-              <span className="text-[13px] font-semibold" style={{ color: "#F0EDE8" }}>
+              <span style={{ color: "#EBEBEB", fontSize: "13px", fontWeight: 600 }}>
                 Notificações
               </span>
               {unread > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="text-[11px] transition-colors hover:text-[#F0EDE8]"
-                  style={{ color: "#3C3C52" }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#555",
+                    fontSize: "11px",
+                    fontFamily: "inherit",
+                  }}
                 >
                   Marcar como lidas
                 </button>
@@ -114,38 +159,54 @@ export function NotificationBell({ initialNotifications }: NotificationBellProps
             </div>
 
             {/* List */}
-            <div className="max-h-72 overflow-y-auto">
+            <div style={{ maxHeight: "280px", overflowY: "auto" }}>
               {notifications.length === 0 ? (
-                <div className="px-4 py-8 text-center text-[13px]" style={{ color: "#3C3C52" }}>
+                <div
+                  style={{
+                    padding: "32px 16px",
+                    textAlign: "center",
+                    color: "#3A3A3A",
+                    fontSize: "12px",
+                  }}
+                >
                   Nenhuma notificação
                 </div>
               ) : (
                 notifications.map((n) => {
                   const Icon = TYPE_ICONS[n.type] ?? Info;
-                  const iconColor = TYPE_COLORS[n.type] ?? "#6B6B84";
+                  const iconColor = TYPE_COLORS[n.type] ?? "#555";
                   return (
                     <div
                       key={n.id}
-                      className="flex gap-3 px-4 py-3"
                       style={{
+                        display: "flex",
+                        gap: "12px",
+                        padding: "12px 16px",
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
-                        background: !n.isRead ? "rgba(232,160,32,0.03)" : "transparent",
+                        background: !n.isRead ? "rgba(16,185,129,0.03)" : "transparent",
                       }}
                     >
                       <div
-                        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[4px]"
-                        style={{ background: `${iconColor}15` }}
+                        style={{
+                          marginTop: "2px",
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "5px",
+                          background: `${iconColor}15`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
                       >
-                        <Icon className="h-3.5 w-3.5" style={{ color: iconColor }} strokeWidth={2} />
+                        <Icon style={{ width: "13px", height: "13px", color: iconColor }} strokeWidth={2} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-medium" style={{ color: "#F0EDE8" }}>
-                          {n.title}
-                        </p>
-                        <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: "#5A5A72" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ color: "#EBEBEB", fontSize: "12px", fontWeight: 500 }}>{n.title}</p>
+                        <p style={{ color: "#555", fontSize: "11px", marginTop: "2px", lineHeight: 1.5 }}>
                           {n.message}
                         </p>
-                        <p className="mt-1 text-[10px]" style={{ color: "#2C2C3A" }}>
+                        <p style={{ color: "#3A3A3A", fontSize: "10px", marginTop: "4px", fontFamily: "var(--font-geist-mono)" }}>
                           {formatDate(n.createdAt)}
                         </p>
                       </div>

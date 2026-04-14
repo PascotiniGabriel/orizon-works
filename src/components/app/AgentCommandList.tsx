@@ -8,13 +8,13 @@ import {
   DollarSign,
   FolderOpen,
   Bot,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
+  ChevronRight,
 } from "lucide-react";
 import type { AgentSummary } from "@/lib/db/queries/company";
 
-const AGENT_TYPE_ICONS: Record<string, React.ElementType> = {
+/* ── constants ── */
+
+const AGENT_ICONS: Record<string, React.ElementType> = {
   rh:             Users,
   marketing:      Megaphone,
   comercial:      TrendingUp,
@@ -22,7 +22,7 @@ const AGENT_TYPE_ICONS: Record<string, React.ElementType> = {
   administrativo: FolderOpen,
 };
 
-const AGENT_TYPE_LABELS: Record<string, string> = {
+const AGENT_LABELS: Record<string, string> = {
   rh:             "RH",
   marketing:      "Marketing",
   comercial:      "Comercial",
@@ -30,251 +30,180 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   administrativo: "Administrativo",
 };
 
-const AGENT_TYPE_DESCRIPTIONS: Record<string, string> = {
-  rh:             "Recrutamento, avaliação de currículos e entrevistas",
-  marketing:      "Conteúdo, campanhas e estratégia de marca",
-  comercial:      "Scripts de vendas, propostas e follow-up",
-  financeiro:     "Relatórios, análises e controle financeiro",
-  administrativo: "Documentos, e-mails e organização interna",
+const AGENT_DESCRIPTIONS: Record<string, string> = {
+  rh:             "Recrutamento, currículos e entrevistas",
+  marketing:      "Conteúdo, campanhas e estratégia",
+  comercial:      "Scripts de vendas e follow-up",
+  financeiro:     "Relatórios e controle financeiro",
+  administrativo: "Documentos e organização interna",
 };
 
-const AGENT_COLORS: Record<string, {
-  accent: string;
-  accentBg: string;
-  iconBg: string;
-  iconText: string;
-  cardBorder: string;
-  cardBorderHover: string;
-}> = {
-  rh: {
-    accent:          "#B09EFC",
-    accentBg:        "rgba(167,139,250,0.08)",
-    iconBg:          "rgba(167,139,250,0.12)",
-    iconText:        "#B09EFC",
-    cardBorder:      "rgba(255,255,255,0.07)",
-    cardBorderHover: "rgba(167,139,250,0.3)",
-  },
-  marketing: {
-    accent:          "#FC879A",
-    accentBg:        "rgba(251,113,133,0.08)",
-    iconBg:          "rgba(251,113,133,0.12)",
-    iconText:        "#FC879A",
-    cardBorder:      "rgba(255,255,255,0.07)",
-    cardBorderHover: "rgba(251,113,133,0.3)",
-  },
-  comercial: {
-    accent:          "#74B4FB",
-    accentBg:        "rgba(96,165,250,0.08)",
-    iconBg:          "rgba(96,165,250,0.12)",
-    iconText:        "#74B4FB",
-    cardBorder:      "rgba(255,255,255,0.07)",
-    cardBorderHover: "rgba(96,165,250,0.3)",
-  },
-  financeiro: {
-    accent:          "#4EDBA4",
-    accentBg:        "rgba(52,211,153,0.08)",
-    iconBg:          "rgba(52,211,153,0.12)",
-    iconText:        "#4EDBA4",
-    cardBorder:      "rgba(255,255,255,0.07)",
-    cardBorderHover: "rgba(52,211,153,0.3)",
-  },
-  administrativo: {
-    accent:          "#E8A020",
-    accentBg:        "rgba(232,160,32,0.08)",
-    iconBg:          "rgba(232,160,32,0.12)",
-    iconText:        "#E8A020",
-    cardBorder:      "rgba(255,255,255,0.07)",
-    cardBorderHover: "rgba(232,160,32,0.3)",
-  },
+const AGENT_COLOR: Record<string, { dot: string; badge: string; badgeBg: string }> = {
+  rh:             { dot: "#A78BFA", badge: "#A78BFA", badgeBg: "rgba(167,139,250,0.1)" },
+  marketing:      { dot: "#FB7185", badge: "#FB7185", badgeBg: "rgba(251,113,133,0.1)" },
+  comercial:      { dot: "#60A5FA", badge: "#60A5FA", badgeBg: "rgba(96,165,250,0.1)"  },
+  financeiro:     { dot: "#10B981", badge: "#10B981", badgeBg: "rgba(16,185,129,0.1)"  },
+  administrativo: { dot: "#FBBF24", badge: "#FBBF24", badgeBg: "rgba(251,191,36,0.1)"  },
 };
 
-const DEFAULT_COLORS = {
-  accent:          "#9090A8",
-  accentBg:        "rgba(255,255,255,0.05)",
-  iconBg:          "rgba(255,255,255,0.08)",
-  iconText:        "#9090A8",
-  cardBorder:      "rgba(255,255,255,0.07)",
-  cardBorderHover: "rgba(255,255,255,0.2)",
+const DEFAULT_COLOR = {
+  dot: "#555",
+  badge: "#555",
+  badgeBg: "rgba(255,255,255,0.06)",
 };
 
-interface AgentCardGridProps {
+/* ── AgentList (VAPI-style rows) ── */
+
+interface AgentListProps {
   agents: AgentSummary[];
 }
 
-export function AgentCardGrid({ agents }: AgentCardGridProps) {
+export function AgentCardGrid({ agents }: AgentListProps) {
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-        gap: "12px",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "8px",
+        overflow: "hidden",
       }}
     >
-      {agents.map((agent) => (
-        <AgentCard key={agent.id} agent={agent} />
-      ))}
+      {agents.map((agent, i) => {
+        const label = agent.customName ?? AGENT_LABELS[agent.type] ?? agent.type;
+        const typeLabel = AGENT_LABELS[agent.type] ?? agent.type;
+        const description = AGENT_DESCRIPTIONS[agent.type] ?? "Agente especializado";
+        const Icon = AGENT_ICONS[agent.type] ?? Bot;
+        const clr = AGENT_COLOR[agent.type] ?? DEFAULT_COLOR;
+
+        return (
+          <Link
+            key={agent.id}
+            href={`/escritorio/chat/${agent.id}`}
+            className="ow-row"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              padding: "14px 18px",
+              textDecoration: "none",
+              borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined,
+              transition: "background 0.12s",
+            }}
+          >
+            {/* Icon */}
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "7px",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {agent.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={agent.avatarUrl}
+                  alt={label}
+                  style={{ width: "100%", height: "100%", borderRadius: "7px", objectFit: "cover" }}
+                />
+              ) : (
+                <Icon
+                  style={{ width: "16px", height: "16px", color: clr.dot }}
+                  strokeWidth={1.75}
+                />
+              )}
+            </div>
+
+            {/* Name + description */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
+                <span
+                  style={{
+                    color: "#EBEBEB",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{
+                    background: clr.badgeBg,
+                    color: clr.badge,
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    padding: "1px 6px",
+                    borderRadius: "3px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    flexShrink: 0,
+                  }}
+                >
+                  {typeLabel}
+                </span>
+              </div>
+              <p
+                style={{
+                  color: "#555",
+                  fontSize: "11px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {description}
+              </p>
+            </div>
+
+            {/* Status */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 8px",
+                borderRadius: "20px",
+                background: agent.briefingComplete
+                  ? "rgba(16,185,129,0.08)"
+                  : "rgba(255,255,255,0.03)",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: "5px",
+                  height: "5px",
+                  borderRadius: "50%",
+                  background: agent.briefingComplete ? "#10B981" : "#3A3A3A",
+                }}
+              />
+              <span
+                style={{
+                  color: agent.briefingComplete ? "#10B981" : "#555",
+                  fontSize: "10px",
+                  fontWeight: 600,
+                }}
+              >
+                {agent.briefingComplete ? "Pronto" : "Configurando"}
+              </span>
+            </div>
+
+            {/* Arrow */}
+            <ChevronRight
+              style={{ width: "14px", height: "14px", color: "#3A3A3A", flexShrink: 0 }}
+              strokeWidth={2}
+            />
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
-// Keep old name as alias for backward compat
+// backward-compat alias
 export { AgentCardGrid as AgentCommandList };
-
-function AgentCard({ agent }: { agent: AgentSummary }) {
-  const label = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
-  const typeLabel = AGENT_TYPE_LABELS[agent.type] ?? agent.type;
-  const description = AGENT_TYPE_DESCRIPTIONS[agent.type] ?? "Agente especializado";
-  const Icon = AGENT_TYPE_ICONS[agent.type] ?? Bot;
-  const colors = AGENT_COLORS[agent.type] ?? DEFAULT_COLORS;
-
-  return (
-    <Link
-      href={`/escritorio/chat/${agent.id}`}
-      className="group relative flex flex-col overflow-hidden transition-all duration-200"
-      style={{
-        background: "#111118",
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: "10px",
-        textDecoration: "none",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = colors.cardBorderHover;
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px -4px ${colors.accent}20`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = colors.cardBorder;
-        (e.currentTarget as HTMLElement).style.boxShadow = "none";
-      }}
-    >
-      {/* Top color bar */}
-      <div
-        style={{
-          height: "3px",
-          background: `linear-gradient(90deg, ${colors.accent}80, transparent)`,
-        }}
-      />
-
-      <div style={{ padding: "18px 20px 20px" }}>
-        {/* Icon + status row */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
-          {/* Icon */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "44px",
-              height: "44px",
-              borderRadius: "10px",
-              background: colors.iconBg,
-              border: `1px solid ${colors.accent}30`,
-              flexShrink: 0,
-            }}
-          >
-            {agent.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={agent.avatarUrl}
-                alt={label}
-                style={{ width: "100%", height: "100%", borderRadius: "10px", objectFit: "cover" }}
-              />
-            ) : (
-              <Icon style={{ width: "22px", height: "22px", color: colors.iconText }} strokeWidth={1.75} />
-            )}
-          </div>
-
-          {/* Status badge */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              padding: "4px 8px",
-              borderRadius: "20px",
-              background: agent.briefingComplete
-                ? "rgba(78,219,164,0.08)"
-                : "rgba(255,255,255,0.04)",
-              fontSize: "10px",
-              fontWeight: 600,
-              color: agent.briefingComplete ? "#4EDBA4" : "#3C3C52",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {agent.briefingComplete ? (
-              <CheckCircle2 style={{ width: "11px", height: "11px" }} strokeWidth={2.5} />
-            ) : (
-              <Clock style={{ width: "11px", height: "11px" }} strokeWidth={2} />
-            )}
-            {agent.briefingComplete ? "Pronto" : "Configurando"}
-          </div>
-        </div>
-
-        {/* Names */}
-        <div style={{ marginBottom: "10px" }}>
-          <p
-            style={{
-              color: "#F0EDE8",
-              fontSize: "17px",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              lineHeight: 1.2,
-              marginBottom: "3px",
-            }}
-          >
-            {label}
-          </p>
-          <p
-            style={{
-              color: colors.accent,
-              fontSize: "10px",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-            }}
-          >
-            {typeLabel}
-          </p>
-        </div>
-
-        {/* Description */}
-        <p
-          style={{
-            color: "#4C4C64",
-            fontSize: "12px",
-            lineHeight: "1.55",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {description}
-        </p>
-      </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "10px 20px",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          background: "rgba(255,255,255,0.01)",
-        }}
-      >
-        <span
-          className="flex items-center gap-1.5 text-[12px] font-medium transition-all duration-150"
-          style={{ color: "#3C3C52" }}
-        >
-          Abrir agente
-          <ArrowRight
-            className="transition-transform duration-200 group-hover:translate-x-1"
-            style={{ width: "13px", height: "13px", color: colors.accent }}
-            strokeWidth={2}
-          />
-        </span>
-      </div>
-    </Link>
-  );
-}
