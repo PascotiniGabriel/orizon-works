@@ -9,31 +9,12 @@ import { exportToPDF, exportToWord } from "@/lib/export";
 import { PromptBuilderModal } from "@/components/app/PromptBuilderModal";
 import { FileUploadButton, type UploadedFile } from "@/components/app/FileUploadButton";
 import {
-  Bot,
-  Sparkles,
-  Paperclip,
-  X,
-  ClipboardList,
-  Search,
-  MessageCircle,
-  Calendar,
-  Smartphone,
-  Mail,
-  FileText,
-  Target,
-  Phone,
-  BarChart2,
-  Lightbulb,
-  TrendingUp,
-  Calculator,
-  FolderOpen,
+  Bot, Sparkles, Paperclip, X, ClipboardList, Search, MessageCircle,
+  Calendar, Smartphone, Mail, FileText, Target, Phone, BarChart2,
+  Lightbulb, TrendingUp, Calculator, FolderOpen,
 } from "lucide-react";
 
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-
+interface Message { role: "user" | "assistant"; content: string; }
 interface ChatInterfaceProps {
   agentId: string;
   agentDisplayName: string;
@@ -42,15 +23,11 @@ interface ChatInterfaceProps {
 }
 
 const AGENT_TYPE_LABELS: Record<string, string> = {
-  rh: "RH",
-  marketing: "Marketing",
-  comercial: "Comercial",
-  financeiro: "Financeiro",
-  administrativo: "Administrativo",
+  rh: "RH", marketing: "Marketing", comercial: "Comercial",
+  financeiro: "Financeiro", administrativo: "Administrativo",
 };
 
 type PromptItem = { icon: React.ElementType; text: string };
-
 const SUGGESTED_PROMPTS: Record<string, PromptItem[]> = {
   rh: [
     { icon: ClipboardList, text: "Crie uma descrição de vaga para [cargo] com os requisitos principais" },
@@ -65,10 +42,10 @@ const SUGGESTED_PROMPTS: Record<string, PromptItem[]> = {
     { icon: Target,       text: "Monte uma estratégia de lançamento para [produto/evento]" },
   ],
   comercial: [
-    { icon: Phone,        text: "Crie um script de abordagem para [tipo de cliente]" },
-    { icon: BarChart2,    text: "Monte uma proposta comercial para [produto/serviço]" },
-    { icon: Lightbulb,    text: "Sugira argumentos para superar a objeção de [objeção]" },
-    { icon: Mail,         text: "Escreva um e-mail de follow-up após reunião com [cliente]" },
+    { icon: Phone,     text: "Crie um script de abordagem para [tipo de cliente]" },
+    { icon: BarChart2, text: "Monte uma proposta comercial para [produto/serviço]" },
+    { icon: Lightbulb, text: "Sugira argumentos para superar a objeção de [objeção]" },
+    { icon: Mail,      text: "Escreva um e-mail de follow-up após reunião com [cliente]" },
   ],
   financeiro: [
     { icon: BarChart2,    text: "Explique [conceito financeiro] de forma simples" },
@@ -83,7 +60,6 @@ const SUGGESTED_PROMPTS: Record<string, PromptItem[]> = {
     { icon: FolderOpen,   text: "Organize estes documentos por [critério]: [lista de itens]" },
   ],
 };
-
 const DEFAULT_PROMPTS: PromptItem[] = [
   { icon: MessageCircle, text: "Como você pode me ajudar?" },
   { icon: ClipboardList, text: "Quais são suas principais capacidades?" },
@@ -97,118 +73,29 @@ function AssistantMessage({ content }: { content: string }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        h1: ({ children }) => (
-          <p style={{ marginTop: "12px", marginBottom: "4px", fontSize: "15px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.02em" }}>{children}</p>
-        ),
-        h2: ({ children }) => (
-          <p style={{ marginTop: "12px", marginBottom: "4px", fontSize: "15px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.02em" }}>{children}</p>
-        ),
-        h3: ({ children }) => (
-          <p style={{ marginTop: "10px", marginBottom: "2px", fontSize: "14px", fontWeight: 600, color: "#DDDDDD" }}>{children}</p>
-        ),
-        p: ({ children }) => (
-          <p style={{ marginBottom: "10px", lineHeight: "1.7", color: "#C8C8C8", fontSize: "15px" }}>{children}</p>
-        ),
-        ul: ({ children }) => (
-          <ul style={{ marginBottom: "10px", paddingLeft: "20px", listStyleType: "disc", color: "#C8C8C8" }}>
-            {children}
-          </ul>
-        ),
-        ol: ({ children }) => (
-          <ol style={{ marginBottom: "10px", paddingLeft: "20px", listStyleType: "decimal", color: "#C8C8C8" }}>
-            {children}
-          </ol>
-        ),
-        li: ({ children }) => <li style={{ lineHeight: "1.7", fontSize: "15px" }}>{children}</li>,
-        strong: ({ children }) => (
-          <strong style={{ fontWeight: 600, color: "#EBEBEB" }}>{children}</strong>
-        ),
-        em: ({ children }) => <em style={{ fontStyle: "italic", color: "#AAAAAA" }}>{children}</em>,
+        h1: ({ children }) => <p style={{ marginTop: "14px", marginBottom: "6px", fontSize: "18px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.02em" }}>{children}</p>,
+        h2: ({ children }) => <p style={{ marginTop: "14px", marginBottom: "6px", fontSize: "17px", fontWeight: 700, color: "#EBEBEB" }}>{children}</p>,
+        h3: ({ children }) => <p style={{ marginTop: "12px", marginBottom: "4px", fontSize: "16px", fontWeight: 600, color: "#DDDDDD" }}>{children}</p>,
+        p:  ({ children }) => <p style={{ marginBottom: "12px", lineHeight: "1.75", color: "#C8C8C8", fontSize: "16px" }}>{children}</p>,
+        ul: ({ children }) => <ul style={{ marginBottom: "12px", paddingLeft: "22px", listStyleType: "disc", color: "#C8C8C8" }}>{children}</ul>,
+        ol: ({ children }) => <ol style={{ marginBottom: "12px", paddingLeft: "22px", listStyleType: "decimal", color: "#C8C8C8" }}>{children}</ol>,
+        li: ({ children }) => <li style={{ lineHeight: "1.75", fontSize: "16px", marginBottom: "4px" }}>{children}</li>,
+        strong: ({ children }) => <strong style={{ fontWeight: 600, color: "#EBEBEB" }}>{children}</strong>,
+        em:     ({ children }) => <em style={{ fontStyle: "italic", color: "#AAAAAA" }}>{children}</em>,
         code: ({ children, className }) => {
           const isBlock = className?.includes("language-");
-          if (isBlock) {
-            return (
-              <code
-                style={{
-                  display: "block",
-                  overflowX: "auto",
-                  borderRadius: "6px",
-                  padding: "12px",
-                  fontSize: "13px",
-                  fontFamily: "var(--font-geist-mono)",
-                  whiteSpace: "pre",
-                  background: "#0A0A0A",
-                  color: "#10B981",
-                  border: "1px solid rgba(16,185,129,0.15)",
-                }}
-              >
-                {children}
-              </code>
-            );
-          }
-          return (
-            <code
-              style={{
-                borderRadius: "3px",
-                padding: "1px 6px",
-                fontSize: "13px",
-                fontFamily: "var(--font-geist-mono)",
-                background: "rgba(16,185,129,0.1)",
-                color: "#10B981",
-                border: "1px solid rgba(16,185,129,0.2)",
-              }}
-            >
-              {children}
-            </code>
+          return isBlock ? (
+            <code style={{ display: "block", overflowX: "auto", borderRadius: "6px", padding: "14px", fontSize: "14px", fontFamily: "var(--font-geist-mono)", whiteSpace: "pre", background: "#0A0A0A", color: "#10B981", border: "1px solid rgba(16,185,129,0.15)" }}>{children}</code>
+          ) : (
+            <code style={{ borderRadius: "3px", padding: "2px 6px", fontSize: "14px", fontFamily: "var(--font-geist-mono)", background: "rgba(16,185,129,0.1)", color: "#10B981", border: "1px solid rgba(16,185,129,0.2)" }}>{children}</code>
           );
         },
-        pre: ({ children }) => <div style={{ marginBottom: "10px" }}>{children}</div>,
-        hr: () => <hr style={{ margin: "12px 0", borderColor: "rgba(255,255,255,0.08)" }} />,
-        blockquote: ({ children }) => (
-          <blockquote
-            style={{
-              marginBottom: "10px",
-              paddingLeft: "12px",
-              fontStyle: "italic",
-              borderLeft: "2px solid rgba(16,185,129,0.4)",
-              color: "#888",
-            }}
-          >
-            {children}
-          </blockquote>
-        ),
-        table: ({ children }) => (
-          <div style={{ marginBottom: "10px", overflowX: "auto", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>{children}</table>
-          </div>
-        ),
-        th: ({ children }) => (
-          <th
-            style={{
-              padding: "8px 12px",
-              textAlign: "left",
-              fontSize: "11px",
-              fontWeight: 600,
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.04)",
-              color: "#888",
-            }}
-          >
-            {children}
-          </th>
-        ),
-        td: ({ children }) => (
-          <td
-            style={{
-              padding: "8px 12px",
-              fontSize: "14px",
-              borderBottom: "1px solid rgba(255,255,255,0.05)",
-              color: "#C8C8C8",
-            }}
-          >
-            {children}
-          </td>
-        ),
+        pre:        ({ children }) => <div style={{ marginBottom: "12px" }}>{children}</div>,
+        hr:         () =>             <hr style={{ margin: "14px 0", borderColor: "rgba(255,255,255,0.08)" }} />,
+        blockquote: ({ children }) => <blockquote style={{ marginBottom: "12px", paddingLeft: "14px", fontStyle: "italic", borderLeft: "2px solid rgba(16,185,129,0.4)", color: "#888", fontSize: "15px" }}>{children}</blockquote>,
+        table: ({ children }) => <div style={{ marginBottom: "12px", overflowX: "auto", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.08)" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: "15px" }}>{children}</table></div>,
+        th: ({ children }) => <th style={{ padding: "10px 14px", textAlign: "left", fontSize: "12px", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#888" }}>{children}</th>,
+        td: ({ children }) => <td style={{ padding: "10px 14px", fontSize: "15px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#C8C8C8" }}>{children}</td>,
       }}
     >
       {content}
@@ -217,140 +104,58 @@ function AssistantMessage({ content }: { content: string }) {
 }
 
 /* ── Empty state ── */
-function EmptyState({
-  agentName,
-  agentType,
-  onSuggest,
-  onGuided,
-}: {
-  agentName: string;
-  agentType: string;
-  onSuggest: (text: string) => void;
-  onGuided: () => void;
+function EmptyState({ agentName, agentType, onSuggest, onGuided }: {
+  agentName: string; agentType: string;
+  onSuggest: (text: string) => void; onGuided: () => void;
 }) {
   const prompts: PromptItem[] = SUGGESTED_PROMPTS[agentType] ?? DEFAULT_PROMPTS;
-
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100%",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "32px 24px",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "560px" }}>
+    <div style={{ display: "flex", height: "100%", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
+      <div style={{ width: "100%", maxWidth: "600px" }}>
         {/* Heading */}
-        <div style={{ textAlign: "center", marginBottom: "28px" }}>
-          <p
-            style={{
-              fontSize: "18px",
-              fontWeight: 600,
-              color: "#EBEBEB",
-              letterSpacing: "-0.025em",
-              marginBottom: "6px",
-            }}
-          >
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <p style={{ fontSize: "22px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.03em", marginBottom: "8px" }}>
             Como posso ajudar, hoje?
           </p>
-          <p style={{ color: "#555", fontSize: "14px" }}>
+          <p style={{ color: "#555", fontSize: "15px" }}>
             Selecione uma sugestão ou escreva diretamente.
           </p>
         </div>
 
         {/* Suggestion grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "8px",
-            marginBottom: "16px",
-          }}
-        >
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "18px" }}>
           {prompts.map((p, i) => {
             const Icon = p.icon;
             return (
               <button
                 key={i}
                 onClick={() => onSuggest(p.text)}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "10px",
-                  padding: "14px 16px",
-                  textAlign: "left",
-                  fontSize: "13px",
-                  lineHeight: "1.5",
-                  color: "#888",
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  borderRadius: "7px",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "all 0.12s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-                  (e.currentTarget as HTMLElement).style.color = "#EBEBEB";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                  (e.currentTarget as HTMLElement).style.color = "#888";
-                }}
+                style={{ display: "flex", alignItems: "flex-start", gap: "12px", padding: "16px 18px", textAlign: "left", fontSize: "15px", lineHeight: "1.55", color: "#888", background: "transparent", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLElement).style.color = "#EBEBEB"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#888"; }}
               >
-                <Icon
-                  style={{ width: "15px", height: "15px", color: "#3A3A3A", marginTop: "2px", flexShrink: 0 }}
-                  strokeWidth={1.75}
-                />
+                <Icon style={{ width: "16px", height: "16px", color: "#3A3A3A", marginTop: "2px", flexShrink: 0 }} strokeWidth={1.75} />
                 <span>{p.text}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Guided mode banner */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            padding: "14px 18px",
-            background: "rgba(16,185,129,0.05)",
-            border: "1px solid rgba(16,185,129,0.15)",
-            borderRadius: "7px",
-          }}
-        >
+        {/* Guided banner */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", padding: "16px 20px", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "8px" }}>
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "#10B981", marginBottom: "3px" }}>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "#10B981", marginBottom: "4px" }}>
               Nunca usou IA antes?
             </p>
-            <p style={{ fontSize: "13px", color: "#555", lineHeight: "1.5" }}>
+            <p style={{ fontSize: "14px", color: "#555", lineHeight: "1.55" }}>
               O <strong style={{ color: "#10B981", fontWeight: 600 }}>Modo Guiado</strong> monta seu pedido passo a passo — sem precisar saber escrever prompts.
             </p>
           </div>
           <button
             onClick={onGuided}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "9px 16px",
-              background: "#10B981",
-              color: "#000",
-              fontWeight: 600,
-              fontSize: "13px",
-              borderRadius: "6px",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              flexShrink: 0,
-              whiteSpace: "nowrap",
-            }}
+            style={{ display: "flex", alignItems: "center", gap: "7px", padding: "10px 18px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "14px", borderRadius: "7px", border: "none", cursor: "pointer", fontFamily: "inherit", flexShrink: 0, whiteSpace: "nowrap" }}
           >
-            <Sparkles style={{ width: "13px", height: "13px" }} strokeWidth={2.5} />
+            <Sparkles style={{ width: "14px", height: "14px" }} strokeWidth={2.5} />
             Modo Guiado
           </button>
         </div>
@@ -360,12 +165,7 @@ function EmptyState({
 }
 
 /* ── Main component ── */
-export function ChatInterface({
-  agentId,
-  agentDisplayName,
-  agentAvatarUrl,
-  agentType,
-}: ChatInterfaceProps) {
+export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agentType }: ChatInterfaceProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -378,9 +178,7 @@ export function ChatInterface({
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streaming]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, streaming]);
 
   function autoResize() {
     const ta = textareaRef.current;
@@ -389,100 +187,63 @@ export function ChatInterface({
     ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
   }
 
-  const streamMessage = useCallback(
-    async (fullContent: string, displayContent: string, currentMessages: Message[]) => {
-      const userMsg: Message = { role: "user", content: displayContent };
-      const newMessages = [...currentMessages, { role: "user" as const, content: fullContent }];
-      setMessages((prev) => [...prev, userMsg]);
-      setStreaming(true);
-
-      const assistantMsg: Message = { role: "assistant", content: "" };
-      setMessages((prev) => [...prev, assistantMsg]);
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ agentId, sessionId, messages: newMessages }),
-        });
-
-        const newSessionId = res.headers.get("X-Session-Id");
-        if (newSessionId) setSessionId(newSessionId);
-
-        if (res.status === 402) {
-          setTokenBlocked(true);
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = {
-              role: "assistant",
-              content: "Tokens esgotados. Entre em contato com o administrador para adquirir um Token Pack.",
-            };
-            return updated;
-          });
-          return;
-        }
-
-        if (!res.ok || !res.body) throw new Error("Erro na resposta");
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let full = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          full += chunk;
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = { role: "assistant", content: full };
-            return updated;
-          });
-        }
-
-        router.refresh();
-      } catch {
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: "Ocorreu um erro ao processar sua mensagem. Tente novamente.",
-          };
-          return updated;
-        });
-      } finally {
-        setStreaming(false);
-        textareaRef.current?.focus();
+  const streamMessage = useCallback(async (fullContent: string, displayContent: string, currentMessages: Message[]) => {
+    const userMsg: Message = { role: "user", content: displayContent };
+    const newMessages = [...currentMessages, { role: "user" as const, content: fullContent }];
+    setMessages((prev) => [...prev, userMsg]);
+    setStreaming(true);
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentId, sessionId, messages: newMessages }),
+      });
+      const newSessionId = res.headers.get("X-Session-Id");
+      if (newSessionId) setSessionId(newSessionId);
+      if (res.status === 402) {
+        setTokenBlocked(true);
+        setMessages((prev) => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: "Tokens esgotados. Entre em contato com o administrador para adquirir um Token Pack." }; return u; });
+        return;
       }
-    },
-    [agentId, sessionId, router]
-  );
+      if (!res.ok || !res.body) throw new Error("Erro na resposta");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        setMessages((prev) => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: full }; return u; });
+      }
+      router.refresh();
+    } catch {
+      setMessages((prev) => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: "Ocorreu um erro ao processar sua mensagem. Tente novamente." }; return u; });
+    } finally {
+      setStreaming(false);
+      textareaRef.current?.focus();
+    }
+  }, [agentId, sessionId, router]);
 
   async function sendMessage() {
     const text = input.trim();
     if (!text || streaming || tokenBlocked) return;
-
     let fullContent = text;
     if (pendingFile?.extractedText) {
-      fullContent = `${text}\n\n---\nArquivo anexado: ${pendingFile.fileName}\n\nConteúdo:\n${pendingFile.extractedText.slice(0, 20000)}`;
+      fullContent = `${text}\n\n---\nArquivo: ${pendingFile.fileName}\n\n${pendingFile.extractedText.slice(0, 20000)}`;
     } else if (pendingFile?.isAudio && pendingFile.transcriptionStatus === "completed" && pendingFile.extractedText) {
-      fullContent = `${text}\n\n---\nTranscrição do áudio "${pendingFile.fileName}":\n${pendingFile.extractedText.slice(0, 20000)}`;
+      fullContent = `${text}\n\n---\nTranscrição: "${pendingFile.fileName}":\n${pendingFile.extractedText.slice(0, 20000)}`;
     } else if (pendingFile) {
       fullContent = `${text}\n\n[Arquivo: ${pendingFile.fileName}]`;
     }
-
     setInput("");
     setPendingFile(null);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
-
     await streamMessage(fullContent, text, messages);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   }
 
   async function handleExport(format: "pdf" | "word") {
@@ -490,149 +251,45 @@ export function ChatInterface({
     setExporting(true);
     try {
       const opts = { agentName: agentDisplayName, agentType, messages };
-      if (format === "pdf") await exportToPDF(opts);
-      else await exportToWord(opts);
-    } finally {
-      setExporting(false);
-    }
+      if (format === "pdf") await exportToPDF(opts); else await exportToWord(opts);
+    } finally { setExporting(false); }
   }
 
-  function handleGuidedConfirm(finalPrompt: string) {
-    setShowGuided(false);
-    streamMessage(finalPrompt, finalPrompt, messages);
-  }
-
-  function handleSuggest(text: string) {
-    setInput(text);
-    setTimeout(() => {
-      textareaRef.current?.focus();
-      autoResize();
-    }, 0);
-  }
+  function handleGuidedConfirm(finalPrompt: string) { setShowGuided(false); streamMessage(finalPrompt, finalPrompt, messages); }
+  function handleSuggest(text: string) { setInput(text); setTimeout(() => { textareaRef.current?.focus(); autoResize(); }, 0); }
 
   const isEmpty = messages.length === 0;
 
   return (
     <>
-      {showGuided && (
-        <PromptBuilderModal
-          agentName={agentDisplayName}
-          onClose={() => setShowGuided(false)}
-          onConfirm={handleGuidedConfirm}
-        />
-      )}
+      {showGuided && <PromptBuilderModal agentName={agentDisplayName} onClose={() => setShowGuided(false)} onConfirm={handleGuidedConfirm} />}
 
-      {/* Flush container — no border, no radius */}
-      <div
-        className="flex h-full flex-col overflow-hidden"
-        style={{ background: "#111111" }}
-      >
+      <div className="flex h-full flex-col overflow-hidden" style={{ background: "#111111" }}>
+
         {/* ── Header ── */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "14px 20px",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-            flexShrink: 0,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           {agentAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={agentAvatarUrl}
-              alt={agentDisplayName}
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "7px",
-                objectFit: "cover",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            />
+            <img src={agentAvatarUrl} alt={agentDisplayName} style={{ width: "38px", height: "38px", borderRadius: "8px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.08)" }} />
           ) : (
-            <div
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "7px",
-                background: "rgba(16,185,129,0.08)",
-                border: "1px solid rgba(16,185,129,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Bot style={{ width: "18px", height: "18px", color: "#10B981" }} strokeWidth={1.75} />
+            <div style={{ width: "38px", height: "38px", borderRadius: "8px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Bot style={{ width: "20px", height: "20px", color: "#10B981" }} strokeWidth={1.75} />
             </div>
           )}
-
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p
-              style={{
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#EBEBEB",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {agentDisplayName}
-            </p>
-            <p style={{ fontSize: "12px", color: "#3A3A3A" }}>
-              Agente de {AGENT_TYPE_LABELS[agentType] ?? agentType}
-            </p>
+            <p style={{ fontSize: "16px", fontWeight: 600, color: "#EBEBEB", letterSpacing: "-0.02em" }}>{agentDisplayName}</p>
+            <p style={{ fontSize: "13px", color: "#3A3A3A", marginTop: "1px" }}>Agente de {AGENT_TYPE_LABELS[agentType] ?? agentType}</p>
           </div>
-
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             {messages.length > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <button
-                  onClick={() => handleExport("pdf")}
-                  disabled={exporting}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "11px",
-                    color: "#555",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  PDF
-                </button>
-                <button
-                  onClick={() => handleExport("word")}
-                  disabled={exporting}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "11px",
-                    color: "#555",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  Word
-                </button>
+              <div style={{ display: "flex", gap: "4px" }}>
+                <button onClick={() => handleExport("pdf")} disabled={exporting} style={{ padding: "5px 10px", borderRadius: "5px", fontSize: "13px", color: "#555", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>PDF</button>
+                <button onClick={() => handleExport("word")} disabled={exporting} style={{ padding: "5px 10px", borderRadius: "5px", fontSize: "13px", color: "#555", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Word</button>
               </div>
             )}
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: "#10B981",
-                  boxShadow: "0 0 6px rgba(16,185,129,0.5)",
-                }}
-              />
-              <span style={{ fontSize: "12px", color: "#3A3A3A" }}>Online</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#10B981", boxShadow: "0 0 6px rgba(16,185,129,0.5)", flexShrink: 0 }} />
+              <span style={{ fontSize: "13px", color: "#3A3A3A" }}>Online</span>
             </div>
           </div>
         </div>
@@ -640,101 +297,35 @@ export function ChatInterface({
         {/* ── Messages ── */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {isEmpty ? (
-            <EmptyState
-              agentName={agentDisplayName}
-              agentType={agentType}
-              onSuggest={handleSuggest}
-              onGuided={() => setShowGuided(true)}
-            />
+            <EmptyState agentName={agentDisplayName} agentType={agentType} onSuggest={handleSuggest} onGuided={() => setShowGuided(true)} />
           ) : (
-            <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div style={{ padding: "28px 24px", display: "flex", flexDirection: "column", gap: "24px" }}>
               {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                  }}
-                >
+                <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
                   {msg.role === "assistant" && (
-                    <div style={{ marginRight: "10px", marginTop: "4px", flexShrink: 0 }}>
+                    <div style={{ marginRight: "12px", marginTop: "4px", flexShrink: 0 }}>
                       {agentAvatarUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={agentAvatarUrl}
-                          alt={agentDisplayName}
-                          style={{
-                            width: "26px",
-                            height: "26px",
-                            borderRadius: "5px",
-                            objectFit: "cover",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                          }}
-                        />
+                        <img src={agentAvatarUrl} alt={agentDisplayName} style={{ width: "28px", height: "28px", borderRadius: "6px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.08)" }} />
                       ) : (
-                        <div
-                          style={{
-                            width: "26px",
-                            height: "26px",
-                            borderRadius: "5px",
-                            background: "rgba(16,185,129,0.08)",
-                            border: "1px solid rgba(16,185,129,0.15)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Bot style={{ width: "14px", height: "14px", color: "#10B981" }} strokeWidth={2} />
+                        <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <Bot style={{ width: "15px", height: "15px", color: "#10B981" }} strokeWidth={2} />
                         </div>
                       )}
                     </div>
                   )}
-
-                  <div
-                    style={{
-                      maxWidth: "76%",
-                      borderRadius: "10px",
-                      padding: "12px 16px",
-                      fontSize: "15px",
-                      lineHeight: "1.65",
-                      ...(msg.role === "user"
-                        ? {
-                            background: "#10B981",
-                            color: "#000",
-                            borderBottomRightRadius: "3px",
-                            fontWeight: 500,
-                          }
-                        : {
-                            background: "#181818",
-                            border: "1px solid rgba(255,255,255,0.07)",
-                            borderBottomLeftRadius: "3px",
-                          }),
-                    }}
-                  >
+                  <div style={{ maxWidth: "76%", borderRadius: "12px", padding: "14px 18px", fontSize: "16px", lineHeight: "1.7", ...(msg.role === "user" ? { background: "#10B981", color: "#000", borderBottomRightRadius: "4px", fontWeight: 500 } : { background: "#181818", border: "1px solid rgba(255,255,255,0.07)", borderBottomLeftRadius: "4px" }) }}>
                     {msg.role === "assistant" ? (
                       <>
                         {msg.content === "" && streaming && i === messages.length - 1 ? (
-                          <span style={{ display: "inline-flex", gap: "4px", padding: "4px 0" }}>
-                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3A3A3A", animation: "bounce 1s infinite" }} />
-                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3A3A3A", animation: "bounce 1s 0.15s infinite" }} />
-                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3A3A3A", animation: "bounce 1s 0.3s infinite" }} />
+                          <span style={{ display: "inline-flex", gap: "5px", padding: "4px 0" }}>
+                            {[0, 150, 300].map((d) => <span key={d} style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#3A3A3A", display: "inline-block", animation: `bounce 1s ${d}ms infinite` }} />)}
                           </span>
                         ) : (
                           <AssistantMessage content={msg.content} />
                         )}
                         {streaming && i === messages.length - 1 && msg.content !== "" && (
-                          <span
-                            style={{
-                              display: "inline-block",
-                              width: "2px",
-                              height: "14px",
-                              borderRadius: "1px",
-                              background: "#10B981",
-                              marginLeft: "2px",
-                              verticalAlign: "middle",
-                              animation: "pulse 1s infinite",
-                            }}
-                          />
+                          <span style={{ display: "inline-block", width: "2px", height: "16px", borderRadius: "1px", background: "#10B981", marginLeft: "2px", verticalAlign: "middle", animation: "pulse 1s infinite" }} />
                         )}
                       </>
                     ) : (
@@ -749,148 +340,55 @@ export function ChatInterface({
         </div>
 
         {/* ── Input ── */}
-        <div
-          style={{
-            padding: "12px 16px",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            flexShrink: 0,
-          }}
-        >
+        <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           {tokenBlocked ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "12px 16px",
-                borderRadius: "7px",
-                background: "rgba(239,68,68,0.06)",
-                border: "1px solid rgba(239,68,68,0.15)",
-                color: "#EF4444",
-                fontSize: "14px",
-              }}
-            >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "14px 16px", borderRadius: "8px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", fontSize: "15px" }}>
               Tokens esgotados — contate o administrador para continuar
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
               {pendingFile && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    background: "rgba(16,185,129,0.05)",
-                    border: "1px solid rgba(16,185,129,0.15)",
-                  }}
-                >
-                  <Paperclip style={{ width: "13px", height: "13px", color: "#10B981", flexShrink: 0 }} strokeWidth={2} />
-                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "13px", color: "#10B981" }}>
-                    {pendingFile.fileName}
-                  </span>
-                  {pendingFile.isAudio && pendingFile.transcriptionStatus === "pending" && (
-                    <span style={{ fontSize: "11px", color: "#555" }}>transcrevendo...</span>
-                  )}
-                  <button
-                    onClick={() => setPendingFile(null)}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "#555", padding: 0, display: "flex" }}
-                  >
-                    <X style={{ width: "13px", height: "13px" }} strokeWidth={2} />
+                <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px 14px", borderRadius: "7px", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.15)" }}>
+                  <Paperclip style={{ width: "14px", height: "14px", color: "#10B981", flexShrink: 0 }} strokeWidth={2} />
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "14px", color: "#10B981" }}>{pendingFile.fileName}</span>
+                  {pendingFile.isAudio && pendingFile.transcriptionStatus === "pending" && <span style={{ fontSize: "13px", color: "#555" }}>transcrevendo...</span>}
+                  <button onClick={() => setPendingFile(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#555", padding: 0, display: "flex" }}>
+                    <X style={{ width: "14px", height: "14px" }} strokeWidth={2} />
                   </button>
                 </div>
               )}
-
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}>
                 <textarea
                   ref={textareaRef}
                   value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    autoResize();
-                  }}
+                  onChange={(e) => { setInput(e.target.value); autoResize(); }}
                   onKeyDown={handleKeyDown}
-                  placeholder={
-                    pendingFile
-                      ? `Diga o que fazer com "${pendingFile.fileName}"...`
-                      : `Mensagem... (Enter para enviar)`
-                  }
+                  placeholder={pendingFile ? `Diga o que fazer com "${pendingFile.fileName}"...` : `Mensagem... (Enter para enviar)`}
                   disabled={streaming}
                   rows={1}
-                  style={{
-                    flex: 1,
-                    resize: "none",
-                    overflow: "hidden",
-                    borderRadius: "7px",
-                    padding: "11px 14px",
-                    fontSize: "14px",
-                    background: "#161616",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#EBEBEB",
-                    minHeight: "44px",
-                    maxHeight: "200px",
-                    fontFamily: "inherit",
-                    outline: "none",
-                    lineHeight: "1.5",
-                    transition: "border-color 0.12s",
-                  }}
-                  onFocus={(e) => {
-                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(16,185,129,0.4)";
-                  }}
-                  onBlur={(e) => {
-                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(255,255,255,0.08)";
-                  }}
+                  style={{ flex: 1, resize: "none", overflow: "hidden", borderRadius: "8px", padding: "13px 16px", fontSize: "15px", background: "#161616", border: "1px solid rgba(255,255,255,0.08)", color: "#EBEBEB", minHeight: "48px", maxHeight: "200px", fontFamily: "inherit", outline: "none", lineHeight: "1.5", transition: "border-color 0.12s" }}
+                  onFocus={(e) => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(16,185,129,0.4)"; }}
+                  onBlur={(e) => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
                   autoFocus
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={streaming || !input.trim()}
-                  style={{
-                    background: "#10B981",
-                    color: "#000",
-                    border: "none",
-                    borderRadius: "7px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    padding: "0 18px",
-                    height: "44px",
-                    flexShrink: 0,
-                    cursor: streaming || !input.trim() ? "not-allowed" : "pointer",
-                    opacity: streaming || !input.trim() ? 0.4 : 1,
-                    transition: "opacity 0.12s",
-                  }}
+                  style={{ background: "#10B981", color: "#000", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 700, padding: "0 22px", height: "48px", flexShrink: 0, cursor: streaming || !input.trim() ? "not-allowed" : "pointer", opacity: streaming || !input.trim() ? 0.4 : 1, transition: "opacity 0.12s" }}
                 >
                   Enviar
                 </Button>
               </div>
-
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <FileUploadButton
-                  agentType={agentType}
-                  sessionId={sessionId}
-                  onUploaded={(f) => setPendingFile(f)}
-                  disabled={streaming}
-                />
+                <FileUploadButton agentType={agentType} sessionId={sessionId} onUploaded={(f) => setPendingFile(f)} disabled={streaming} />
                 <button
                   onClick={() => setShowGuided(true)}
                   disabled={streaming}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    fontSize: "12px",
-                    color: "#3A3A3A",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    transition: "color 0.12s",
-                  }}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#3A3A3A", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", transition: "color 0.12s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#10B981"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#3A3A3A"; }}
                 >
-                  <Sparkles style={{ width: "12px", height: "12px" }} strokeWidth={2} />
+                  <Sparkles style={{ width: "13px", height: "13px" }} strokeWidth={2} />
                   Modo Guiado
                 </button>
               </div>
