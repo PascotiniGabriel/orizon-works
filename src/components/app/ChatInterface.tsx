@@ -91,45 +91,56 @@ const DEFAULT_PROMPTS: PromptItem[] = [
   { icon: Lightbulb,     text: "Qual tarefa mais comum você resolve?" },
 ];
 
+/* ── Markdown renderer ── */
 function AssistantMessage({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
         h1: ({ children }) => (
-          <p className="mt-3 mb-1 text-sm font-bold first:mt-0" style={{ color: "#F2F0EA" }}>{children}</p>
+          <p style={{ marginTop: "12px", marginBottom: "4px", fontSize: "15px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.02em" }}>{children}</p>
         ),
         h2: ({ children }) => (
-          <p className="mt-3 mb-1 text-sm font-bold first:mt-0" style={{ color: "#F2F0EA" }}>{children}</p>
+          <p style={{ marginTop: "12px", marginBottom: "4px", fontSize: "15px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.02em" }}>{children}</p>
         ),
         h3: ({ children }) => (
-          <p className="mt-2 mb-0.5 text-sm font-semibold first:mt-0" style={{ color: "#E0DFDA" }}>{children}</p>
+          <p style={{ marginTop: "10px", marginBottom: "2px", fontSize: "14px", fontWeight: 600, color: "#DDDDDD" }}>{children}</p>
         ),
         p: ({ children }) => (
-          <p className="mb-2 leading-relaxed last:mb-0" style={{ color: "#C0BFC9" }}>{children}</p>
+          <p style={{ marginBottom: "10px", lineHeight: "1.7", color: "#C8C8C8", fontSize: "15px" }}>{children}</p>
         ),
         ul: ({ children }) => (
-          <ul className="mb-2 space-y-1 pl-4 last:mb-0" style={{ listStyleType: "disc", color: "#C0BFC9" }}>
+          <ul style={{ marginBottom: "10px", paddingLeft: "20px", listStyleType: "disc", color: "#C8C8C8" }}>
             {children}
           </ul>
         ),
         ol: ({ children }) => (
-          <ol className="mb-2 space-y-1 pl-4 last:mb-0" style={{ listStyleType: "decimal", color: "#C0BFC9" }}>
+          <ol style={{ marginBottom: "10px", paddingLeft: "20px", listStyleType: "decimal", color: "#C8C8C8" }}>
             {children}
           </ol>
         ),
-        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+        li: ({ children }) => <li style={{ lineHeight: "1.7", fontSize: "15px" }}>{children}</li>,
         strong: ({ children }) => (
-          <strong className="font-semibold" style={{ color: "#F2F0EA" }}>{children}</strong>
+          <strong style={{ fontWeight: 600, color: "#EBEBEB" }}>{children}</strong>
         ),
-        em: ({ children }) => <em className="italic" style={{ color: "#A0A0AA" }}>{children}</em>,
+        em: ({ children }) => <em style={{ fontStyle: "italic", color: "#AAAAAA" }}>{children}</em>,
         code: ({ children, className }) => {
           const isBlock = className?.includes("language-");
           if (isBlock) {
             return (
               <code
-                className="block overflow-x-auto rounded-[6px] p-3 text-xs font-mono whitespace-pre"
-                style={{ background: "#0A0A0F", color: "#34D399", border: "1px solid rgba(52,211,153,0.15)" }}
+                style={{
+                  display: "block",
+                  overflowX: "auto",
+                  borderRadius: "6px",
+                  padding: "12px",
+                  fontSize: "13px",
+                  fontFamily: "var(--font-geist-mono)",
+                  whiteSpace: "pre",
+                  background: "#0A0A0A",
+                  color: "#10B981",
+                  border: "1px solid rgba(16,185,129,0.15)",
+                }}
               >
                 {children}
               </code>
@@ -137,40 +148,63 @@ function AssistantMessage({ content }: { content: string }) {
           }
           return (
             <code
-              className="rounded-[3px] px-1.5 py-0.5 text-xs font-mono"
-              style={{ background: "rgba(232,160,32,0.1)", color: "#E8A020", border: "1px solid rgba(232,160,32,0.2)" }}
+              style={{
+                borderRadius: "3px",
+                padding: "1px 6px",
+                fontSize: "13px",
+                fontFamily: "var(--font-geist-mono)",
+                background: "rgba(16,185,129,0.1)",
+                color: "#10B981",
+                border: "1px solid rgba(16,185,129,0.2)",
+              }}
             >
               {children}
             </code>
           );
         },
-        pre: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
-        hr: () => <hr className="my-3" style={{ borderColor: "rgba(255,255,255,0.08)" }} />,
+        pre: ({ children }) => <div style={{ marginBottom: "10px" }}>{children}</div>,
+        hr: () => <hr style={{ margin: "12px 0", borderColor: "rgba(255,255,255,0.08)" }} />,
         blockquote: ({ children }) => (
           <blockquote
-            className="mb-2 pl-3 italic"
-            style={{ borderLeft: "2px solid rgba(232,160,32,0.4)", color: "#8A8994" }}
+            style={{
+              marginBottom: "10px",
+              paddingLeft: "12px",
+              fontStyle: "italic",
+              borderLeft: "2px solid rgba(16,185,129,0.4)",
+              color: "#888",
+            }}
           >
             {children}
           </blockquote>
         ),
         table: ({ children }) => (
-          <div className="mb-2 overflow-x-auto rounded-[6px] last:mb-0" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-            <table className="w-full border-collapse text-sm">{children}</table>
+          <div style={{ marginBottom: "10px", overflowX: "auto", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>{children}</table>
           </div>
         ),
         th: ({ children }) => (
           <th
-            className="px-3 py-2 text-left text-[11px] font-semibold"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#8A8994" }}
+            style={{
+              padding: "8px 12px",
+              textAlign: "left",
+              fontSize: "11px",
+              fontWeight: 600,
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.04)",
+              color: "#888",
+            }}
           >
             {children}
           </th>
         ),
         td: ({ children }) => (
           <td
-            className="px-3 py-2 text-xs"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#C0BFC9" }}
+            style={{
+              padding: "8px 12px",
+              fontSize: "14px",
+              borderBottom: "1px solid rgba(255,255,255,0.05)",
+              color: "#C8C8C8",
+            }}
           >
             {children}
           </td>
@@ -182,6 +216,7 @@ function AssistantMessage({ content }: { content: string }) {
   );
 }
 
+/* ── Empty state ── */
 function EmptyState({
   agentName,
   agentType,
@@ -196,66 +231,135 @@ function EmptyState({
   const prompts: PromptItem[] = SUGGESTED_PROMPTS[agentType] ?? DEFAULT_PROMPTS;
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6 py-8">
-      <div className="w-full max-w-2xl space-y-5">
-        <div className="text-center">
-          <p className="text-[15px] font-semibold" style={{ color: "#F2F0EA", letterSpacing: "-0.02em" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100%",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "32px 24px",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "560px" }}>
+        {/* Heading */}
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+          <p
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "#EBEBEB",
+              letterSpacing: "-0.025em",
+              marginBottom: "6px",
+            }}
+          >
             Como posso ajudar, hoje?
           </p>
-          <p className="mt-1 text-[13px]" style={{ color: "#64636E" }}>
+          <p style={{ color: "#555", fontSize: "14px" }}>
             Selecione uma sugestão ou escreva diretamente.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {/* Suggestion grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "8px",
+            marginBottom: "16px",
+          }}
+        >
           {prompts.map((p, i) => {
             const Icon = p.icon;
             return (
               <button
                 key={i}
                 onClick={() => onSuggest(p.text)}
-                className="group flex items-start gap-3 rounded-[8px] px-4 py-3 text-left text-[13px] transition-all duration-150 hover:bg-white/[0.04] cursor-pointer"
-                style={{ border: "1px solid rgba(255,255,255,0.07)", color: "#8A8994" }}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                  padding: "14px 16px",
+                  textAlign: "left",
+                  fontSize: "13px",
+                  lineHeight: "1.5",
+                  color: "#888",
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: "7px",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  transition: "all 0.12s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                  (e.currentTarget as HTMLElement).style.color = "#EBEBEB";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  (e.currentTarget as HTMLElement).style.color = "#888";
+                }}
               >
                 <Icon
-                  className="mt-0.5 h-4 w-4 shrink-0 transition-colors group-hover:text-[#E8A020]"
-                  style={{ color: "#3D3D50" }}
+                  style={{ width: "15px", height: "15px", color: "#3A3A3A", marginTop: "2px", flexShrink: 0 }}
                   strokeWidth={1.75}
                 />
-                <span className="leading-snug group-hover:text-[#C0BFC9]">{p.text}</span>
+                <span>{p.text}</span>
               </button>
             );
           })}
         </div>
 
+        {/* Guided mode banner */}
         <div
-          className="rounded-[8px] px-5 py-4"
-          style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.18)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            padding: "14px 18px",
+            background: "rgba(16,185,129,0.05)",
+            border: "1px solid rgba(16,185,129,0.15)",
+            borderRadius: "7px",
+          }}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[13px] font-semibold" style={{ color: "#E8A020" }}>
-                Nunca usou IA antes?
-              </p>
-              <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: "#8A6A30" }}>
-                O <strong style={{ color: "#E8A020" }}>Modo Guiado</strong> monta seu pedido passo a passo — sem precisar saber escrever prompts.
-              </p>
-            </div>
-            <button
-              onClick={onGuided}
-              className="shrink-0 flex items-center gap-1.5 rounded-[6px] px-4 py-2 text-[12px] font-semibold transition-opacity hover:opacity-90 cursor-pointer"
-              style={{ background: "#E8A020", color: "#09090E" }}
-            >
-              <Sparkles className="h-3 w-3" strokeWidth={2.5} />
-              Modo Guiado
-            </button>
+          <div>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "#10B981", marginBottom: "3px" }}>
+              Nunca usou IA antes?
+            </p>
+            <p style={{ fontSize: "13px", color: "#555", lineHeight: "1.5" }}>
+              O <strong style={{ color: "#10B981", fontWeight: 600 }}>Modo Guiado</strong> monta seu pedido passo a passo — sem precisar saber escrever prompts.
+            </p>
           </div>
+          <button
+            onClick={onGuided}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "9px 16px",
+              background: "#10B981",
+              color: "#000",
+              fontWeight: 600,
+              fontSize: "13px",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Sparkles style={{ width: "13px", height: "13px" }} strokeWidth={2.5} />
+            Modo Guiado
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
+/* ── Main component ── */
 export function ChatInterface({
   agentId,
   agentDisplayName,
@@ -418,73 +522,123 @@ export function ChatInterface({
         />
       )}
 
+      {/* Flush container — no border, no radius */}
       <div
         className="flex h-full flex-col overflow-hidden"
-        style={{
-          background: "#111118",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: "12px",
-        }}
+        style={{ background: "#111111" }}
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <div
-          className="flex items-center gap-3 px-5 py-3.5"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "14px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            flexShrink: 0,
+          }}
         >
           {agentAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={agentAvatarUrl}
               alt={agentDisplayName}
-              className="h-9 w-9 rounded-[6px] object-cover"
-              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "7px",
+                objectFit: "cover",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
             />
           ) : (
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-[6px]"
-              style={{ background: "rgba(232,160,32,0.1)", border: "1px solid rgba(232,160,32,0.2)" }}
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "7px",
+                background: "rgba(16,185,129,0.08)",
+                border: "1px solid rgba(16,185,129,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
             >
-              <Bot className="h-5 w-5" style={{ color: "#E8A020" }} strokeWidth={1.75} />
+              <Bot style={{ width: "18px", height: "18px", color: "#10B981" }} strokeWidth={1.75} />
             </div>
           )}
-          <div>
-            <p className="text-[13px] font-semibold" style={{ color: "#F2F0EA", letterSpacing: "-0.01em" }}>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "#EBEBEB",
+                letterSpacing: "-0.01em",
+              }}
+            >
               {agentDisplayName}
             </p>
-            <p className="text-[11px]" style={{ color: "#3D3D50" }}>
+            <p style={{ fontSize: "12px", color: "#3A3A3A" }}>
               Agente de {AGENT_TYPE_LABELS[agentType] ?? agentType}
             </p>
           </div>
-          <div className="ml-auto flex items-center gap-3">
+
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             {messages.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                 <button
                   onClick={() => handleExport("pdf")}
                   disabled={exporting}
-                  className="rounded-[5px] px-2 py-1 text-[11px] transition-all duration-150 hover:bg-white/[0.06] disabled:opacity-40 cursor-pointer"
-                  style={{ color: "#3D3D50" }}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "11px",
+                    color: "#555",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
                 >
                   PDF
                 </button>
                 <button
                   onClick={() => handleExport("word")}
                   disabled={exporting}
-                  className="rounded-[5px] px-2 py-1 text-[11px] transition-all duration-150 hover:bg-white/[0.06] disabled:opacity-40 cursor-pointer"
-                  style={{ color: "#3D3D50" }}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "11px",
+                    color: "#555",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
                 >
                   Word
                 </button>
               </div>
             )}
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#34D399]" style={{ boxShadow: "0 0 4px rgba(52,211,153,0.6)" }} />
-              <span className="text-[11px]" style={{ color: "#3D3D50" }}>Online</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#10B981",
+                  boxShadow: "0 0 6px rgba(16,185,129,0.5)",
+                }}
+              />
+              <span style={{ fontSize: "12px", color: "#3A3A3A" }}>Online</span>
             </div>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
+        {/* ── Messages ── */}
+        <div style={{ flex: 1, overflowY: "auto" }}>
           {isEmpty ? (
             <EmptyState
               agentName={agentDisplayName}
@@ -493,66 +647,98 @@ export function ChatInterface({
               onGuided={() => setShowGuided(true)}
             />
           ) : (
-            <div className="px-5 py-4 space-y-5">
+            <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
               {messages.map((msg, i) => (
                 <div
                   key={i}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  style={{
+                    display: "flex",
+                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                  }}
                 >
                   {msg.role === "assistant" && (
-                    <div className="mr-2.5 mt-1 shrink-0">
+                    <div style={{ marginRight: "10px", marginTop: "4px", flexShrink: 0 }}>
                       {agentAvatarUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={agentAvatarUrl}
                           alt={agentDisplayName}
-                          className="h-6 w-6 rounded-[4px] object-cover"
-                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                          style={{
+                            width: "26px",
+                            height: "26px",
+                            borderRadius: "5px",
+                            objectFit: "cover",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                          }}
                         />
                       ) : (
                         <div
-                          className="flex h-6 w-6 items-center justify-center rounded-[4px]"
-                          style={{ background: "rgba(232,160,32,0.1)", border: "1px solid rgba(232,160,32,0.15)" }}
+                          style={{
+                            width: "26px",
+                            height: "26px",
+                            borderRadius: "5px",
+                            background: "rgba(16,185,129,0.08)",
+                            border: "1px solid rgba(16,185,129,0.15)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
                         >
-                          <Bot className="h-3.5 w-3.5" style={{ color: "#E8A020" }} strokeWidth={2} />
+                          <Bot style={{ width: "14px", height: "14px", color: "#10B981" }} strokeWidth={2} />
                         </div>
                       )}
                     </div>
                   )}
 
                   <div
-                    className="max-w-[78%] rounded-[10px] px-4 py-3 text-[13px]"
-                    style={
-                      msg.role === "user"
+                    style={{
+                      maxWidth: "76%",
+                      borderRadius: "10px",
+                      padding: "12px 16px",
+                      fontSize: "15px",
+                      lineHeight: "1.65",
+                      ...(msg.role === "user"
                         ? {
-                            background: "#E8A020",
-                            color: "#0D0B00",
+                            background: "#10B981",
+                            color: "#000",
                             borderBottomRightRadius: "3px",
+                            fontWeight: 500,
                           }
                         : {
-                            background: "#18181F",
-                            border: "1px solid rgba(255,255,255,0.06)",
+                            background: "#181818",
+                            border: "1px solid rgba(255,255,255,0.07)",
                             borderBottomLeftRadius: "3px",
-                          }
-                    }
+                          }),
+                    }}
                   >
                     {msg.role === "assistant" ? (
                       <>
                         {msg.content === "" && streaming && i === messages.length - 1 ? (
-                          <span className="inline-flex gap-1 py-0.5">
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full" style={{ background: "#3D3D50", animationDelay: "0ms" }} />
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full" style={{ background: "#3D3D50", animationDelay: "150ms" }} />
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full" style={{ background: "#3D3D50", animationDelay: "300ms" }} />
+                          <span style={{ display: "inline-flex", gap: "4px", padding: "4px 0" }}>
+                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3A3A3A", animation: "bounce 1s infinite" }} />
+                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3A3A3A", animation: "bounce 1s 0.15s infinite" }} />
+                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3A3A3A", animation: "bounce 1s 0.3s infinite" }} />
                           </span>
                         ) : (
                           <AssistantMessage content={msg.content} />
                         )}
                         {streaming && i === messages.length - 1 && msg.content !== "" && (
-                          <span className="ml-0.5 inline-block h-3 w-0.5 animate-pulse rounded-full" style={{ background: "#E8A020" }} />
+                          <span
+                            style={{
+                              display: "inline-block",
+                              width: "2px",
+                              height: "14px",
+                              borderRadius: "1px",
+                              background: "#10B981",
+                              marginLeft: "2px",
+                              verticalAlign: "middle",
+                              animation: "pulse 1s infinite",
+                            }}
+                          />
                         )}
                       </>
                     ) : (
-                      <span className="whitespace-pre-wrap leading-relaxed">{msg.content}</span>
+                      <span style={{ whiteSpace: "pre-wrap" }}>{msg.content}</span>
                     )}
                   </div>
                 </div>
@@ -562,43 +748,61 @@ export function ChatInterface({
           )}
         </div>
 
-        {/* Input */}
+        {/* ── Input ── */}
         <div
-          className="px-4 py-3"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+          style={{
+            padding: "12px 16px",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            flexShrink: 0,
+          }}
         >
           {tokenBlocked ? (
             <div
-              className="flex items-center justify-center rounded-[8px] px-4 py-3 text-[13px]"
-              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "12px 16px",
+                borderRadius: "7px",
+                background: "rgba(239,68,68,0.06)",
+                border: "1px solid rgba(239,68,68,0.15)",
+                color: "#EF4444",
+                fontSize: "14px",
+              }}
             >
               Tokens esgotados — contate o administrador para continuar
             </div>
           ) : (
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {pendingFile && (
                 <div
-                  className="flex items-center gap-2 rounded-[6px] px-3 py-2"
-                  style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.18)" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    background: "rgba(16,185,129,0.05)",
+                    border: "1px solid rgba(16,185,129,0.15)",
+                  }}
                 >
-                  <Paperclip className="h-3.5 w-3.5 shrink-0" style={{ color: "#E8A020" }} strokeWidth={2} />
-                  <span className="flex-1 truncate text-[12px]" style={{ color: "#C8962A" }}>
+                  <Paperclip style={{ width: "13px", height: "13px", color: "#10B981", flexShrink: 0 }} strokeWidth={2} />
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "13px", color: "#10B981" }}>
                     {pendingFile.fileName}
                   </span>
                   {pendingFile.isAudio && pendingFile.transcriptionStatus === "pending" && (
-                    <span className="text-[11px]" style={{ color: "#8A6A30" }}>transcrevendo...</span>
+                    <span style={{ fontSize: "11px", color: "#555" }}>transcrevendo...</span>
                   )}
                   <button
                     onClick={() => setPendingFile(null)}
-                    className="transition-opacity hover:opacity-70 cursor-pointer"
-                    style={{ color: "#8A6A30" }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#555", padding: 0, display: "flex" }}
                   >
-                    <X className="h-3.5 w-3.5" strokeWidth={2} />
+                    <X style={{ width: "13px", height: "13px" }} strokeWidth={2} />
                   </button>
                 </div>
               )}
 
-              <div className="flex items-end gap-2">
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -614,33 +818,54 @@ export function ChatInterface({
                   }
                   disabled={streaming}
                   rows={1}
-                  className="flex-1 resize-none overflow-hidden rounded-[8px] px-4 py-2.5 text-[13px] placeholder-[#3D3D50] transition-all duration-150 outline-none disabled:opacity-50"
                   style={{
-                    background: "#0D0D14",
-                    border: "1px solid rgba(255,255,255,0.09)",
-                    color: "#F2F0EA",
-                    minHeight: "42px",
+                    flex: 1,
+                    resize: "none",
+                    overflow: "hidden",
+                    borderRadius: "7px",
+                    padding: "11px 14px",
+                    fontSize: "14px",
+                    background: "#161616",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#EBEBEB",
+                    minHeight: "44px",
                     maxHeight: "200px",
+                    fontFamily: "inherit",
+                    outline: "none",
+                    lineHeight: "1.5",
+                    transition: "border-color 0.12s",
                   }}
                   onFocus={(e) => {
-                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(232,160,32,0.4)";
+                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(16,185,129,0.4)";
                   }}
                   onBlur={(e) => {
-                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(255,255,255,0.09)";
+                    (e.currentTarget as HTMLTextAreaElement).style.borderColor = "rgba(255,255,255,0.08)";
                   }}
                   autoFocus
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={streaming || !input.trim()}
-                  className="shrink-0 self-end rounded-[8px] text-[13px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-40 cursor-pointer"
-                  style={{ background: "#E8A020", color: "#09090E", border: "none" }}
+                  style={{
+                    background: "#10B981",
+                    color: "#000",
+                    border: "none",
+                    borderRadius: "7px",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    padding: "0 18px",
+                    height: "44px",
+                    flexShrink: 0,
+                    cursor: streaming || !input.trim() ? "not-allowed" : "pointer",
+                    opacity: streaming || !input.trim() ? 0.4 : 1,
+                    transition: "opacity 0.12s",
+                  }}
                 >
                   Enviar
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <FileUploadButton
                   agentType={agentType}
                   sessionId={sessionId}
@@ -650,10 +875,22 @@ export function ChatInterface({
                 <button
                   onClick={() => setShowGuided(true)}
                   disabled={streaming}
-                  className="flex items-center gap-1 text-[11px] transition-colors hover:text-[#E8A020] disabled:opacity-40 cursor-pointer"
-                  style={{ color: "#3D3D50" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    fontSize: "12px",
+                    color: "#3A3A3A",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    transition: "color 0.12s",
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#10B981"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#3A3A3A"; }}
                 >
-                  <Sparkles className="h-3 w-3" strokeWidth={2} />
+                  <Sparkles style={{ width: "12px", height: "12px" }} strokeWidth={2} />
                   Modo Guiado
                 </button>
               </div>
