@@ -131,7 +131,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
-        <div style={{ maxWidth: "860px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ maxWidth: "860px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "20px" }}>
 
           {/* === Token consumption === */}
           <section style={CARD}>

@@ -86,7 +86,10 @@ export default async function EscritorioPage() {
 }
 
 function formatK(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000_000) {
+    const val = Math.floor(n / 10_000) / 100;
+    return `${val}M`;
+  }
   if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
   return String(n);
 }
