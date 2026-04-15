@@ -45,10 +45,10 @@ Redesign completo da interface, inspirado no VAPI. Quarta iteração — versão
 ### Escala de Fontes Estabelecida
 `11px` labels → `13px` meta → `14px` nav/form → `15px` body/nome → `16px` mensagens/headers → `17px` page titles → `22px` chat heading → `26px` auth headings → `30px` auth headline
 
-### Páginas ainda com design antigo (pendentes)
-- [ ] `historico/[sessionId]/page.tsx` — detalhe de sessão
-- [ ] `recuperar-senha/page.tsx`
-- [ ] `convite/[token]/page.tsx` e páginas relacionadas
+### Páginas atualizadas para o novo design
+- [x] `historico/[sessionId]/page.tsx` — dark layout, ícone do agente, bolhas emerald
+- [x] `recuperar-senha/page.tsx` — formulário nativo, emerald, sem shadcn Card
+- [x] `convite/[token]/page.tsx` + `AcceptInviteForm.tsx` — fundo #0A0A0A, card emerald
 
 ---
 
@@ -174,7 +174,7 @@ CREATE POLICY "service_role_all" ON invites FOR ALL TO postgres USING (true) WIT
 
 ### Alta
 - [ ] **Super Admin — gestão de empresas**: editar tokens, mudar plano, cancelar/reativar assinatura
-- [ ] **Páginas antigas atualizadas**: `historico/[sessionId]`, `recuperar-senha`, `convite/[token]`
+- [x] ~~**Páginas antigas atualizadas**~~: `historico/[sessionId]`, `recuperar-senha`, `convite/[token]` — concluído
 
 ### Média
 - [ ] Supabase Storage bucket `company-documents` (criar manualmente no dashboard)
