@@ -10,6 +10,7 @@ import {
   pgEnum,
   index,
   unique,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 // ============================================================
@@ -451,6 +452,63 @@ export const notifications = pgTable(
 );
 
 // ============================================================
+// RAG — Documentos e Chunks para Retrieval-Augmented Generation
+// ============================================================
+
+/**
+ * Documentos indexados por empresa/agente.
+ * Os chunks com embeddings ficam na tabela rag_chunks (gerenciada via Supabase client
+ * diretamente, pois Drizzle não suporta o tipo vector do pgvector nativamente).
+ */
+export const ragDocuments = pgTable(
+  "rag_documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    agentId: uuid("agent_id").references(() => agents.id, { onDelete: "cascade" }),
+    fileName: text("file_name").notNull(),
+    fileType: text("file_type").notNull(), // 'pdf' | 'docx' | 'txt' | 'csv'
+    storagePath: text("storage_path"),
+    chunkCount: integer("chunk_count").default(0),
+    status: text("status").notNull().default("processing"), // 'processing' | 'ready' | 'error'
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id),
+  },
+  (table) => [
+    index("rag_documents_company_idx").on(table.companyId),
+    index("rag_documents_agent_idx").on(table.agentId),
+  ]
+);
+
+/**
+ * Chunks de texto — espelho do schema SQL (sem a coluna embedding vector(512),
+ * que é gerenciada fora do Drizzle via Supabase client).
+ */
+export const ragChunks = pgTable(
+  "rag_chunks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => ragDocuments.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    agentId: uuid("agent_id").references(() => agents.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    chunkIndex: integer("chunk_index").notNull(),
+    metadata: jsonb("metadata").default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("rag_chunks_company_idx").on(table.companyId),
+    index("rag_chunks_agent_idx").on(table.agentId),
+  ]
+);
+
+// ============================================================
 // TYPE EXPORTS
 // ============================================================
 
@@ -465,3 +523,5 @@ export type Message = typeof messages.$inferSelect;
 export type Upload = typeof uploads.$inferSelect;
 export type TokenPack = typeof tokenPacks.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type RagDocument = typeof ragDocuments.$inferSelect;
+export type RagChunk = typeof ragChunks.$inferSelect;

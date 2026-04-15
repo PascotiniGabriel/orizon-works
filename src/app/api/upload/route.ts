@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
-import { users, uploads } from "@/lib/db/schema";
+import { users, uploads, ragDocuments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export const runtime = "nodejs";
+
+// RAG só é ativado quando VOYAGE_API_KEY está configurado
+const VOYAGE_ENABLED = Boolean(process.env.VOYAGE_API_KEY);
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
@@ -76,6 +79,7 @@ export async function POST(request: NextRequest) {
   }
 
   const fileExt = ALLOWED_MIME[mimeType];
+  const agentId = formData.get("agentId") as string | null;
   const storagePath = `${companyId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 
   // Upload para Supabase Storage
@@ -143,6 +147,41 @@ export async function POST(request: NextRequest) {
       transcriptionStatus,
     })
     .returning({ id: uploads.id });
+
+  // ── RAG: indexar documentos com texto extraído ───────────────────────────
+  // Apenas para arquivos com texto extraído e que não sejam áudio
+  // (áudio precisa de transcrição primeiro, feita separadamente)
+  if (extractedText && extractedText.length >= 50 && !isAudio && VOYAGE_ENABLED) {
+    try {
+      const [ragDoc] = await db
+        .insert(ragDocuments)
+        .values({
+          companyId,
+          agentId: agentId ?? undefined,
+          fileName: file.name,
+          fileType: fileExt,
+          storagePath,
+          status: "processing",
+          createdBy: user.id,
+        })
+        .returning({ id: ragDocuments.id });
+
+      // Disparar indexação em background — não bloquear a resposta
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/rag/ingest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentId: ragDoc.id,
+          text: extractedText,
+          companyId,
+          agentId: agentId ?? null,
+        }),
+      }).catch((err) => console.error("Erro ao disparar RAG ingest:", err));
+    } catch (err) {
+      // Falha silenciosa — upload já foi salvo com sucesso
+      console.error("Erro ao criar registro RAG:", err);
+    }
+  }
 
   return NextResponse.json({
     uploadId: uploadRecord.id,

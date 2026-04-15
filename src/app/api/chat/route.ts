@@ -8,6 +8,8 @@ import { checkTokenBalance, debitTokens } from "@/lib/db/queries/tokens";
 import { buildSystemPrompt } from "@/lib/claude/prompt-builder";
 import { getOrCreateSession, saveMessages } from "@/lib/db/queries/sessions";
 import { enrichSimpleMessage } from "@/lib/claude/prompt-engineer";
+import { checkCompanyHasRagDocuments } from "@/lib/db/queries/rag";
+import { searchRag, formatRagContext } from "@/lib/rag/search";
 
 export const runtime = "nodejs";
 
@@ -86,6 +88,26 @@ export async function POST(request: NextRequest) {
   // ── Última mensagem do usuário ───────────────────────────────────────────
   const lastUserMessage = messages[messages.length - 1]?.content ?? "";
 
+  // ── RAG: injetar contexto de documentos relevantes no system prompt ──────
+  let ragContext = "";
+  try {
+    const hasRag = await checkCompanyHasRagDocuments(companyId);
+    if (hasRag) {
+      const ragChunks = await searchRag({
+        query: lastUserMessage,
+        companyId,
+        agentId,
+        maxChunks: 4,
+        threshold: 0.45,
+      });
+      ragContext = formatRagContext(ragChunks);
+    }
+  } catch {
+    // Falha silenciosa — chat continua sem RAG
+  }
+
+  const systemPrompt = compiled.systemPrompt + ragContext;
+
   // ── Modo Simples: enriquecer última mensagem automaticamente (T17) ───────
   const enrichedMessages = messages.map((m, i) => {
     if (i === messages.length - 1 && m.role === "user") {
@@ -105,7 +127,7 @@ export async function POST(request: NextRequest) {
   const stream = anthropic.messages.stream({
     model: MODEL,
     max_tokens: 2048,
-    system: compiled.systemPrompt,
+    system: systemPrompt,
     messages: enrichedMessages,
   });
 
