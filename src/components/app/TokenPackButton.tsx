@@ -32,7 +32,7 @@ export function TokenPackButton() {
       onClick={handleClick}
       disabled={loading}
       className="shrink-0 ml-4 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 cursor-pointer"
-      style={{ backgroundColor: "#E8A020" }}
+      style={{ backgroundColor: "#10B981" }}
     >
       {loading ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />

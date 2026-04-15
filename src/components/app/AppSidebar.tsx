@@ -34,7 +34,11 @@ interface AppSidebarProps {
 }
 
 function formatTokens(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000_000) {
+    // floor to 2 decimal places to avoid misleading rounding (e.g. 3,498,905 → "3.49M" not "3.5M")
+    const val = Math.floor(n / 10_000) / 100;
+    return `${val}M`;
+  }
   if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
   return String(n);
 }
@@ -122,19 +126,20 @@ export function AppSidebar({ agents, role, notifications, fullName, tokenBalance
         </div>
 
         {/* Buy button */}
-        <button
-          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", height: "36px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px", borderRadius: "6px", border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: "9px", transition: "opacity 0.15s" }}
+        <Link
+          href="/configuracoes"
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", height: "36px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px", borderRadius: "6px", border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: "9px", textDecoration: "none", transition: "opacity 0.15s" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.88"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
         >
           <Zap style={{ width: "13px", height: "13px" }} fill="currentColor" />
           Comprar tokens
-        </button>
+        </Link>
 
         {/* Notifications + remaining */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 4px" }}>
           <NotificationBell initialNotifications={notifications} />
-          <span style={{ color: "#2A2A2A", fontSize: "11px" }}>{pct.toFixed(0)}% restante</span>
+          <span style={{ color: "#666", fontSize: "11px" }}>{pct.toFixed(0)}% restante</span>
         </div>
       </div>
     </aside>

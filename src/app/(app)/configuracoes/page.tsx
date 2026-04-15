@@ -34,7 +34,7 @@ const ROLE_LABELS: Record<string, string> = {
 const ROLE_BADGE: Record<string, { bg: string; color: string; border: string }> = {
   company_admin: { bg: "rgba(167,139,250,0.12)", color: "#B09EFC", border: "rgba(167,139,250,0.25)" },
   sector_manager:{ bg: "rgba(96,165,250,0.12)",  color: "#74B4FB", border: "rgba(96,165,250,0.25)"  },
-  employee:      { bg: "rgba(255,255,255,0.06)", color: "#8888A0", border: "rgba(255,255,255,0.1)"  },
+  employee:      { bg: "rgba(255,255,255,0.06)", color: "#888",    border: "rgba(255,255,255,0.1)"  },
   super_admin:   { bg: "rgba(239,68,68,0.12)",   color: "#F87171", border: "rgba(239,68,68,0.25)"   },
 };
 
@@ -59,7 +59,7 @@ const AGENT_COLORS: Record<string, { bg: string; text: string; border: string }>
   marketing:     { bg: "rgba(251,113,133,0.12)", text: "#FC879A", border: "rgba(251,113,133,0.2)" },
   comercial:     { bg: "rgba(96,165,250,0.12)",  text: "#74B4FB", border: "rgba(96,165,250,0.2)"  },
   financeiro:    { bg: "rgba(52,211,153,0.12)",  text: "#4EDBA4", border: "rgba(52,211,153,0.2)"  },
-  administrativo:{ bg: "rgba(232,160,32,0.12)",  text: "#E8A020", border: "rgba(232,160,32,0.2)"  },
+  administrativo:{ bg: "rgba(16,185,129,0.12)",  text: "#10B981", border: "rgba(16,185,129,0.2)"  },
 };
 
 function formatNumber(n: number) {
@@ -75,13 +75,13 @@ function formatDate(date: Date | null) {
   }).format(new Date(date));
 }
 
-const CARD_STYLE = {
-  background: "#111118",
-  border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: "10px",
-} as const;
+const CARD: React.CSSProperties = {
+  background: "#161616",
+  border: "1px solid rgba(255,255,255,0.07)",
+  borderRadius: "8px",
+};
 
-const DIVIDER = { borderTop: "1px solid rgba(255,255,255,0.06)" } as const;
+const DIVIDER: React.CSSProperties = { borderTop: "1px solid rgba(255,255,255,0.06)" };
 
 interface ConfiguracoesPageProps {
   searchParams: Promise<{ token_pack?: string }>;
@@ -114,343 +114,228 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
   const percentRemaining = 100 - tokenPercent;
 
   const barColor =
-    tokenPercent > 80 ? "#F87171" : tokenPercent > 60 ? "#E8A020" : "#4EDBA4";
+    tokenPercent > 80 ? "#F87171" : tokenPercent > 60 ? "#FBBF24" : "#10B981";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      {/* Page header */}
-      <div className="pt-2">
-        <p
-          className="text-[11px] font-semibold uppercase mb-3"
-          style={{ color: "#3E3E52", letterSpacing: "0.16em" }}
-        >
-          Painel
-        </p>
-        <h1
-          className="font-bold leading-none"
-          style={{ color: "#EEECE6", fontSize: "40px", letterSpacing: "-0.04em" }}
-        >
-          Configurações
-        </h1>
-        <p className="mt-2 text-[14px]" style={{ color: "#5A5A72" }}>
-          {info.companyName}
-        </p>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+
+      {/* Page header bar */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", height: "52px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <h1 style={{ color: "#EBEBEB", fontSize: "17px", fontWeight: 600, letterSpacing: "-0.025em", margin: 0 }}>
+            Configurações
+          </h1>
+          <span style={{ color: "#555", fontSize: "13px" }}>{info.companyName}</span>
+        </div>
       </div>
 
-      {/* === Token consumption === */}
-      <section style={CARD_STYLE} className="overflow-hidden">
-        <div
-          className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
-        >
-          <div>
-            <h2
-              className="text-[15px] font-semibold"
-              style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
-            >
-              Consumo de Tokens
-            </h2>
-            <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
-              Período atual
-            </p>
-          </div>
-          <Zap className="h-4 w-4" style={{ color: barColor }} strokeWidth={2.5} fill={barColor} />
-        </div>
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+        <div style={{ maxWidth: "860px", display: "flex", flexDirection: "column", gap: "20px" }}>
 
-        <div className="px-6 py-5 space-y-4">
-          {/* Bar */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[13px] font-medium" style={{ color: "#EEECE6" }}>
-                {formatNumber(tokensUsed)} usados
-              </span>
-              <span className="text-[12px]" style={{ color: "#4A4A60" }}>
-                limite: {formatNumber(info.tokenLimit)}
-              </span>
-            </div>
-            <div
-              className="h-2 w-full overflow-hidden rounded-full"
-              style={{ background: "rgba(255,255,255,0.07)" }}
-            >
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: `${Math.min(tokenPercent, 100)}%`,
-                  background: barColor,
-                  boxShadow: `0 0 8px ${barColor}50`,
-                }}
-              />
-            </div>
-            <p className="mt-2 text-[12px]" style={{ color: "#4A4A60" }}>
-              {formatNumber(info.tokenBalance)} tokens disponíveis ({percentRemaining}% restante)
-            </p>
-          </div>
-
-          {/* Checkout feedback */}
-          {token_pack === "success" && (
-            <div
-              className="flex items-center gap-3 rounded-[8px] px-4 py-3"
-              style={{
-                background: "rgba(78,219,164,0.08)",
-                border: "1px solid rgba(78,219,164,0.2)",
-              }}
-            >
-              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#4EDBA4" }} strokeWidth={2} />
+          {/* === Token consumption === */}
+          <section style={CARD}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <div>
-                <p className="text-[13px] font-semibold" style={{ color: "#4EDBA4" }}>
-                  Token Pack adquirido com sucesso!
+                <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em", margin: 0 }}>
+                  Consumo de Tokens
                 </p>
-                <p className="text-[12px] mt-0.5" style={{ color: "#3A8A6A" }}>
-                  2.000.000 tokens foram adicionados ao seu saldo.
+                <p style={{ color: "#555", fontSize: "13px", marginTop: "2px" }}>Período atual</p>
+              </div>
+              <Zap style={{ width: "16px", height: "16px", color: barColor }} strokeWidth={2.5} fill={barColor} />
+            </div>
+
+            <div style={{ padding: "20px" }}>
+              {/* Bar */}
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 500 }}>
+                    {formatNumber(tokensUsed)} usados
+                  </span>
+                  <span style={{ color: "#555", fontSize: "13px" }}>
+                    limite: {formatNumber(info.tokenLimit)}
+                  </span>
+                </div>
+                <div style={{ height: "3px", background: "rgba(255,255,255,0.07)", borderRadius: "2px", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.min(tokenPercent, 100)}%`, background: barColor, borderRadius: "2px", boxShadow: `0 0 8px ${barColor}50` }} />
+                </div>
+                <p style={{ color: "#555", fontSize: "13px", marginTop: "8px" }}>
+                  {formatNumber(info.tokenBalance)} tokens disponíveis ({percentRemaining}% restante)
                 </p>
               </div>
-            </div>
-          )}
-          {token_pack === "canceled" && (
-            <div
-              className="flex items-center gap-3 rounded-[8px] px-4 py-3"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <XCircle className="h-4 w-4 shrink-0" style={{ color: "#5A5A72" }} strokeWidth={2} />
-              <p className="text-[13px]" style={{ color: "#5A5A72" }}>
-                Compra cancelada. Nenhum valor foi cobrado.
-              </p>
-            </div>
-          )}
 
-          {/* Token pack offer */}
-          <div
-            className="flex items-center justify-between rounded-[8px] px-4 py-3"
-            style={{
-              background: "rgba(232,160,32,0.07)",
-              border: "1px solid rgba(232,160,32,0.18)",
-            }}
-          >
-            <div>
-              <p className="text-[13px] font-semibold" style={{ color: "#E8A020" }}>
-                {info.tokenBalance < info.tokenLimit * 0.2
-                  ? "Saldo abaixo de 20% — recarregue agora"
-                  : "Precisa de mais tokens?"}
-              </p>
-              <p className="text-[12px] mt-0.5" style={{ color: "#9A7020" }}>
-                +2.000.000 tokens adicionados imediatamente ao seu saldo.
-              </p>
-            </div>
-            <TokenPackButton />
-          </div>
-        </div>
-      </section>
-
-      {isAdmin && stats && (
-        <>
-          {/* === Monthly stats === */}
-          <section>
-            <p
-              className="text-[11px] font-semibold uppercase mb-4"
-              style={{ color: "#3E3E52", letterSpacing: "0.14em" }}
-            >
-              Resumo do Mês
-            </p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {[
-                { label: "Sessões", value: formatNumber(stats.totalSessions) },
-                { label: "Mensagens", value: formatNumber(stats.totalMessages) },
-                { label: "Tokens consumidos", value: formatNumber(stats.totalTokensUsed) },
-                { label: "Usuários ativos", value: formatNumber(stats.activeUsers) },
-              ].map((card) => (
-                <div
-                  key={card.label}
-                  className="p-5"
-                  style={CARD_STYLE}
-                >
-                  <p className="text-[11px] mb-2" style={{ color: "#4A4A60" }}>
-                    {card.label}
-                  </p>
-                  <p
-                    className="font-bold"
-                    style={{ color: "#EEECE6", fontSize: "28px", letterSpacing: "-0.04em", lineHeight: 1 }}
-                  >
-                    {card.value}
+              {/* Checkout feedback */}
+              {token_pack === "success" && (
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "6px", padding: "12px 16px", marginBottom: "12px" }}>
+                  <CheckCircle2 style={{ width: "16px", height: "16px", color: "#10B981", flexShrink: 0 }} strokeWidth={2} />
+                  <div>
+                    <p style={{ color: "#10B981", fontSize: "14px", fontWeight: 600, margin: 0 }}>
+                      Token Pack adquirido com sucesso!
+                    </p>
+                    <p style={{ color: "#4EDBA4", fontSize: "13px", marginTop: "2px" }}>
+                      2.000.000 tokens foram adicionados ao seu saldo.
+                    </p>
+                  </div>
+                </div>
+              )}
+              {token_pack === "canceled" && (
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "6px", padding: "12px 16px", marginBottom: "12px" }}>
+                  <XCircle style={{ width: "16px", height: "16px", color: "#555", flexShrink: 0 }} strokeWidth={2} />
+                  <p style={{ color: "#888", fontSize: "13px", margin: 0 }}>
+                    Compra cancelada. Nenhum valor foi cobrado.
                   </p>
                 </div>
-              ))}
+              )}
+
+              {/* Token pack offer */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "6px", padding: "14px 16px" }}>
+                <div>
+                  <p style={{ color: "#10B981", fontSize: "14px", fontWeight: 600, margin: 0 }}>
+                    {info.tokenBalance < info.tokenLimit * 0.2
+                      ? "Saldo abaixo de 20% — recarregue agora"
+                      : "Precisa de mais tokens?"}
+                  </p>
+                  <p style={{ color: "#3A8A6A", fontSize: "13px", marginTop: "2px" }}>
+                    +2.000.000 tokens adicionados imediatamente ao seu saldo.
+                  </p>
+                </div>
+                <TokenPackButton />
+              </div>
             </div>
           </section>
 
-          {/* === Por agente === */}
-          {stats.agentStats.length > 0 && (
-            <section style={CARD_STYLE} className="overflow-hidden">
-              <div
-                className="px-6 py-4"
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
-              >
-                <h2
-                  className="text-[15px] font-semibold"
-                  style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
-                >
-                  Uso por Agente
-                </h2>
-              </div>
-              <div>
-                {stats.agentStats.map((a, i) => {
-                  const Icon = AGENT_ICONS[a.agentType] ?? Bot;
-                  const agentStyle = AGENT_COLORS[a.agentType] ?? {
-                    bg: "rgba(255,255,255,0.07)",
-                    text: "#8888A0",
-                    border: "rgba(255,255,255,0.1)",
-                  };
-                  return (
-                    <div
-                      key={a.agentType}
-                      className="flex items-center gap-4 px-6 py-4"
-                      style={i > 0 ? DIVIDER : undefined}
-                    >
-                      <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px]"
-                        style={{
-                          background: agentStyle.bg,
-                          border: `1px solid ${agentStyle.border}`,
-                        }}
-                      >
-                        <Icon className="h-5 w-5" style={{ color: agentStyle.text }} strokeWidth={1.75} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className="text-[14px] font-medium truncate"
-                          style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
-                        >
-                          {a.agentName}
-                        </p>
-                        <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
-                          {AGENT_LABELS[a.agentType] ?? a.agentType}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-[13px] font-semibold" style={{ color: "#EEECE6" }}>
-                          {a.sessions} sessões
-                        </p>
-                        <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
-                          {formatNumber(a.tokens)} tokens
-                        </p>
-                      </div>
+          {isAdmin && stats && (
+            <>
+              {/* === Monthly stats === */}
+              <section>
+                <p style={{ color: "#444", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: "12px" }}>
+                  Resumo do Mês
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px" }}>
+                  {[
+                    { label: "Sessões",           value: formatNumber(stats.totalSessions)   },
+                    { label: "Mensagens",          value: formatNumber(stats.totalMessages)   },
+                    { label: "Tokens consumidos",  value: formatNumber(stats.totalTokensUsed) },
+                    { label: "Usuários ativos",    value: formatNumber(stats.activeUsers)     },
+                  ].map((card) => (
+                    <div key={card.label} style={{ ...CARD, padding: "16px 18px" }}>
+                      <p style={{ color: "#555", fontSize: "12px", marginBottom: "8px" }}>{card.label}</p>
+                      <p style={{ color: "#EBEBEB", fontSize: "26px", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1, margin: 0 }}>
+                        {card.value}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+
+              {/* === Por agente === */}
+              {stats.agentStats.length > 0 && (
+                <section style={CARD}>
+                  <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                    <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em", margin: 0 }}>
+                      Uso por Agente
+                    </p>
+                  </div>
+                  <div>
+                    {stats.agentStats.map((a, i) => {
+                      const Icon = AGENT_ICONS[a.agentType] ?? Bot;
+                      const agentStyle = AGENT_COLORS[a.agentType] ?? { bg: "rgba(255,255,255,0.07)", text: "#888", border: "rgba(255,255,255,0.1)" };
+                      return (
+                        <div key={a.agentType} className="ow-row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 20px", ...(i > 0 ? DIVIDER : {}) }}>
+                          <div style={{ width: "38px", height: "38px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", background: agentStyle.bg, border: `1px solid ${agentStyle.border}` }}>
+                            <Icon style={{ width: "17px", height: "17px", color: agentStyle.text }} strokeWidth={1.75} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 500, letterSpacing: "-0.01em", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {a.agentName}
+                            </p>
+                            <p style={{ color: "#555", fontSize: "13px", marginTop: "1px" }}>
+                              {AGENT_LABELS[a.agentType] ?? a.agentType}
+                            </p>
+                          </div>
+                          <div style={{ textAlign: "right", flexShrink: 0 }}>
+                            <p style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 500, margin: 0 }}>{a.sessions} sessões</p>
+                            <p style={{ color: "#555", fontSize: "13px", marginTop: "1px", fontFamily: "var(--font-geist-mono)" }}>
+                              {formatNumber(a.tokens)} tokens
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* === Users === */}
+              <section style={CARD}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div>
+                    <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em", margin: 0 }}>
+                      Usuários
+                    </p>
+                    <p style={{ color: "#555", fontSize: "13px", marginTop: "2px" }}>
+                      {companyUsers.length} cadastrado(s)
+                    </p>
+                  </div>
+                  <InviteUserModal />
+                </div>
+
+                {companyUsers.length === 0 ? (
+                  <div style={{ padding: "48px 20px", textAlign: "center" }}>
+                    <div style={{ width: "44px", height: "44px", borderRadius: "8px", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                      <Users style={{ width: "20px", height: "20px", color: "#444" }} strokeWidth={1.5} />
+                    </div>
+                    <p style={{ color: "#888", fontSize: "15px", fontWeight: 500, margin: 0 }}>Nenhum usuário cadastrado ainda.</p>
+                    <p style={{ color: "#555", fontSize: "13px", marginTop: "4px" }}>Convide funcionários usando o botão acima.</p>
+                  </div>
+                ) : (
+                  <div>
+                    {companyUsers.map((u, i) => {
+                      const badge = ROLE_BADGE[u.role] ?? ROLE_BADGE.employee;
+                      const nameInitial = (u.fullName ?? u.email)[0].toUpperCase();
+                      return (
+                        <div key={u.id} className="ow-row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 20px", ...(i > 0 ? DIVIDER : {}) }}>
+                          {/* Avatar */}
+                          <div style={{ width: "36px", height: "36px", flexShrink: 0, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "#888" }}>
+                            {nameInitial}
+                          </div>
+
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 500, letterSpacing: "-0.01em", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {u.fullName ?? u.email}
+                            </p>
+                            <p style={{ color: "#555", fontSize: "13px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {u.email}
+                            </p>
+                          </div>
+
+                          {/* Role + last access */}
+                          <div style={{ flexShrink: 0, textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+                            <span style={{ display: "inline-flex", alignItems: "center", borderRadius: "4px", padding: "2px 7px", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
+                              {ROLE_LABELS[u.role] ?? u.role}
+                            </span>
+                            <p style={{ color: "#444", fontSize: "12px", margin: 0, fontFamily: "var(--font-geist-mono)" }}>
+                              {formatDate(u.lastSeenAt)}
+                            </p>
+                          </div>
+
+                          {/* Sessions */}
+                          <span style={{ flexShrink: 0, fontSize: "13px", color: "#444", fontFamily: "var(--font-geist-mono)" }}>
+                            {u.sessionCount} sess.
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </>
           )}
 
-          {/* === Users === */}
-          <section style={CARD_STYLE} className="overflow-hidden">
-            <div
-              className="flex items-center justify-between px-6 py-4"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
-            >
-              <div>
-                <h2
-                  className="text-[15px] font-semibold"
-                  style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
-                >
-                  Usuários
-                </h2>
-                <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
-                  {companyUsers.length} cadastrado(s)
-                </p>
-              </div>
-              <InviteUserModal />
-            </div>
-
-            {companyUsers.length === 0 ? (
-              <div className="px-6 py-12 text-center">
-                <div
-                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-[8px]"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
-                >
-                  <Users className="h-6 w-6" style={{ color: "#4A4A60" }} strokeWidth={1.5} />
-                </div>
-                <p className="text-[14px] font-medium" style={{ color: "#8888A0" }}>
-                  Nenhum usuário cadastrado ainda.
-                </p>
-                <p className="text-[12px] mt-1" style={{ color: "#4A4A60" }}>
-                  Convide funcionários usando o botão acima.
-                </p>
-              </div>
-            ) : (
-              <div>
-                {companyUsers.map((u, i) => {
-                  const badge = ROLE_BADGE[u.role] ?? ROLE_BADGE.employee;
-                  const nameInitial = (u.fullName ?? u.email)[0].toUpperCase();
-                  return (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-4 px-6 py-4"
-                      style={i > 0 ? DIVIDER : undefined}
-                    >
-                      {/* Avatar */}
-                      <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[14px] font-bold"
-                        style={{
-                          background: "rgba(255,255,255,0.07)",
-                          color: "#8888A0",
-                          border: "1px solid rgba(255,255,255,0.1)",
-                        }}
-                      >
-                        {nameInitial}
-                      </div>
-
-                      {/* Info */}
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className="truncate text-[14px] font-medium"
-                          style={{ color: "#EEECE6", letterSpacing: "-0.01em" }}
-                        >
-                          {u.fullName ?? u.email}
-                        </p>
-                        <p className="text-[12px] mt-0.5" style={{ color: "#4A4A60" }}>
-                          {u.email}
-                        </p>
-                      </div>
-
-                      {/* Role + last access */}
-                      <div className="shrink-0 text-right space-y-1.5">
-                        <span
-                          className="inline-flex items-center rounded-[4px] px-2 py-[3px] text-[10px] font-bold uppercase"
-                          style={{
-                            background: badge.bg,
-                            color: badge.color,
-                            border: `1px solid ${badge.border}`,
-                            letterSpacing: "0.07em",
-                          }}
-                        >
-                          {ROLE_LABELS[u.role] ?? u.role}
-                        </span>
-                        <p className="text-[11px]" style={{ color: "#3A3A50" }}>
-                          {formatDate(u.lastSeenAt)}
-                        </p>
-                      </div>
-
-                      {/* Sessions */}
-                      <span
-                        className="shrink-0 text-[12px] tabular-nums"
-                        style={{ color: "#3A3A50" }}
-                      >
-                        {u.sessionCount}
-                        <span className="ml-1" style={{ color: "#2A2A38" }}>sess.</span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </>
-      )}
-
-      {/* Bottom spacing */}
-      <div className="h-4" />
+          <div style={{ height: "16px" }} />
+        </div>
+      </div>
     </div>
   );
 }

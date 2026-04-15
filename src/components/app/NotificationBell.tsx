@@ -76,7 +76,7 @@ export function NotificationBell({ initialNotifications }: NotificationBellProps
           background: "none",
           border: "none",
           cursor: "pointer",
-          color: unread > 0 ? "#10B981" : "#3A3A3A",
+          color: unread > 0 ? "#10B981" : "#666",
           position: "relative",
           transition: "background 0.12s",
         }}
