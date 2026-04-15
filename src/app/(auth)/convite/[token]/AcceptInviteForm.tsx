@@ -24,7 +24,6 @@ export function AcceptInviteForm({ token, email }: AcceptInviteFormProps) {
       setError("Preencha todos os campos. Senha mínima de 6 caracteres.");
       return;
     }
-
     setLoading(true);
     setError(null);
 
@@ -39,23 +38,46 @@ export function AcceptInviteForm({ token, email }: AcceptInviteFormProps) {
     router.push("/login?message=conta-criada");
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    height: "46px",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "8px",
+    padding: "0 14px",
+    color: "#EBEBEB",
+    fontSize: "15px",
+    outline: "none",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    color: "#888",
+    fontSize: "14px",
+    fontWeight: 500,
+    marginBottom: "7px",
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">
-          E-mail
-        </label>
+    <form
+      onSubmit={handleSubmit}
+      style={{ background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}
+    >
+      {/* Email (read-only) */}
+      <div>
+        <label style={labelStyle}>E-mail</label>
         <input
           value={email}
           disabled
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-500"
+          style={{ ...inputStyle, color: "#555", cursor: "not-allowed" }}
         />
       </div>
 
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700" htmlFor="fullName">
-          Seu nome completo
-        </label>
+      {/* Full name */}
+      <div>
+        <label htmlFor="fullName" style={labelStyle}>Seu nome completo</label>
         <input
           id="fullName"
           type="text"
@@ -63,15 +85,16 @@ export function AcceptInviteForm({ token, email }: AcceptInviteFormProps) {
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Nome Sobrenome"
           required
-          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          style={inputStyle}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(16,185,129,0.5)"; e.currentTarget.style.background = "rgba(16,185,129,0.04)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
         />
       </div>
 
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-          Crie uma senha
-        </label>
-        <div className="relative">
+      {/* Password */}
+      <div>
+        <label htmlFor="password" style={labelStyle}>Crie uma senha</label>
+        <div style={{ position: "relative" }}>
           <input
             id="password"
             type={showPassword ? "text" : "password"}
@@ -80,24 +103,26 @@ export function AcceptInviteForm({ token, email }: AcceptInviteFormProps) {
             placeholder="Mínimo 6 caracteres"
             required
             minLength={6}
-            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 pr-10 text-sm text-gray-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            style={{ ...inputStyle, paddingRight: "44px" }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(16,185,129,0.5)"; e.currentTarget.style.background = "rgba(16,185,129,0.04)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             onClick={() => setShowPassword((v) => !v)}
+            style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#555", display: "flex", alignItems: "center", padding: 0 }}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff style={{ width: "16px", height: "16px" }} strokeWidth={1.75} />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye style={{ width: "16px", height: "16px" }} strokeWidth={1.75} />
             )}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+        <div style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "8px", padding: "10px 14px", color: "#F87171", fontSize: "13px" }}>
           {error}
         </div>
       )}
@@ -105,10 +130,9 @@ export function AcceptInviteForm({ token, email }: AcceptInviteFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-        style={{ backgroundColor: "#E8A020" }}
+        style={{ height: "46px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "15px", borderRadius: "8px", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
       >
-        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+        {loading && <Loader2 style={{ width: "16px", height: "16px" }} className="animate-spin" />}
         {loading ? "Criando conta..." : "Criar minha conta"}
       </button>
     </form>

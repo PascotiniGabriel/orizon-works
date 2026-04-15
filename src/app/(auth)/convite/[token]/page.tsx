@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getInviteByToken } from "@/actions/invites";
 import { AcceptInviteForm } from "./AcceptInviteForm";
-import { Building2 } from "lucide-react";
+import { Building2, Clock } from "lucide-react";
 import { db } from "@/lib/db";
 import { companies } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -27,11 +27,15 @@ export default async function InvitePage({ params }: InvitePageProps) {
 
   if (invite.status === "expired" || new Date() > invite.expiresAt) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="mb-4 text-4xl">⏰</div>
-          <h1 className="text-xl font-bold text-gray-900">Convite expirado</h1>
-          <p className="mt-2 text-sm text-gray-500">
+      <div style={{ minHeight: "100vh", background: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+        <div style={{ textAlign: "center", maxWidth: "380px" }}>
+          <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <Clock style={{ width: "22px", height: "22px", color: "#F87171" }} strokeWidth={1.75} />
+          </div>
+          <h1 style={{ color: "#EBEBEB", fontSize: "22px", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: "10px" }}>
+            Convite expirado
+          </h1>
+          <p style={{ color: "#555", fontSize: "15px", lineHeight: "1.6" }}>
             Este convite expirou. Peça ao administrador para enviar um novo convite.
           </p>
         </div>
@@ -39,7 +43,6 @@ export default async function InvitePage({ params }: InvitePageProps) {
     );
   }
 
-  // Busca nome da empresa
   const company = await db
     .select({ name: companies.name })
     .from(companies)
@@ -48,43 +51,41 @@ export default async function InvitePage({ params }: InvitePageProps) {
     .then((r) => r[0]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md space-y-6">
-        {/* Logo */}
-        <div className="text-center">
-          <div
-            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-sm"
-            style={{ background: "linear-gradient(135deg, #E8A020, #f5c55a)" }}
-          >
+    <div style={{ minHeight: "100vh", background: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      <div style={{ width: "100%", maxWidth: "400px", display: "flex", flexDirection: "column", gap: "24px" }}>
+
+        {/* Brand */}
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: "44px", height: "44px", borderRadius: "10px", background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: "18px", fontWeight: 800, color: "#000" }}>
             O
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Você foi convidado</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Crie sua conta para acessar o OrizonWorks
+          <h1 style={{ color: "#EBEBEB", fontSize: "24px", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: "6px" }}>
+            Você foi convidado
+          </h1>
+          <p style={{ color: "#555", fontSize: "15px" }}>
+            Crie sua conta para acessar o Orizon Works
           </p>
         </div>
 
-        {/* Card de info do convite */}
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-              <Building2 className="h-4 w-4 text-amber-700" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-amber-900">
-                {company?.name ?? "Empresa"}
-              </p>
-              <p className="text-xs text-amber-700">
-                Função: <strong>{ROLE_LABELS[invite.role] ?? invite.role}</strong>
-              </p>
-              <p className="text-xs text-amber-600 mt-0.5">
-                Convite para: {invite.email}
-              </p>
-            </div>
+        {/* Invite info card */}
+        <div style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ width: "36px", height: "36px", flexShrink: 0, borderRadius: "8px", background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Building2 style={{ width: "16px", height: "16px", color: "#10B981" }} strokeWidth={1.75} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {company?.name ?? "Empresa"}
+            </p>
+            <p style={{ color: "#4EDBA4", fontSize: "13px", marginTop: "2px" }}>
+              Função: {ROLE_LABELS[invite.role] ?? invite.role}
+            </p>
+            <p style={{ color: "#555", fontSize: "12px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {invite.email}
+            </p>
           </div>
         </div>
 
-        {/* Formulário */}
+        {/* Form */}
         <AcceptInviteForm token={token} email={invite.email} />
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Bot, Users, Megaphone, TrendingUp, DollarSign, FolderOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getSessionDetail } from "@/lib/db/queries/sessions";
@@ -10,6 +11,22 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   comercial: "Comercial",
   financeiro: "Financeiro",
   administrativo: "Administrativo",
+};
+
+const AGENT_ICONS: Record<string, React.ElementType> = {
+  rh: Users,
+  marketing: Megaphone,
+  comercial: TrendingUp,
+  financeiro: DollarSign,
+  administrativo: FolderOpen,
+};
+
+const AGENT_COLORS: Record<string, { bg: string; icon: string }> = {
+  rh:            { bg: "rgba(167,139,250,0.1)", icon: "#B09EFC" },
+  marketing:     { bg: "rgba(251,113,133,0.1)", icon: "#FC879A" },
+  comercial:     { bg: "rgba(96,165,250,0.1)",  icon: "#74B4FB" },
+  financeiro:    { bg: "rgba(16,185,129,0.1)",  icon: "#10B981" },
+  administrativo:{ bg: "rgba(251,191,36,0.1)",  icon: "#FBBF24" },
 };
 
 function formatDate(date: Date) {
@@ -30,9 +47,7 @@ export default async function SessionDetailPage({
   const { sessionId } = await params;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const info = await getUserCompanyInfo(user.id);
@@ -42,97 +57,96 @@ export default async function SessionDetailPage({
   if (!detail) notFound();
 
   const { session, messages } = detail;
-  const agentLabel =
-    session.agentName ?? AGENT_TYPE_LABELS[session.agentType] ?? session.agentType;
+  const agentLabel = session.agentName ?? AGENT_TYPE_LABELS[session.agentType] ?? session.agentType;
+  const AgentIcon = AGENT_ICONS[session.agentType] ?? Bot;
+  const agentColor = AGENT_COLORS[session.agentType] ?? { bg: "rgba(255,255,255,0.06)", icon: "#666" };
+  const visibleMessages = messages.filter((m) => m.role !== "system");
 
   return (
-    <div className="mx-auto max-w-3xl">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-4">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+
+      {/* Page header bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "0 20px", height: "52px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
         <Link
           href="/escritorio/historico"
-          className="flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-gray-700"
+          style={{ display: "flex", alignItems: "center", gap: "6px", color: "#555", fontSize: "13px", textDecoration: "none", flexShrink: 0 }}
         >
-          ← Histórico
+          <ArrowLeft style={{ width: "14px", height: "14px" }} strokeWidth={2} />
+          Histórico
         </Link>
-        <div className="flex items-center gap-3">
-          {session.agentAvatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={session.agentAvatarUrl}
-              alt={agentLabel}
-              className="h-9 w-9 rounded-xl border border-gray-100"
-            />
-          ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-lg border border-amber-100">
-              🤖
-            </div>
-          )}
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">{agentLabel}</h1>
-            <p className="text-xs text-gray-400">
-              {formatDate(session.createdAt)}
-              {info.role !== "employee" && session.userName && ` · ${session.userName}`}
-              {` · ${session.tokensUsed.toLocaleString("pt-BR")} tokens`}
-            </p>
-          </div>
+
+        <span style={{ color: "rgba(255,255,255,0.1)", fontSize: "16px" }}>·</span>
+
+        {/* Agent icon */}
+        <div style={{ width: "26px", height: "26px", borderRadius: "6px", background: agentColor.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <AgentIcon style={{ width: "13px", height: "13px", color: agentColor.icon }} strokeWidth={1.75} />
         </div>
+
+        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+          <h1 style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.02em", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {agentLabel}
+          </h1>
+          <span style={{ color: "#444", fontSize: "12px", fontFamily: "var(--font-geist-mono)", whiteSpace: "nowrap" }}>
+            {formatDate(session.createdAt)}
+          </span>
+          {info.role !== "employee" && session.userName && (
+            <span style={{ color: "#555", fontSize: "12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              · {session.userName}
+            </span>
+          )}
+        </div>
+
+        <span style={{ color: "#444", fontSize: "12px", fontFamily: "var(--font-geist-mono)", flexShrink: 0 }}>
+          {session.tokensUsed.toLocaleString("pt-BR")} tokens
+        </span>
       </div>
 
-      {/* Conversa */}
-      <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-        <div className="px-5 py-4 space-y-4">
-          {messages.length === 0 ? (
-            <p className="text-center text-sm text-gray-400 py-8">
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ maxWidth: "720px", margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: "16px" }}>
+          {visibleMessages.length === 0 ? (
+            <p style={{ textAlign: "center", color: "#444", fontSize: "14px", padding: "48px 0" }}>
               Nenhuma mensagem nesta sessão.
             </p>
           ) : (
-            messages
-              .filter((m) => m.role !== "system")
-              .map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {msg.role === "assistant" && (
-                    <div className="mr-2 mt-1 shrink-0">
-                      {session.agentAvatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={session.agentAvatarUrl}
-                          alt={agentLabel}
-                          className="h-6 w-6 rounded-lg border border-gray-100"
-                        />
-                      ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-50 text-xs border border-amber-100">
-                          🤖
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                      msg.role === "user"
-                        ? "text-white rounded-tr-sm"
-                        : "bg-gray-50 text-gray-800 border rounded-tl-sm"
-                    }`}
-                    style={
-                      msg.role === "user" ? { backgroundColor: "#E8A020" } : undefined
-                    }
-                  >
-                    {msg.content}
+            visibleMessages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", gap: "10px", alignItems: "flex-start" }}
+              >
+                {msg.role === "assistant" && (
+                  <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: agentColor.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "2px" }}>
+                    <AgentIcon style={{ width: "13px", height: "13px", color: agentColor.icon }} strokeWidth={1.75} />
                   </div>
+                )}
+                <div
+                  style={{
+                    maxWidth: "72%",
+                    padding: "10px 14px",
+                    borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                    fontSize: "15px",
+                    lineHeight: "1.65",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    background: msg.role === "user" ? "#10B981" : "rgba(255,255,255,0.04)",
+                    color: msg.role === "user" ? "#000" : "#EBEBEB",
+                    border: msg.role === "user" ? "none" : "1px solid rgba(255,255,255,0.06)",
+                    fontWeight: msg.role === "user" ? 500 : 400,
+                  }}
+                >
+                  {msg.content}
                 </div>
-              ))
+              </div>
+            ))
           )}
         </div>
+      </div>
 
-        {/* Footer somente leitura */}
-        <div className="border-t px-5 py-3">
-          <p className="text-center text-xs text-gray-400">
-            Sessão encerrada — visualização somente leitura
-          </p>
-        </div>
+      {/* Read-only footer */}
+      <div style={{ flexShrink: 0, borderTop: "1px solid rgba(255,255,255,0.06)", padding: "10px 20px", textAlign: "center" }}>
+        <p style={{ color: "#444", fontSize: "12px", margin: 0 }}>
+          Sessão encerrada — visualização somente leitura
+        </p>
       </div>
     </div>
   );
