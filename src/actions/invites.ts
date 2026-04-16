@@ -7,7 +7,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { db } from "@/lib/db";
 import { invites, users } from "@/lib/db/schema";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
-import { eq, and, lt } from "drizzle-orm";
+import { eq, and, lt, sql } from "drizzle-orm";
 import { logAudit } from "@/lib/audit";
 
 export type InviteActionState = {
@@ -191,7 +191,7 @@ export async function acceptInvite(
     return { success: false, error: "Convite expirado" };
   }
 
-  // Cria o usuário no Supabase Auth
+  // Tenta criar o usuário no Supabase Auth
   const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
     email: invite.email,
     password,
@@ -199,18 +199,51 @@ export async function acceptInvite(
     user_metadata: { full_name: fullName },
   });
 
-  if (authError || !authData.user) {
-    return { success: false, error: "Erro ao criar conta. O e-mail já pode estar em uso." };
+  let userId: string;
+
+  if (authError || !authData?.user) {
+    // inviteUserByEmail já criou o usuário no Supabase Auth antes de enviar o e-mail.
+    // Buscamos o ID diretamente pelo e-mail no schema auth do banco.
+    const result = await db.execute(
+      sql`SELECT id FROM auth.users WHERE email = ${invite.email} LIMIT 1`
+    );
+    const existingId = result.rows[0]?.id as string | undefined;
+
+    if (!existingId) {
+      return { success: false, error: "Erro ao criar conta. Contate o suporte." };
+    }
+
+    // Atualiza senha e nome do usuário que já existe
+    const { error: updateError } = await adminSupabase.auth.admin.updateUserById(existingId, {
+      password,
+      user_metadata: { full_name: fullName },
+    });
+
+    if (updateError) {
+      return { success: false, error: "Erro ao definir senha. Tente novamente." };
+    }
+
+    userId = existingId;
+  } else {
+    userId = authData.user.id;
   }
 
-  // Cria o user na tabela users
-  await db.insert(users).values({
-    id: authData.user.id,
-    companyId: invite.companyId,
-    email: invite.email,
-    fullName,
-    role: invite.role,
-  });
+  // Garante que o usuário existe na tabela public.users (evita duplicata)
+  const [alreadyInDb] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!alreadyInDb) {
+    await db.insert(users).values({
+      id: userId,
+      companyId: invite.companyId,
+      email: invite.email,
+      fullName,
+      role: invite.role,
+    });
+  }
 
   // Marca convite como aceito
   await db
