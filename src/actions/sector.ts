@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { users, agents } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export type AgentType = "rh" | "marketing" | "comercial" | "financeiro" | "administrativo";
 
@@ -42,7 +42,7 @@ export async function createAgent(
   const [existing] = await db
     .select({ id: agents.id })
     .from(agents)
-    .where(eq(agents.companyId, companyId));
+    .where(and(eq(agents.companyId, companyId), eq(agents.type, type)));
 
   if (existing) {
     // Reutilizar agente existente se já criado (idempotente)

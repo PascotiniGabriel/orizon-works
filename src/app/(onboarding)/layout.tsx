@@ -12,13 +12,12 @@ export default async function OnboardingLayout({ children }: { children: ReactNo
   const info = await getUserCompanyInfo(user.id);
   if (!info) redirect("/login");
 
-  // Se o onboarding já foi concluído, manda direto para o escritório
   if (info.onboardingCompleted) redirect("/escritorio");
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0A0A0A" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: "#0A0A0A" }}>
       {/* Header */}
-      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#0A0A0A", padding: "0 24px", height: "52px", display: "flex", alignItems: "center" }}>
+      <header style={{ flexShrink: 0, borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#0A0A0A", padding: "0 24px", height: "52px", display: "flex", alignItems: "center" }}>
         <div style={{ maxWidth: "900px", width: "100%", margin: "0 auto", display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ width: "24px", height: "24px", background: "#10B981", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ color: "#000", fontSize: "12px", fontWeight: 800 }}>O</span>
@@ -32,10 +31,12 @@ export default async function OnboardingLayout({ children }: { children: ReactNo
         </div>
       </header>
 
-      {/* Content */}
-      <main style={{ maxWidth: "900px", margin: "0 auto", padding: "32px 24px" }}>
-        {children}
-      </main>
+      {/* Content: flex: 1 + overflow hidden para o height chain funcionar */}
+      <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", maxWidth: "900px", width: "100%", margin: "0 auto", padding: "28px 24px" }}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

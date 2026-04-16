@@ -2,8 +2,8 @@ import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
 
 export default function OnboardingPage() {
   return (
-    <div className="space-y-6">
-      <div>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "18px" }}>
+      <div style={{ flexShrink: 0 }}>
         <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.03em" }}>
           Vamos conhecer sua empresa
         </h1>
@@ -12,7 +12,8 @@ export default function OnboardingPage() {
         </p>
       </div>
 
-      <div style={{ height: "calc(100vh - 220px)", minHeight: "480px" }}>
+      {/* flex: 1 + minHeight: 0 é o par necessário para overflow funcionar em flex */}
+      <div style={{ flex: 1, minHeight: 0 }}>
         <OnboardingChat />
       </div>
     </div>

@@ -52,8 +52,14 @@ type Step = "select" | "avatar" | "chat";
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
-export function SectorOnboarding() {
+interface SectorOnboardingProps {
+  existingTypes?: AgentType[];
+}
+
+export function SectorOnboarding({ existingTypes = [] }: SectorOnboardingProps) {
   const router = useRouter();
+
+  const availableTypes = AGENT_TYPES.filter((a) => !existingTypes.includes(a.type));
 
   const [step, setStep] = useState<Step>("select");
   const [selectedType, setSelectedType] = useState<AgentType | null>(null);
@@ -186,7 +192,7 @@ export function SectorOnboarding() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "10px" }}>
-          {AGENT_TYPES.map((at) => {
+          {availableTypes.map((at) => {
             const active = selectedType === at.type;
             return (
               <button
@@ -370,7 +376,7 @@ export function SectorOnboarding() {
     <div style={{
       display: "flex", flexDirection: "column", overflow: "hidden",
       borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)",
-      background: "#111111", height: "calc(100vh - 280px)", minHeight: "420px",
+      background: "#111111", height: "500px", minHeight: "420px",
     }}>
       {/* Header do chat */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 16px", flexShrink: 0 }}>
@@ -390,7 +396,7 @@ export function SectorOnboarding() {
       </div>
 
       {/* Mensagens */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
         {visibleMessages.map((msg, i) => (
           <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
             <div style={{

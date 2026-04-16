@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo, getCompanyAgents } from "@/lib/db/queries/company";
-import { Bot, Zap, History, Settings } from "lucide-react";
+import { Bot, Zap, History, Settings, Plus } from "lucide-react";
 import { AgentCardGrid } from "@/components/app/AgentCommandList";
 
 export default async function EscritorioPage() {
@@ -15,6 +15,7 @@ export default async function EscritorioPage() {
 
   const agents = await getCompanyAgents(info.companyId);
   const readyCount = agents.filter((a) => a.briefingComplete).length;
+  const canAddAgent = agents.length < info.maxAgents && agents.length < 5; // máx 5 tipos de agente
   const firstName = info.fullName?.split(" ")[0] ?? "você";
 
   const now = new Date();
@@ -35,7 +36,18 @@ export default async function EscritorioPage() {
             </span>
           )}
         </div>
-        <span style={{ color: "#3A3A3A", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{dateStr}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {canAddAgent && (
+            <Link
+              href="/escritorio/agentes/novo"
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", height: "32px", padding: "0 14px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "12px", borderRadius: "6px", textDecoration: "none" }}
+            >
+              <Plus style={{ width: "13px", height: "13px" }} strokeWidth={2.5} />
+              Novo agente
+            </Link>
+          )}
+          <span style={{ color: "#3A3A3A", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{dateStr}</span>
+        </div>
       </div>
 
       {/* Content */}

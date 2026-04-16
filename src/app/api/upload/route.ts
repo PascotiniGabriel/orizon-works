@@ -3,13 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { users, uploads, ragDocuments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { checkUploadRateLimit } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
 // RAG só é ativado quando VOYAGE_API_KEY está configurado
 const VOYAGE_ENABLED = Boolean(process.env.VOYAGE_API_KEY);
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const ALLOWED_MIME: Record<string, string> = {
   "application/pdf": "pdf",
@@ -55,6 +57,15 @@ export async function POST(request: NextRequest) {
 
   const companyId = dbUser.companyId;
 
+  // ── Rate limiting ────────────────────────────────────────────────────────
+  const withinUploadLimit = await checkUploadRateLimit(user.id);
+  if (!withinUploadLimit) {
+    return NextResponse.json(
+      { error: "Limite de uploads atingido. Você pode enviar até 15 arquivos por hora." },
+      { status: 429 }
+    );
+  }
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
   const sessionId = formData.get("sessionId") as string | null;
@@ -65,7 +76,7 @@ export async function POST(request: NextRequest) {
 
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: "Arquivo muito grande. Limite: 25 MB." },
+      { error: "Arquivo muito grande. Limite: 10 MB." },
       { status: 413 }
     );
   }
@@ -182,6 +193,15 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar registro RAG:", err);
     }
   }
+
+  logAudit({
+    companyId,
+    userId: user.id,
+    action: "rag.document_upload",
+    entityType: "upload",
+    entityId: uploadRecord.id,
+    metadata: { fileName: file.name, mimeType, fileSize: file.size },
+  });
 
   return NextResponse.json({
     uploadId: uploadRecord.id,

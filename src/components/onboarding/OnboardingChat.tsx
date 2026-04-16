@@ -131,12 +131,12 @@ export function OnboardingChat() {
 
       {/* Chat */}
       <div style={{
-        flex: 1, display: "flex", flexDirection: "column", overflow: "hidden",
+        flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden",
         borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)",
         background: "#111111",
       }}>
         {/* Mensagens */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
           {visibleMessages.map((msg, i) => (
             <div
               key={i}

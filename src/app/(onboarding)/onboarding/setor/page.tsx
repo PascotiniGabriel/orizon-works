@@ -2,8 +2,8 @@ import { SectorOnboarding } from "@/components/onboarding/SectorOnboarding";
 
 export default function OnboardingSetorPage() {
   return (
-    <div className="space-y-6">
-      <div>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "18px" }}>
+      <div style={{ flexShrink: 0 }}>
         <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.03em" }}>
           Configure seu primeiro agente
         </h1>
@@ -12,7 +12,9 @@ export default function OnboardingSetorPage() {
         </p>
       </div>
 
-      <SectorOnboarding />
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <SectorOnboarding />
+      </div>
     </div>
   );
 }

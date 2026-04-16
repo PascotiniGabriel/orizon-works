@@ -227,7 +227,7 @@ export function DocumentosClient({ initialDocuments, agentId }: DocumentosClient
         )}
 
         <span style={{ color: "#444", fontSize: "12px" }}>
-          PDF, CSV ou TXT · máx. 25 MB
+          PDF, CSV ou TXT · máx. 10 MB
         </span>
       </div>
 
