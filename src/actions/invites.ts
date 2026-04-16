@@ -7,7 +7,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { db } from "@/lib/db";
 import { invites, users } from "@/lib/db/schema";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
-import { eq, and } from "drizzle-orm";
+import { eq, and, lt } from "drizzle-orm";
 import { logAudit } from "@/lib/audit";
 
 export type InviteActionState = {
@@ -66,6 +66,19 @@ export async function createInvite(
   if (existing.length > 0) {
     return { success: false, error: "Este e-mail já está cadastrado na empresa" };
   }
+
+  // Auto-expirar convites vencidos (após 7 dias) para liberar o e-mail
+  await db
+    .update(invites)
+    .set({ status: "expired" })
+    .where(
+      and(
+        eq(invites.email, email),
+        eq(invites.companyId, info.companyId),
+        eq(invites.status, "pending"),
+        lt(invites.expiresAt, new Date())
+      )
+    );
 
   // Verifica convite pendente
   const existingInvite = await db
@@ -206,4 +219,37 @@ export async function acceptInvite(
     .where(eq(invites.token, token));
 
   return { success: true };
+}
+
+// ============================================================
+// CANCELAR / REMOVER CONVITE
+// ============================================================
+
+export async function cancelInvite(inviteId: string): Promise<InviteActionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "Não autorizado" };
+
+  const info = await getUserCompanyInfo(user.id);
+  if (!info) return { success: false, error: "Empresa não encontrada" };
+
+  if (info.role !== "company_admin" && info.role !== "super_admin") {
+    return { success: false, error: "Sem permissão" };
+  }
+
+  // Verifica que o convite pertence a esta empresa
+  const [invite] = await db
+    .select({ id: invites.id })
+    .from(invites)
+    .where(and(eq(invites.id, inviteId), eq(invites.companyId, info.companyId)))
+    .limit(1);
+
+  if (!invite) return { success: false, error: "Convite não encontrado" };
+
+  await db.delete(invites).where(eq(invites.id, inviteId));
+
+  return { success: true, message: "Convite removido com sucesso" };
 }

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
-import { agents, agentBriefings, users, companies } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { agents, agentBriefings, users, companies, invites } from "@/lib/db/schema";
+import { and, eq, or } from "drizzle-orm";
 
 export interface AgentSummary {
   id: string;
@@ -41,6 +41,37 @@ export async function getCompanyAgents(companyId: string): Promise<AgentSummary[
     ...r,
     briefingComplete: r.briefingComplete ?? false,
   }));
+}
+
+export interface InviteSummary {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+export async function getCompanyInvites(companyId: string): Promise<InviteSummary[]> {
+  const rows = await db
+    .select({
+      id: invites.id,
+      email: invites.email,
+      role: invites.role,
+      status: invites.status,
+      createdAt: invites.createdAt,
+      expiresAt: invites.expiresAt,
+    })
+    .from(invites)
+    .where(
+      and(
+        eq(invites.companyId, companyId),
+        or(eq(invites.status, "pending"), eq(invites.status, "expired"))
+      )
+    )
+    .orderBy(invites.createdAt);
+
+  return rows as InviteSummary[];
 }
 
 export async function getUserCompanyInfo(userId: string): Promise<UserCompanyInfo | null> {

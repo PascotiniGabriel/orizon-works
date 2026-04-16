@@ -2,8 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getCompanyStats, getCompanyUsers } from "@/lib/db/queries/admin";
+import { getCompanyInvites } from "@/lib/db/queries/company";
 import { InviteUserModal } from "@/components/app/InviteUserModal";
+import { CancelInviteButton } from "@/components/app/CancelInviteButton";
 import { TokenPackButton } from "@/components/app/TokenPackButton";
+import { MfaSection } from "./MfaSection";
 import {
   Users,
   Megaphone,
@@ -100,12 +103,13 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
 
   const isAdmin = info.role === "company_admin" || info.role === "super_admin";
 
-  const [stats, companyUsers] = isAdmin
+  const [stats, companyUsers, companyInvites] = isAdmin
     ? await Promise.all([
         getCompanyStats(info.companyId),
         getCompanyUsers(info.companyId),
+        getCompanyInvites(info.companyId),
       ])
-    : [null, []];
+    : [null, [], []];
 
   const tokensUsed = info.tokenLimit - info.tokenBalance;
   const tokenPercent = info.tokenLimit > 0
@@ -329,9 +333,67 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                     })}
                   </div>
                 )}
+
+                {/* Convites pendentes / expirados */}
+                {companyInvites.length > 0 && (
+                  <>
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "12px 20px 8px" }}>
+                      <p style={{ color: "#444", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", margin: 0 }}>
+                        Convites enviados
+                      </p>
+                    </div>
+                    {companyInvites.map((invite, i) => {
+                      const isExpired = invite.status === "expired";
+                      return (
+                        <div key={invite.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px 20px", ...(i > 0 ? DIVIDER : {}) }}>
+                          {/* Initial */}
+                          <div style={{ width: "36px", height: "36px", flexShrink: 0, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "#3A3A3A" }}>
+                            {invite.email[0].toUpperCase()}
+                          </div>
+
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ color: "#888", fontSize: "14px", fontWeight: 500, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {invite.email}
+                            </p>
+                            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>
+                              {isExpired ? "Expirou em" : "Expira em"} {formatDate(invite.expiresAt)}
+                            </p>
+                          </div>
+
+                          {/* Status badge + cancel */}
+                          <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", borderRadius: "4px",
+                              padding: "2px 7px", fontSize: "10px", fontWeight: 700,
+                              textTransform: "uppercase", letterSpacing: "0.07em",
+                              background: isExpired ? "rgba(255,255,255,0.04)" : "rgba(251,191,36,0.08)",
+                              color: isExpired ? "#444" : "#FBBF24",
+                              border: isExpired ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(251,191,36,0.2)",
+                            }}>
+                              {isExpired ? "Expirado" : "Aguardando"}
+                            </span>
+                            <CancelInviteButton inviteId={invite.id} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
               </section>
             </>
           )}
+
+          {/* Seção de Segurança — 2FA */}
+          <section style={{ background: "#161616", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "20px 24px", marginBottom: "16px" }}>
+            <h2 style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, marginBottom: "4px" }}>
+              Segurança
+            </h2>
+            <p style={{ color: "#555", fontSize: "13px", marginBottom: "20px" }}>
+              Gerencie a verificação em duas etapas da sua conta.
+            </p>
+            <MfaSection />
+          </section>
 
           <div style={{ height: "16px" }} />
         </div>
