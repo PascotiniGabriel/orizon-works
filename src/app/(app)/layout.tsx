@@ -15,6 +15,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   const info = await getUserCompanyInfo(user.id);
   if (!info) redirect("/login");
+  if (!info.onboardingCompleted) redirect("/onboarding");
 
   const [agents, rawNotifications] = await Promise.all([
     getCompanyAgents(info.companyId),

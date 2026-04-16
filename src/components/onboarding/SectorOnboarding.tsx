@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { createAgent, type AgentType } from "@/actions/sector";
 
 // ─── Tipos de agente disponíveis ──────────────────────────────────────────────
@@ -13,50 +11,20 @@ const AGENT_TYPES: {
   label: string;
   description: string;
   icon: string;
+  color: string;
 }[] = [
-  {
-    type: "rh",
-    label: "RH",
-    description: "Dúvidas de colaboradores, políticas internas e recrutamento",
-    icon: "👥",
-  },
-  {
-    type: "marketing",
-    label: "Marketing",
-    description: "Conteúdo, campanhas, branding e comunicação externa",
-    icon: "📣",
-  },
-  {
-    type: "comercial",
-    label: "Comercial",
-    description: "Propostas, objeções, follow-up e processos de vendas",
-    icon: "💼",
-  },
-  {
-    type: "financeiro",
-    label: "Financeiro",
-    description: "Relatórios, cobranças, conciliação e gestão financeira",
-    icon: "📊",
-  },
-  {
-    type: "administrativo",
-    label: "Administrativo",
-    description: "Processos internos, documentos e rotinas operacionais",
-    icon: "🗂️",
-  },
+  { type: "rh", label: "RH", description: "Dúvidas de colaboradores, políticas internas e recrutamento", icon: "👥", color: "#A78BFA" },
+  { type: "marketing", label: "Marketing", description: "Conteúdo, campanhas, branding e comunicação externa", icon: "📣", color: "#FB7185" },
+  { type: "comercial", label: "Comercial", description: "Propostas, objeções, follow-up e processos de vendas", icon: "💼", color: "#60A5FA" },
+  { type: "financeiro", label: "Financeiro", description: "Relatórios, cobranças, conciliação e gestão financeira", icon: "📊", color: "#10B981" },
+  { type: "administrativo", label: "Administrativo", description: "Processos internos, documentos e rotinas operacionais", icon: "🗂️", color: "#FBBF24" },
 ];
 
-// ─── Avatares (DiceBear bottts-neutral via API pública) ───────────────────────
+// ─── Avatares ─────────────────────────────────────────────────────────────────
 
 const AVATAR_SEEDS = [
-  "orizon-a1",
-  "orizon-b2",
-  "orizon-c3",
-  "orizon-d4",
-  "orizon-e5",
-  "orizon-f6",
-  "orizon-g7",
-  "orizon-h8",
+  "orizon-a1", "orizon-b2", "orizon-c3", "orizon-d4",
+  "orizon-e5", "orizon-f6", "orizon-g7", "orizon-h8",
 ];
 
 function avatarUrl(seed: string) {
@@ -67,14 +35,10 @@ function avatarUrl(seed: string) {
 
 const INITIAL_MESSAGES: Record<AgentType, string> = {
   rh: "Olá! Vou configurar seu agente de RH. Para começar: quais são as principais responsabilidades do setor de RH na sua empresa? (ex: recrutamento, folha de pagamento, treinamentos, benefícios)",
-  marketing:
-    "Olá! Vou configurar seu agente de Marketing. Para começar: quais são as principais atividades de marketing da sua empresa? (ex: redes sociais, conteúdo, campanhas, SEO)",
-  comercial:
-    "Olá! Vou configurar seu agente Comercial. Para começar: como é o processo de vendas da sua empresa? Quais são as principais etapas desde a prospecção até o fechamento?",
-  financeiro:
-    "Olá! Vou configurar seu agente Financeiro. Para começar: quais são as principais atividades financeiras que esse agente deve conhecer? (ex: contas a pagar/receber, conciliação, relatórios)",
-  administrativo:
-    "Olá! Vou configurar seu agente Administrativo. Para começar: quais são as principais responsabilidades administrativas da sua empresa? (ex: contratos, fornecedores, documentos, agenda)",
+  marketing: "Olá! Vou configurar seu agente de Marketing. Para começar: quais são as principais atividades de marketing da sua empresa? (ex: redes sociais, conteúdo, campanhas, SEO)",
+  comercial: "Olá! Vou configurar seu agente Comercial. Para começar: como é o processo de vendas da sua empresa? Quais são as principais etapas desde a prospecção até o fechamento?",
+  financeiro: "Olá! Vou configurar seu agente Financeiro. Para começar: quais são as principais atividades financeiras que esse agente deve conhecer? (ex: contas a pagar/receber, conciliação, relatórios)",
+  administrativo: "Olá! Vou configurar seu agente Administrativo. Para começar: quais são as principais responsabilidades administrativas da sua empresa? (ex: contratos, fornecedores, documentos, agenda)",
 };
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
@@ -123,19 +87,13 @@ export function SectorOnboarding() {
   function handleAvatarConfirm() {
     if (!selectedType) return;
     startCreateTransition(async () => {
-      const result = await createAgent(
-        selectedType,
-        customName,
-        avatarUrl(selectedAvatar)
-      );
+      const result = await createAgent(selectedType, customName, avatarUrl(selectedAvatar));
       if (!result.success || !result.agentId) {
         alert("Erro ao criar o agente. Tente novamente.");
         return;
       }
       setAgentId(result.agentId);
-      setMessages([
-        { role: "assistant", content: INITIAL_MESSAGES[selectedType] },
-      ]);
+      setMessages([{ role: "assistant", content: INITIAL_MESSAGES[selectedType] }]);
       setStep("chat");
     });
   }
@@ -159,11 +117,7 @@ export function SectorOnboarding() {
       const res = await fetch("/api/onboarding/setor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agentId,
-          agentType: selectedType,
-          messages: newMessages,
-        }),
+        body: JSON.stringify({ agentId, agentType: selectedType, messages: newMessages }),
       });
 
       if (!res.ok || !res.body) throw new Error("Erro na resposta");
@@ -212,209 +166,255 @@ export function SectorOnboarding() {
     }
   }
 
-  const visibleMessages = messages.map((m) => ({
-    ...m,
-    content: m.content.replace(/AGENT_BRIEFING_COMPLETO[\s\S]*/g, "").trim(),
-  })).filter((m) => m.content.length > 0);
+  const visibleMessages = messages
+    .map((m) => ({ ...m, content: m.content.replace(/AGENT_BRIEFING_COMPLETO[\s\S]*/g, "").trim() }))
+    .filter((m) => m.content.length > 0);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   if (step === "select") {
+    const selectedInfo = AGENT_TYPES.find((a) => a.type === selectedType);
     return (
-      <div className="flex flex-col gap-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         <div>
-          <h2 className="text-lg font-semibold" style={{ color: "#0D1B2A" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#EBEBEB" }}>
             Escolha o tipo do seu primeiro agente
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p style={{ marginTop: "6px", fontSize: "13px", color: "#555" }}>
             Você pode criar mais agentes depois. Comece pelo setor mais estratégico da sua empresa.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {AGENT_TYPES.map((at) => (
-            <button
-              key={at.type}
-              onClick={() => setSelectedType(at.type)}
-              className={`flex flex-col gap-2 rounded-xl border p-4 text-left transition-all ${
-                selectedType === at.type
-                  ? "border-amber-400 bg-amber-50 shadow-sm"
-                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
-              }`}
-            >
-              <span className="text-2xl">{at.icon}</span>
-              <span className="font-semibold text-gray-900">{at.label}</span>
-              <span className="text-xs text-gray-500 leading-relaxed">{at.description}</span>
-            </button>
-          ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "10px" }}>
+          {AGENT_TYPES.map((at) => {
+            const active = selectedType === at.type;
+            return (
+              <button
+                key={at.type}
+                onClick={() => setSelectedType(at.type)}
+                style={{
+                  display: "flex", flexDirection: "column", gap: "8px",
+                  borderRadius: "8px", padding: "14px",
+                  border: active ? `1px solid ${at.color}40` : "1px solid rgba(255,255,255,0.07)",
+                  background: active ? `${at.color}0D` : "rgba(255,255,255,0.02)",
+                  cursor: "pointer", textAlign: "left", transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.14)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)";
+                  }
+                }}
+              >
+                <span style={{ fontSize: "22px" }}>{at.icon}</span>
+                <span style={{ fontSize: "14px", fontWeight: 600, color: active ? at.color : "#EBEBEB" }}>{at.label}</span>
+                <span style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{at.description}</span>
+              </button>
+            );
+          })}
         </div>
 
         {selectedType && (
-          <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <label className="text-sm font-medium text-gray-700">
+          <div style={{
+            display: "flex", flexDirection: "column", gap: "10px",
+            borderRadius: "8px", padding: "16px",
+            border: `1px solid ${selectedInfo?.color ?? "#10B981"}20`,
+            background: `${selectedInfo?.color ?? "#10B981"}08`,
+          }}>
+            <label style={{ fontSize: "13px", fontWeight: 500, color: "#888" }}>
               Nome personalizado do agente{" "}
-              <span className="font-normal text-gray-400">(opcional)</span>
+              <span style={{ color: "#3A3A3A", fontWeight: 400 }}>(opcional)</span>
             </label>
-            <Input
+            <input
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
-              placeholder={`Ex: Ana — Assistente de ${
-                AGENT_TYPES.find((a) => a.type === selectedType)?.label ?? "RH"
-              }`}
-              className="bg-white"
+              placeholder={`Ex: Ana — Assistente de ${selectedInfo?.label ?? "RH"}`}
               maxLength={100}
+              style={{
+                height: "34px", borderRadius: "6px",
+                border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+                color: "#EBEBEB", fontSize: "14px", padding: "0 12px",
+                outline: "none",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = `${selectedInfo?.color ?? "#10B981"}60`; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
             />
-            <p className="text-xs text-gray-500">
+            <p style={{ fontSize: "12px", color: "#3A3A3A" }}>
               Se deixar em branco, o agente usará apenas o nome do setor.
             </p>
           </div>
         )}
 
-        <div className="flex justify-end">
-          <Button
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button
             onClick={handleTypeConfirm}
             disabled={!selectedType}
-            className="font-semibold text-white"
-            style={{ backgroundColor: "#E8A020" }}
+            style={{
+              height: "36px", padding: "0 20px", borderRadius: "6px",
+              background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px",
+              border: "none", cursor: selectedType ? "pointer" : "not-allowed",
+              opacity: selectedType ? 1 : 0.35, transition: "opacity 0.15s",
+            }}
           >
             Continuar →
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   if (step === "avatar") {
+    const agentLabel = customName || AGENT_TYPES.find((a) => a.type === selectedType)?.label;
+    const sectorLabel = AGENT_TYPES.find((a) => a.type === selectedType)?.label;
     return (
-      <div className="flex flex-col gap-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         <div>
-          <h2 className="text-lg font-semibold" style={{ color: "#0D1B2A" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#EBEBEB" }}>
             Escolha o avatar do agente
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Selecione a aparência que melhor representa{" "}
-            <strong>
-              {customName || AGENT_TYPES.find((a) => a.type === selectedType)?.label}
-            </strong>
-            .
+          <p style={{ marginTop: "6px", fontSize: "13px", color: "#555" }}>
+            Selecione a aparência que melhor representa <strong style={{ color: "#888" }}>{agentLabel}</strong>.
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 sm:grid-cols-8">
-          {AVATAR_SEEDS.map((seed) => (
-            <button
-              key={seed}
-              onClick={() => setSelectedAvatar(seed)}
-              className={`relative flex items-center justify-center rounded-xl border-2 p-1 transition-all ${
-                selectedAvatar === seed
-                  ? "border-amber-400 shadow-md"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatarUrl(seed)}
-                alt={`Avatar ${seed}`}
-                className="h-14 w-14 rounded-lg"
-              />
-              {selectedAvatar === seed && (
-                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-white text-xs font-bold">
-                  ✓
-                </span>
-              )}
-            </button>
-          ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: "10px" }}>
+          {AVATAR_SEEDS.map((seed) => {
+            const active = selectedAvatar === seed;
+            return (
+              <button
+                key={seed}
+                onClick={() => setSelectedAvatar(seed)}
+                style={{
+                  position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
+                  borderRadius: "10px", padding: "4px", cursor: "pointer",
+                  border: active ? "2px solid #10B981" : "2px solid rgba(255,255,255,0.08)",
+                  background: active ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.02)",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={avatarUrl(seed)} alt={`Avatar ${seed}`} style={{ width: "52px", height: "52px", borderRadius: "8px" }} />
+                {active && (
+                  <span style={{
+                    position: "absolute", top: "-7px", right: "-7px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: "18px", height: "18px", borderRadius: "50%",
+                    background: "#10B981", color: "#000", fontSize: "9px", fontWeight: 800,
+                  }}>✓</span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
+        <div style={{
+          display: "flex", alignItems: "center", gap: "14px",
+          borderRadius: "8px", padding: "14px",
+          border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)",
+        }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={avatarUrl(selectedAvatar)}
-            alt="Avatar selecionado"
-            className="h-16 w-16 rounded-xl border border-gray-200"
-          />
+          <img src={avatarUrl(selectedAvatar)} alt="Avatar selecionado" style={{ width: "52px", height: "52px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)" }} />
           <div>
-            <p className="font-semibold text-gray-900">
-              {customName ||
-                AGENT_TYPES.find((a) => a.type === selectedType)?.label}
-            </p>
-            <p className="text-sm text-gray-500">
-              Agente de {AGENT_TYPES.find((a) => a.type === selectedType)?.label}
-            </p>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "#EBEBEB" }}>{agentLabel}</p>
+            <p style={{ fontSize: "12px", color: "#555", marginTop: "2px" }}>Agente de {sectorLabel}</p>
           </div>
         </div>
 
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <button
             onClick={() => setStep("select")}
+            style={{
+              height: "36px", padding: "0 16px", borderRadius: "6px",
+              border: "1px solid rgba(255,255,255,0.1)", background: "transparent",
+              color: "#888", fontSize: "13px", cursor: "pointer", transition: "border-color 0.15s",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
           >
             ← Voltar
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleAvatarConfirm}
             disabled={isCreating}
-            className="font-semibold text-white"
-            style={{ backgroundColor: "#E8A020" }}
+            style={{
+              height: "36px", padding: "0 20px", borderRadius: "6px",
+              background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px",
+              border: "none", cursor: isCreating ? "not-allowed" : "pointer",
+              opacity: isCreating ? 0.6 : 1, transition: "opacity 0.15s",
+            }}
           >
             {isCreating ? "Criando agente..." : "Iniciar configuração →"}
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   // step === "chat"
+  const agentLabel = customName || AGENT_TYPES.find((a) => a.type === selectedType)?.label;
+  const sectorLabel = AGENT_TYPES.find((a) => a.type === selectedType)?.label;
+
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm" style={{ height: "calc(100vh - 300px)", minHeight: "420px" }}>
+    <div style={{
+      display: "flex", flexDirection: "column", overflow: "hidden",
+      borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)",
+      background: "#111111", height: "calc(100vh - 280px)", minHeight: "420px",
+    }}>
       {/* Header do chat */}
-      <div className="flex items-center gap-3 border-b px-4 py-3">
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 16px", flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={avatarUrl(selectedAvatar)}
-          alt="Avatar"
-          className="h-9 w-9 rounded-lg border border-gray-200"
-        />
+        <img src={avatarUrl(selectedAvatar)} alt="Avatar" style={{ width: "34px", height: "34px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)" }} />
         <div>
-          <p className="text-sm font-semibold text-gray-900">
-            {customName || AGENT_TYPES.find((a) => a.type === selectedType)?.label}
-          </p>
-          <p className="text-xs text-gray-400">
-            Configuração do agente de {AGENT_TYPES.find((a) => a.type === selectedType)?.label}
-          </p>
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "#EBEBEB" }}>{agentLabel}</p>
+          <p style={{ fontSize: "11px", color: "#555", marginTop: "1px" }}>Configuração do agente de {sectorLabel}</p>
         </div>
-        <div className="ml-auto rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+        <div style={{
+          marginLeft: "auto", borderRadius: "999px",
+          background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)",
+          padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#10B981",
+        }}>
           Camada 2 de 2
         </div>
       </div>
 
       {/* Mensagens */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
         {visibleMessages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                msg.role === "user"
-                  ? "text-white"
-                  : "bg-gray-50 text-gray-800 border"
-              }`}
-              style={msg.role === "user" ? { backgroundColor: "#E8A020" } : undefined}
-            >
+          <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+            <div style={{
+              maxWidth: "80%", borderRadius: "14px", padding: "10px 14px",
+              fontSize: "14px", lineHeight: 1.6, whiteSpace: "pre-wrap",
+              ...(msg.role === "user"
+                ? { background: "#10B981", color: "#000", fontWeight: 500 }
+                : { background: "rgba(255,255,255,0.04)", color: "#EBEBEB", border: "1px solid rgba(255,255,255,0.07)" }
+              ),
+            }}>
               {msg.content}
-              {msg.role === "assistant" &&
-                streaming &&
-                i === visibleMessages.length - 1 && (
-                  <span className="ml-1 inline-block h-3 w-0.5 animate-pulse bg-gray-400" />
-                )}
+              {msg.role === "assistant" && streaming && i === visibleMessages.length - 1 && (
+                <span style={{ marginLeft: "4px", display: "inline-block", width: "2px", height: "12px", background: "#555", animation: "pulse 1s infinite" }} />
+              )}
             </div>
           </div>
         ))}
         {done && (
-          <div className="flex justify-center">
-            <div className="rounded-full bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-800 font-medium">
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{
+              borderRadius: "999px", background: "rgba(16,185,129,0.08)",
+              border: "1px solid rgba(16,185,129,0.2)", padding: "8px 18px",
+              fontSize: "13px", color: "#10B981", fontWeight: 500,
+            }}>
               Agente configurado! Redirecionando para o escritório...
             </div>
           </div>
@@ -423,25 +423,38 @@ export function SectorOnboarding() {
       </div>
 
       {/* Input */}
-      <div className="border-t p-3 flex gap-2 items-center">
-        <Input
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", padding: "10px 12px", display: "flex", gap: "8px", alignItems: "center", flexShrink: 0 }}>
+        <input
           ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Digite sua resposta..."
           disabled={streaming || done}
-          className="flex-1"
           autoFocus
+          style={{
+            flex: 1, height: "34px", borderRadius: "6px",
+            border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+            color: "#EBEBEB", fontSize: "14px", padding: "0 12px",
+            outline: "none", transition: "border-color 0.15s",
+            opacity: (streaming || done) ? 0.5 : 1,
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(16,185,129,0.4)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
         />
-        <Button
+        <button
           onClick={sendMessage}
           disabled={streaming || done || !input.trim()}
-          className="shrink-0 font-semibold text-white"
-          style={{ backgroundColor: "#E8A020" }}
+          style={{
+            height: "34px", padding: "0 16px", borderRadius: "6px",
+            background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px",
+            border: "none", cursor: "pointer", flexShrink: 0,
+            opacity: (streaming || done || !input.trim()) ? 0.4 : 1,
+            transition: "opacity 0.15s",
+          }}
         >
           Enviar
-        </Button>
+        </button>
       </div>
     </div>
   );

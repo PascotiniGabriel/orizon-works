@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { OnboardingProgress } from "./OnboardingProgress";
 import { DocumentUpload } from "./DocumentUpload";
 
@@ -11,15 +9,6 @@ interface Message {
   role: "user" | "assistant" | "system";
   content: string;
 }
-
-const COMPLETED_FIELDS_MAP: Record<string, string> = {
-  segment: "Nome e segmento",
-  mission: "Missão",
-  values: "Valores e cultura",
-  communicationTone: "Tom de comunicação",
-  targetAudience: "Público-alvo",
-  mainProducts: "Produtos e serviços",
-};
 
 export function OnboardingChat() {
   const router = useRouter();
@@ -80,30 +69,17 @@ export function OnboardingChat() {
         });
       }
 
-      // Detectar campos coletados na conversa acumulada
+      // Detectar campos coletados
       const allText = [...newMessages.map((m) => m.content), full].join(" ").toLowerCase();
       const detected: string[] = [];
-      if (allText.includes("segmento") || allText.includes("setor") || allText.includes("área")) {
-        detected.push("segment");
-      }
-      if (allText.includes("missão") || allText.includes("propósito")) {
-        detected.push("mission");
-      }
-      if (allText.includes("valores") || allText.includes("cultura")) {
-        detected.push("values");
-      }
-      if (allText.includes("tom") || allText.includes("comunicação")) {
-        detected.push("communicationTone");
-      }
-      if (allText.includes("público") || allText.includes("cliente")) {
-        detected.push("targetAudience");
-      }
-      if (allText.includes("produto") || allText.includes("serviço")) {
-        detected.push("mainProducts");
-      }
+      if (allText.includes("segmento") || allText.includes("setor") || allText.includes("área")) detected.push("segment");
+      if (allText.includes("missão") || allText.includes("propósito")) detected.push("mission");
+      if (allText.includes("valores") || allText.includes("cultura")) detected.push("values");
+      if (allText.includes("tom") || allText.includes("comunicação")) detected.push("communicationTone");
+      if (allText.includes("público") || allText.includes("cliente")) detected.push("targetAudience");
+      if (allText.includes("produto") || allText.includes("serviço")) detected.push("mainProducts");
       setCompletedFields([...new Set(detected)]);
 
-      // Detectar conclusão → avança para Camada 2 (briefing de setor)
       if (full.includes("BRIEFING_COMPLETO")) {
         setDone(true);
         setTimeout(() => {
@@ -147,54 +123,61 @@ export function OnboardingChat() {
     .filter((m) => m.content.length > 0);
 
   return (
-    <div className="flex h-full gap-6">
+    <div style={{ display: "flex", height: "100%", gap: "20px" }}>
       {/* Sidebar de progresso */}
-      <aside className="hidden w-56 shrink-0 lg:block">
+      <aside className="hidden lg:block" style={{ width: "200px", flexShrink: 0 }}>
         <OnboardingProgress completedFields={completedFields} />
       </aside>
 
       {/* Chat */}
-      <div className="flex flex-1 flex-col overflow-hidden rounded-xl border bg-white shadow-sm">
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", overflow: "hidden",
+        borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)",
+        background: "#111111",
+      }}>
         {/* Mensagens */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
           {visibleMessages.map((msg, i) => (
             <div
               key={i}
-              className={`flex ${
-                msg.role === "user"
-                  ? "justify-end"
-                  : msg.role === "system"
-                  ? "justify-center"
-                  : "justify-start"
-              }`}
+              style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : msg.role === "system" ? "center" : "flex-start" }}
             >
               {msg.role === "system" ? (
-                <div className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-700">
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  borderRadius: "999px", border: "1px solid rgba(16,185,129,0.2)",
+                  background: "rgba(16,185,129,0.08)", padding: "4px 12px",
+                  fontSize: "12px", color: "#10B981",
+                }}>
                   <span>📎</span>
                   {msg.content}
                 </div>
               ) : (
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                    msg.role === "user"
-                      ? "text-white"
-                      : "bg-gray-50 text-gray-800 border"
-                  }`}
-                  style={
-                    msg.role === "user" ? { backgroundColor: "#E8A020" } : undefined
-                  }
+                  style={{
+                    maxWidth: "80%", borderRadius: "14px", padding: "10px 14px",
+                    fontSize: "14px", lineHeight: 1.6, whiteSpace: "pre-wrap",
+                    ...(msg.role === "user"
+                      ? { background: "#10B981", color: "#000", fontWeight: 500 }
+                      : { background: "rgba(255,255,255,0.04)", color: "#EBEBEB", border: "1px solid rgba(255,255,255,0.07)" }
+                    ),
+                  }}
                 >
                   {msg.content}
                   {msg.role === "assistant" && streaming && i === visibleMessages.length - 1 && (
-                    <span className="ml-1 inline-block h-3 w-0.5 animate-pulse bg-gray-400" />
+                    <span style={{ marginLeft: "4px", display: "inline-block", width: "2px", height: "12px", background: "#555", animation: "pulse 1s infinite" }} />
                   )}
                 </div>
               )}
             </div>
           ))}
           {done && (
-            <div className="flex justify-center">
-              <div className="rounded-full bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-800 font-medium">
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <div style={{
+                borderRadius: "999px", background: "rgba(16,185,129,0.08)",
+                border: "1px solid rgba(16,185,129,0.2)", padding: "8px 18px",
+                fontSize: "13px", color: "#10B981", fontWeight: 500,
+              }}>
                 Empresa configurada! Avançando para o próximo passo...
               </div>
             </div>
@@ -203,29 +186,42 @@ export function OnboardingChat() {
         </div>
 
         {/* Input */}
-        <div className="border-t p-3 flex gap-2 items-center">
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", padding: "10px 12px", display: "flex", gap: "8px", alignItems: "center" }}>
           <DocumentUpload
             onUploaded={handleDocumentUploaded}
             disabled={streaming || done}
           />
-          <Input
+          <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Digite sua resposta..."
             disabled={streaming || done}
-            className="flex-1"
             autoFocus
+            style={{
+              flex: 1, height: "34px", borderRadius: "6px",
+              border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+              color: "#EBEBEB", fontSize: "14px", padding: "0 12px",
+              outline: "none", transition: "border-color 0.15s",
+              opacity: (streaming || done) ? 0.5 : 1,
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(16,185,129,0.4)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
           />
-          <Button
+          <button
             onClick={sendMessage}
             disabled={streaming || done || !input.trim()}
-            className="shrink-0 font-semibold text-white"
-            style={{ backgroundColor: "#E8A020" }}
+            style={{
+              height: "34px", padding: "0 16px", borderRadius: "6px",
+              background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px",
+              border: "none", cursor: "pointer", flexShrink: 0,
+              opacity: (streaming || done || !input.trim()) ? 0.4 : 1,
+              transition: "opacity 0.15s",
+            }}
           >
             Enviar
-          </Button>
+          </button>
         </div>
       </div>
     </div>

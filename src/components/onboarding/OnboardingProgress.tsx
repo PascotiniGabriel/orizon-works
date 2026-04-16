@@ -1,7 +1,5 @@
 "use client";
 
-import { Progress } from "@/components/ui/progress";
-
 const STEPS = [
   "Nome e segmento",
   "Missão",
@@ -20,31 +18,34 @@ export function OnboardingProgress({ completedFields }: OnboardingProgressProps)
   const percent = Math.round((count / STEPS.length) * 100);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between text-sm">
-        <span className="font-medium" style={{ color: "#0D1B2A" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#3A3A3A" }}>
           Perfil da empresa
         </span>
-        <span className="text-muted-foreground">{count}/{STEPS.length}</span>
+        <span style={{ fontSize: "12px", color: "#555" }}>{count}/{STEPS.length}</span>
       </div>
-      <Progress value={percent} className="h-2" />
-      <ul className="space-y-1">
+
+      {/* Progress bar */}
+      <div style={{ height: "2px", background: "rgba(255,255,255,0.07)", borderRadius: "1px", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${percent}%`, background: "#10B981", borderRadius: "1px", transition: "width 0.5s ease" }} />
+      </div>
+
+      <ul style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         {STEPS.map((step, i) => (
-          <li
-            key={step}
-            className="flex items-center gap-2 text-xs"
-            style={{ color: i < count ? "#0D1B2A" : "#94a3b8" }}
-          >
-            <span
-              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-              style={{
-                backgroundColor: i < count ? "#E8A020" : "#e2e8f0",
-                color: i < count ? "#fff" : "#94a3b8",
-              }}
-            >
+          <li key={step} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "16px", height: "16px", borderRadius: "50%", flexShrink: 0,
+              fontSize: "9px", fontWeight: 700,
+              background: i < count ? "#10B981" : "rgba(255,255,255,0.06)",
+              color: i < count ? "#000" : "#3A3A3A",
+            }}>
               {i < count ? "✓" : i + 1}
             </span>
-            {step}
+            <span style={{ fontSize: "12px", color: i < count ? "#EBEBEB" : "#3A3A3A" }}>
+              {step}
+            </span>
           </li>
         ))}
       </ul>

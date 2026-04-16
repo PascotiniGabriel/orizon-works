@@ -33,13 +33,12 @@ export function DocumentUpload({ onUploaded, disabled }: DocumentUploadProps) {
       } else {
         setError(result.message);
       }
-      // Limpar input para permitir reenvio do mesmo arquivo
       if (inputRef.current) inputRef.current.value = "";
     });
   }
 
   return (
-    <div className="relative">
+    <div style={{ position: "relative" }}>
       <input
         ref={inputRef}
         type="file"
@@ -53,16 +52,37 @@ export function DocumentUpload({ onUploaded, disabled }: DocumentUploadProps) {
         onClick={handleClick}
         disabled={disabled || isPending}
         title="Enviar documento PDF"
-        className="flex h-9 w-9 items-center justify-center rounded-lg border text-gray-400 transition-colors hover:border-amber-400 hover:text-amber-500 disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          width: "34px", height: "34px", borderRadius: "6px",
+          border: "1px solid rgba(255,255,255,0.1)", background: "transparent",
+          color: "#3A3A3A", cursor: "pointer", transition: "border-color 0.15s, color 0.15s",
+          opacity: (disabled || isPending) ? 0.4 : 1,
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled && !isPending) {
+            (e.currentTarget as HTMLElement).style.borderColor = "#10B981";
+            (e.currentTarget as HTMLElement).style.color = "#10B981";
+          }
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+          (e.currentTarget as HTMLElement).style.color = "#3A3A3A";
+        }}
       >
         {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
         ) : (
-          <Paperclip className="h-4 w-4" />
+          <Paperclip style={{ width: "14px", height: "14px" }} />
         )}
       </button>
       {error && (
-        <div className="absolute bottom-11 left-0 z-10 w-56 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs text-red-600 shadow-md">
+        <div style={{
+          position: "absolute", bottom: "42px", left: 0, zIndex: 10,
+          width: "224px", borderRadius: "8px", padding: "8px 12px",
+          background: "#1A0A0A", border: "1px solid rgba(239,68,68,0.3)",
+          fontSize: "12px", color: "#EF4444", boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+        }}>
           {error}
         </div>
       )}

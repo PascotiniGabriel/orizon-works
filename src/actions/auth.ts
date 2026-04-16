@@ -16,6 +16,7 @@ import {
   resetPasswordSchema,
   type ActionState,
 } from "@/lib/validations/auth";
+import { getUserCompanyInfo } from "@/lib/db/queries/company";
 
 // ============================================================
 // SIGN IN
@@ -51,6 +52,15 @@ export async function signIn(
           ? "E-mail ou senha incorretos"
           : "Erro ao fazer login. Tente novamente.",
     };
+  }
+
+  // Verificar se o onboarding foi concluído para redirecionar corretamente
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (authUser) {
+    const info = await getUserCompanyInfo(authUser.id);
+    if (info && !info.onboardingCompleted) {
+      redirect("/onboarding");
+    }
   }
 
   redirect("/escritorio");

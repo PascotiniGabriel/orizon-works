@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/login", "/cadastro", "/recuperar-senha"];
+const PUBLIC_PATHS = ["/login", "/cadastro", "/recuperar-senha", "/termos", "/privacidade"];
 const ONBOARDING_PATH = "/onboarding";
 
 export async function middleware(request: NextRequest) {
@@ -47,6 +47,18 @@ export async function middleware(request: NextRequest) {
   // Não autenticado → login
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // MFA: se o usuário tem fator TOTP registrado mas ainda não verificou nesta sessão → /mfa
+  if (pathname !== "/mfa") {
+    try {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+        return NextResponse.redirect(new URL("/mfa", request.url));
+      }
+    } catch {
+      // falha silenciosa — não bloquear o acesso por erro do MFA check
+    }
   }
 
   return response;
