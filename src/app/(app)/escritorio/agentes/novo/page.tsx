@@ -31,9 +31,7 @@ export default async function NovoAgentePage() {
       <div style={{ padding: "18px 30px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: "16px", flexShrink: 0 }}>
         <Link
           href="/escritorio"
-          style={{ display: "flex", alignItems: "center", gap: "6px", color: "#555", fontSize: "13px", textDecoration: "none", transition: "color 0.15s" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#888"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#555"; }}
+          style={{ display: "flex", alignItems: "center", gap: "6px", color: "#555", fontSize: "13px", textDecoration: "none" }}
         >
           <ArrowLeft style={{ width: "14px", height: "14px" }} strokeWidth={2} />
           Escritório

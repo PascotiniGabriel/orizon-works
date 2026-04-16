@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { invites, users } from "@/lib/db/schema";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { eq, and } from "drizzle-orm";
+import { logAudit } from "@/lib/audit";
 
 export type InviteActionState = {
   success: boolean;
@@ -113,11 +114,28 @@ export async function createInvite(
   if (emailError) {
     // Remove o convite criado se o e-mail falhou
     await db.delete(invites).where(eq(invites.token, token));
+    console.error("[createInvite] Supabase emailError:", emailError.message, emailError.status);
+    // Mensagens amigáveis para os erros mais comuns
+    const msg = emailError.message?.toLowerCase() ?? "";
+    if (msg.includes("already registered") || msg.includes("user already exists")) {
+      return { success: false, error: "Este e-mail já possui uma conta no sistema." };
+    }
+    if (msg.includes("invalid redirect")) {
+      return { success: false, error: "URL de redirecionamento inválida. Contate o suporte." };
+    }
     return {
       success: false,
-      error: "Erro ao enviar o e-mail. Tente novamente.",
+      error: `Erro ao enviar o e-mail: ${emailError.message}`,
     };
   }
+
+  logAudit({
+    companyId: info.companyId,
+    userId: info.userId,
+    action: "user.invite",
+    entityType: "invite",
+    metadata: { email, role },
+  });
 
   return {
     success: true,
