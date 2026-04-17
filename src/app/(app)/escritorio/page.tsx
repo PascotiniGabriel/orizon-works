@@ -13,9 +13,22 @@ export default async function EscritorioPage() {
   const info = await getUserCompanyInfo(user.id);
   if (!info) redirect("/login");
 
-  const agents = await getCompanyAgents(info.companyId);
+  const allAgents = await getCompanyAgents(info.companyId);
+
+  // Responsável de Setor só vê o agente do seu setor atribuído
+  const agents =
+    info.role === "sector_manager" && info.managedAgentType
+      ? allAgents.filter((a) => a.type === info.managedAgentType)
+      : info.role === "sector_manager"
+      ? [] // sem setor atribuído ainda
+      : allAgents;
+
   const readyCount = agents.filter((a) => a.briefingComplete).length;
-  const canAddAgent = agents.length < info.maxAgents && agents.length < 5; // máx 5 tipos de agente
+  const canAddAgent =
+    info.role !== "sector_manager" &&
+    info.role !== "employee" &&
+    allAgents.length < info.maxAgents &&
+    allAgents.length < 5;
   const firstName = info.fullName?.split(" ")[0] ?? "você";
 
   const now = new Date();
@@ -80,16 +93,29 @@ export default async function EscritorioPage() {
             <div style={{ width: "52px", height: "52px", borderRadius: "10px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
               <Bot style={{ width: "24px", height: "24px", color: "#10B981" }} strokeWidth={1.5} />
             </div>
-            <p style={{ color: "#EBEBEB", fontSize: "18px", fontWeight: 600, letterSpacing: "-0.02em", marginBottom: "10px" }}>
-              Nenhum agente configurado
-            </p>
-            <p style={{ color: "#555", fontSize: "15px", lineHeight: "1.6", maxWidth: "280px" }}>
-              Configure seu primeiro agente de IA para começar a automatizar seu negócio.
-            </p>
-            <Link href="/onboarding/setor" style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginTop: "26px", padding: "11px 22px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "15px", borderRadius: "7px", textDecoration: "none" }}>
-              <Zap style={{ width: "15px", height: "15px" }} />
-              Criar primeiro agente
-            </Link>
+            {info.role === "sector_manager" && !info.managedAgentType ? (
+              <>
+                <p style={{ color: "#EBEBEB", fontSize: "18px", fontWeight: 600, letterSpacing: "-0.02em", marginBottom: "10px" }}>
+                  Setor não atribuído
+                </p>
+                <p style={{ color: "#555", fontSize: "15px", lineHeight: "1.6", maxWidth: "300px" }}>
+                  Aguarde o administrador da empresa atribuir seu setor em Configurações.
+                </p>
+              </>
+            ) : (
+              <>
+                <p style={{ color: "#EBEBEB", fontSize: "18px", fontWeight: 600, letterSpacing: "-0.02em", marginBottom: "10px" }}>
+                  Nenhum agente configurado
+                </p>
+                <p style={{ color: "#555", fontSize: "15px", lineHeight: "1.6", maxWidth: "280px" }}>
+                  Configure seu primeiro agente de IA para começar a automatizar seu negócio.
+                </p>
+                <Link href="/onboarding/setor" style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginTop: "26px", padding: "11px 22px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "15px", borderRadius: "7px", textDecoration: "none" }}>
+                  <Zap style={{ width: "15px", height: "15px" }} />
+                  Criar primeiro agente
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>

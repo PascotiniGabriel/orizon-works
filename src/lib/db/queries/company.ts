@@ -17,6 +17,7 @@ export interface UserCompanyInfo {
   companyName: string;
   fullName: string | null;
   role: string;
+  managedAgentType: string | null;
   tokenBalance: number;
   tokenLimit: number;
   onboardingCompleted: boolean;
@@ -82,6 +83,7 @@ export async function getUserCompanyInfo(userId: string): Promise<UserCompanyInf
       companyName: companies.name,
       fullName: users.fullName,
       role: users.role,
+      managedAgentType: users.managedAgentType,
       tokenBalance: companies.tokenBalance,
       tokenLimit: companies.tokenLimit,
       onboardingCompleted: companies.onboardingCompleted,

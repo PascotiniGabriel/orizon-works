@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserCompanyInfo } from "@/lib/db/queries/company";
+import { getUserCompanyInfo, getCompanyInvites, getCompanyAgents } from "@/lib/db/queries/company";
 import { getCompanyStats, getCompanyUsers } from "@/lib/db/queries/admin";
-import { getCompanyInvites } from "@/lib/db/queries/company";
 import { InviteUserModal } from "@/components/app/InviteUserModal";
 import { CancelInviteButton } from "@/components/app/CancelInviteButton";
+import { AssignAgentSelector, type AgentOption } from "@/components/app/AssignAgentSelector";
 import { TokenPackButton } from "@/components/app/TokenPackButton";
 import { MfaSection } from "./MfaSection";
 import {
@@ -103,13 +103,19 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
 
   const isAdmin = info.role === "company_admin" || info.role === "super_admin";
 
-  const [stats, companyUsers, companyInvites] = isAdmin
+  const [stats, companyUsers, companyInvites, companyAgents] = isAdmin
     ? await Promise.all([
         getCompanyStats(info.companyId),
         getCompanyUsers(info.companyId),
         getCompanyInvites(info.companyId),
+        getCompanyAgents(info.companyId),
       ])
-    : [null, [], []];
+    : [null, [], [], []];
+
+  const agentOptions: AgentOption[] = (companyAgents as Awaited<ReturnType<typeof getCompanyAgents>>).map((a) => ({
+    type: a.type,
+    label: AGENT_LABELS[a.type] ?? a.type,
+  }));
 
   const tokensUsed = info.tokenLimit - info.tokenBalance;
   const tokenPercent = info.tokenLimit > 0
@@ -314,11 +320,18 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                             </p>
                           </div>
 
-                          {/* Role + last access */}
+                          {/* Role + sector + last access */}
                           <div style={{ flexShrink: 0, textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
                             <span style={{ display: "inline-flex", alignItems: "center", borderRadius: "4px", padding: "2px 7px", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
                               {ROLE_LABELS[u.role] ?? u.role}
                             </span>
+                            {u.role === "sector_manager" && (
+                              <AssignAgentSelector
+                                userId={u.id}
+                                currentAgentType={u.managedAgentType}
+                                availableAgents={agentOptions}
+                              />
+                            )}
                             <p style={{ color: "#444", fontSize: "12px", margin: 0, fontFamily: "var(--font-geist-mono)" }}>
                               {formatDate(u.lastSeenAt)}
                             </p>
