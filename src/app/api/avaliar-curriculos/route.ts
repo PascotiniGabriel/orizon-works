@@ -89,7 +89,7 @@ SEMPRE responda em JSON válido e exatamente no formato solicitado. Nenhum texto
 ${descricaoVaga}
 
 ## CURRÍCULO (arquivo: ${file.name})
-${curriculo.slice(0, 6000)}
+${curriculo.slice(0, 15000)}
 
 Responda APENAS com JSON válido, sem markdown, sem comentários:
 {

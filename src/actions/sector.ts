@@ -2,10 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
-import { users, agents } from "@/lib/db/schema";
+import { users, agents, agentTypeEnum } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 
-export type AgentType = "rh" | "marketing" | "comercial" | "financeiro" | "administrativo";
+export type AgentType = (typeof agentTypeEnum.enumValues)[number];
 
 export interface CreateAgentResult {
   success: boolean;

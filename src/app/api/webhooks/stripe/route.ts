@@ -6,7 +6,10 @@ import { companies, tokenPacks } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import type Stripe from "stripe";
 
-const TOKEN_PACK_AMOUNT = 2_000_000;
+const TOKEN_PACK_MIN = 1;
+const TOKEN_PACK_MAX = 50_000_000;
+
+const TOKEN_PACK_AMOUNT_DEFAULT = 2_000_000;
 
 // Desabilitar o body parser — Stripe precisa do raw body para verificar assinatura
 export const runtime = "nodejs";
@@ -129,12 +132,29 @@ async function handleTokenPackPurchase(
   const companyId = session.metadata?.companyId;
   if (!companyId) return;
 
-  const tokens = parseInt(session.metadata?.tokens ?? TOKEN_PACK_AMOUNT.toString(), 10);
-  const amountPaid = session.amount_total ?? 7900; // centavos
   const paymentIntentId =
     typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id ?? null;
+
+  // Idempotência: aborta se este payment_intent já foi processado
+  if (paymentIntentId) {
+    const [existing] = await db
+      .select({ id: tokenPacks.id })
+      .from(tokenPacks)
+      .where(eq(tokenPacks.stripePaymentIntentId, paymentIntentId))
+      .limit(1);
+    if (existing) return;
+  }
+
+  // Valida o valor de tokens do metadata (previne crédito absurdo em caso de dados corrompidos)
+  const rawTokens = parseInt(session.metadata?.tokens ?? TOKEN_PACK_AMOUNT_DEFAULT.toString(), 10);
+  const tokens =
+    isNaN(rawTokens) || rawTokens < TOKEN_PACK_MIN || rawTokens > TOKEN_PACK_MAX
+      ? TOKEN_PACK_AMOUNT_DEFAULT
+      : rawTokens;
+
+  const amountPaid = session.amount_total ?? 7900; // centavos
 
   // Credita tokens no saldo da empresa
   await db

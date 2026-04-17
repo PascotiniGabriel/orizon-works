@@ -227,28 +227,29 @@ export async function acceptInvite(
     userId = authData.user.id;
   }
 
-  // Garante que o usuário existe na tabela public.users (evita duplicata)
-  const [alreadyInDb] = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+  // Insere usuário e marca convite como aceito em transação atômica
+  await db.transaction(async (tx) => {
+    const [alreadyInDb] = await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-  if (!alreadyInDb) {
-    await db.insert(users).values({
-      id: userId,
-      companyId: invite.companyId,
-      email: invite.email,
-      fullName,
-      role: invite.role,
-    });
-  }
+    if (!alreadyInDb) {
+      await tx.insert(users).values({
+        id: userId,
+        companyId: invite.companyId,
+        email: invite.email,
+        fullName,
+        role: invite.role,
+      });
+    }
 
-  // Marca convite como aceito
-  await db
-    .update(invites)
-    .set({ status: "accepted", acceptedAt: new Date() })
-    .where(eq(invites.token, token));
+    await tx
+      .update(invites)
+      .set({ status: "accepted", acceptedAt: new Date() })
+      .where(eq(invites.token, token));
+  });
 
   return { success: true };
 }

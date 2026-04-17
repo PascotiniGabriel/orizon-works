@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { agents, agentBriefings, companyBriefings } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export interface AgentWithBriefings {
   agent: {
@@ -42,7 +42,7 @@ export async function getAgentWithBriefings(
       avatarUrl: agents.avatarUrl,
     })
     .from(agents)
-    .where(eq(agents.id, agentId));
+    .where(and(eq(agents.id, agentId), eq(agents.companyId, companyId)));
 
   if (!agent) return null;
 

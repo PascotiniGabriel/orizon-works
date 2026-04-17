@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { db } from "@/lib/db";
-import { ragDocuments } from "@/lib/db/schema";
+import { ragDocuments, users } from "@/lib/db/schema";
 import { chunkText, cleanText } from "@/lib/rag/chunking";
 import { generateEmbeddingsBatch } from "@/lib/rag/embeddings";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
@@ -17,6 +17,17 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  // Verificar companyId do usuário autenticado
+  const [dbUser] = await db
+    .select({ companyId: users.companyId })
+    .from(users)
+    .where(eq(users.id, user.id));
+
+  const userCompanyId = dbUser?.companyId;
+  if (!userCompanyId) {
+    return NextResponse.json({ error: "Empresa não encontrada" }, { status: 403 });
   }
 
   let documentId: string | null = null;
@@ -31,6 +42,17 @@ export async function POST(req: NextRequest) {
         { error: "Parâmetros obrigatórios ausentes" },
         { status: 400 }
       );
+    }
+
+    // Verificar que o documento pertence à empresa do usuário autenticado
+    const [ragDoc] = await db
+      .select({ id: ragDocuments.id })
+      .from(ragDocuments)
+      .where(and(eq(ragDocuments.id, documentId), eq(ragDocuments.companyId, userCompanyId)))
+      .limit(1);
+
+    if (!ragDoc) {
+      return NextResponse.json({ error: "Documento não encontrado" }, { status: 403 });
     }
 
     // 1. Limpar e dividir em chunks

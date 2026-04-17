@@ -10,6 +10,7 @@ import { getOrCreateSession, saveMessages } from "@/lib/db/queries/sessions";
 import { enrichSimpleMessage } from "@/lib/claude/prompt-engineer";
 import { checkCompanyHasRagDocuments } from "@/lib/db/queries/rag";
 import { searchRag, formatRagContext } from "@/lib/rag/search";
+import { checkChatRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
   }
 
   const [dbUser] = await db
-    .select({ companyId: users.companyId })
+    .select({ companyId: users.companyId, role: users.role, managedAgentType: users.managedAgentType })
     .from(users)
     .where(eq(users.id, user.id));
 
@@ -45,6 +46,15 @@ export async function POST(request: NextRequest) {
   }
 
   const companyId = dbUser.companyId;
+
+  // ── Rate limiting ────────────────────────────────────────────────────────
+  const withinChatLimit = await checkChatRateLimit(user.id);
+  if (!withinChatLimit) {
+    return NextResponse.json(
+      { error: "Muitas mensagens em pouco tempo. Aguarde um momento e tente novamente." },
+      { status: 429 }
+    );
+  }
 
   // ── Validar body ─────────────────────────────────────────────────────────
   const body = await request.json();
@@ -75,6 +85,18 @@ export async function POST(request: NextRequest) {
   const compiled = await buildSystemPrompt(agentId, companyId);
   if (!compiled) {
     return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+  }
+
+  // ── sector_manager: só pode acessar o agente do seu setor ────────────────
+  if (
+    dbUser.role === "sector_manager" &&
+    dbUser.managedAgentType &&
+    compiled.agentType !== dbUser.managedAgentType
+  ) {
+    return NextResponse.json(
+      { error: "Acesso negado. Você só pode interagir com o agente do seu setor." },
+      { status: 403 }
+    );
   }
 
   // ── Criar/retomar sessão ─────────────────────────────────────────────────

@@ -18,8 +18,10 @@ import {
   FileText,
   Trash2,
   Play,
+  Download,
 } from "lucide-react";
 import type { CurriculoResult } from "@/app/api/avaliar-curriculos/route";
+import { EntrevistaWorkspace } from "./EntrevistaWorkspace";
 
 interface CurriculoRankingWorkspaceProps {
   agentId: string;
@@ -170,11 +172,137 @@ function CurriculoResultCard({ result, rank }: { result: CurriculoResult; rank: 
   );
 }
 
+// ── Exportação CSV ────────────────────────────────────────────────────────
+function exportCSV(results: CurriculoResult[]) {
+  const header = ["Posição", "Nome", "Arquivo", "Nota", "Recomendação", "Resumo", "Pontos Fortes", "Pontos de Atenção"];
+  const rows = results.map((r, i) => [
+    i + 1,
+    r.nome,
+    r.fileName,
+    r.nota.toFixed(1),
+    RECOMENDACAO_CONFIG[r.recomendacao]?.label ?? r.recomendacao,
+    r.resumo,
+    r.pontosFottes.join(" | "),
+    r.pontosFracos.join(" | "),
+  ]);
+
+  const csvContent = [header, ...rows]
+    .map((row) =>
+      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(";")
+    )
+    .join("\n");
+
+  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ranking-curriculos-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Exportação PDF ─────────────────────────────────────────────────────────
+async function exportPDF(results: CurriculoResult[], descricaoVaga: string) {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const pageW = 210;
+  const margin = 16;
+  const contentW = pageW - margin * 2;
+  let y = margin;
+
+  const addLine = (h = 5) => { y += h; if (y > 275) { doc.addPage(); y = margin; } };
+
+  // Título
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Ranking de Currículos", margin, y);
+  addLine(7);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(120, 120, 120);
+  doc.text(`Gerado em ${new Date().toLocaleDateString("pt-BR")} · ${results.length} candidato(s)`, margin, y);
+  addLine(5);
+
+  // Resumo da vaga
+  if (descricaoVaga.trim()) {
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(8);
+    const vagaLines = doc.splitTextToSize(`Vaga: ${descricaoVaga.slice(0, 200)}`, contentW);
+    doc.text(vagaLines, margin, y);
+    addLine(vagaLines.length * 4 + 4);
+  }
+
+  // Candidatos
+  results.forEach((r, i) => {
+    const cfg = RECOMENDACAO_CONFIG[r.recomendacao];
+    const recLabel = cfg?.label ?? r.recomendacao;
+
+    // Cabeçalho do candidato
+    doc.setFillColor(245, 245, 245);
+    doc.rect(margin, y - 3, contentW, 10, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${i + 1}. ${r.nome}`, margin + 2, y + 4);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Nota: ${r.nota.toFixed(1)} / 10  ·  ${recLabel}`, margin + 2, y + 9);
+    addLine(14);
+
+    // Resumo
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    const resumoLines = doc.splitTextToSize(r.resumo, contentW - 4);
+    doc.text(resumoLines, margin + 2, y);
+    addLine(resumoLines.length * 4 + 3);
+
+    // Pontos fortes
+    if (r.pontosFottes.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(16, 185, 129);
+      doc.text("Pontos Fortes:", margin + 2, y);
+      addLine(4);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      r.pontosFottes.forEach((p) => {
+        const pLines = doc.splitTextToSize(`• ${p}`, contentW - 8);
+        doc.text(pLines, margin + 4, y);
+        addLine(pLines.length * 4);
+      });
+    }
+
+    // Pontos fracos
+    if (r.pontosFracos.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(220, 38, 38);
+      doc.text("Pontos de Atenção:", margin + 2, y);
+      addLine(4);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      r.pontosFracos.forEach((p) => {
+        const pLines = doc.splitTextToSize(`• ${p}`, contentW - 8);
+        doc.text(pLines, margin + 4, y);
+        addLine(pLines.length * 4);
+      });
+    }
+
+    addLine(4);
+  });
+
+  doc.save(`ranking-curriculos-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
 export function CurriculoRankingWorkspace({
   agentId,
   agentPrompt,
   agentDisplayName,
 }: CurriculoRankingWorkspaceProps) {
+  const [activeTab, setActiveTab] = useState<"curriculos" | "entrevistas">("curriculos");
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -284,31 +412,56 @@ export function CurriculoRankingWorkspace({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 bg-white px-5 py-3 shrink-0">
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/escritorio/chat/${agentId}`}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Chat
-          </Link>
-          <span className="text-gray-300">/</span>
-          <h1 className="text-sm font-semibold text-gray-900">Ranking de Currículos</h1>
+      <div className="border-b border-gray-100 bg-white px-5 shrink-0">
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/escritorio/chat/${agentId}`}
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Chat
+            </Link>
+            <span className="text-gray-300">/</span>
+            <h1 className="text-sm font-semibold text-gray-900">Painel RH</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-400">{agentDisplayName}</span>
+            {tokensUsed > 0 && (
+              <span className="text-xs text-gray-400 tabular-nums">
+                {tokensUsed.toLocaleString("pt-BR")} tokens
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">{agentDisplayName}</span>
-          {tokensUsed > 0 && (
-            <span className="text-xs text-gray-400 tabular-nums">
-              {tokensUsed.toLocaleString("pt-BR")} tokens
-            </span>
-          )}
+        {/* Tabs */}
+        <div className="flex gap-1 -mb-px">
+          {(["curriculos", "entrevistas"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab
+                  ? "border-amber-500 text-amber-700"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              {tab === "curriculos" ? "Ranking de Currículos" : "Avaliação de Entrevistas"}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-5">
-        {phase === "input" ? (
+        {/* Aba Entrevistas */}
+        {activeTab === "entrevistas" && (
+          <EntrevistaWorkspace agentPrompt={agentPrompt} />
+        )}
+
+        {/* Aba Currículos */}
+        {activeTab === "curriculos" && phase === "input" ? (
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Vaga */}
             <div className="space-y-3">
@@ -512,21 +665,44 @@ export function CurriculoRankingWorkspace({
               </div>
             )}
           </div>
-        )}
+        ) : activeTab === "curriculos" ? null : null}
       </div>
 
-      {/* Footer */}
+      {/* Footer — só na aba currículos */}
+      {activeTab === "curriculos" && (
       <div className="border-t border-gray-100 bg-white px-5 py-4 shrink-0">
         <div className="flex items-center justify-between gap-3">
           {phase === "results" ? (
-            <button
-              type="button"
-              onClick={handleReset}
-              disabled={processing}
-              className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40"
-            >
-              Nova avaliação
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={processing}
+                className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40"
+              >
+                Nova avaliação
+              </button>
+              {results.length > 0 && !processing && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => exportCSV(results)}
+                    className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => exportPDF(results, descricaoVaga)}
+                    className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    PDF
+                  </button>
+                </>
+              )}
+            </div>
           ) : (
             <p className="text-xs text-gray-400">
               {files.length > 0
@@ -549,6 +725,7 @@ export function CurriculoRankingWorkspace({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

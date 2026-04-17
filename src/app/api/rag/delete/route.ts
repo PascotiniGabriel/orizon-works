@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { users, ragDocuments } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,12 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
+    // Buscar nome do documento antes de deletar (para o audit log)
+    const [doc] = await db
+      .select({ fileName: ragDocuments.fileName })
+      .from(ragDocuments)
+      .where(and(eq(ragDocuments.id, documentId), eq(ragDocuments.companyId, dbUser.companyId)));
+
     // Deletar (CASCADE remove os chunks automaticamente)
     await db
       .delete(ragDocuments)
@@ -44,6 +51,15 @@ export async function DELETE(req: NextRequest) {
           eq(ragDocuments.companyId, dbUser.companyId)
         )
       );
+
+    logAudit({
+      companyId: dbUser.companyId,
+      userId: user.id,
+      action: "rag.document_delete",
+      entityType: "rag_document",
+      entityId: documentId,
+      metadata: { fileName: doc?.fileName ?? "desconhecido" },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

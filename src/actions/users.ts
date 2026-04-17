@@ -2,11 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, agentTypeEnum } from "@/lib/db/schema";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { eq, and } from "drizzle-orm";
 
-type AgentType = "rh" | "marketing" | "comercial" | "financeiro" | "administrativo";
+type AgentType = (typeof agentTypeEnum.enumValues)[number];
 
 export async function updateUserManagedAgent(
   targetUserId: string,

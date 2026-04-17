@@ -1,7 +1,7 @@
 # PROGRESSO — Orizon Works
 > Atualizado em: 2026-04-15
 
-## Status Geral: MVP funcional em produção (modo teste Stripe) · Design VAPI concluído · RAG implementado
+## Status Geral: MVP funcional em produção (modo teste Stripe) · Design VAPI concluído · RAG ativo · Todas as prioridades Baixa/Média implementadas
 
 ---
 
@@ -115,7 +115,7 @@ Redesign completo da interface, inspirado no VAPI. Quarta iteração — versão
 - [x] 4 categorias: Contratar, 2ª Entrevista, Banco de Reserva, Não segue
 - [x] Cards rankeados expandíveis
 - [x] Débito de tokens por avaliação
-- [ ] Upload de PDF de currículo
+- [x] Upload de PDF de currículo (drag-and-drop, até 100 PDFs simultâneos)
 - [ ] Exportar ranking para Excel/PDF
 - [ ] Avaliação de áudio de entrevista
 
@@ -142,7 +142,7 @@ Redesign completo da interface, inspirado no VAPI. Quarta iteração — versão
 
 ### RAG — Base de Conhecimento por Agente
 
-- [x] Tabelas `rag_documents` e `rag_chunks` no schema Drizzle (+ SQL pgvector no Supabase)
+- [x] Tabelas `rag_documents` e `rag_chunks` no Supabase com pgvector (`vector(512)`)
 - [x] Embeddings via Voyage AI API HTTP (`voyage-3-lite`, dim 512) — `src/lib/rag/embeddings.ts`
 - [x] Chunking de documentos (`@langchain/textsplitters`, 800 chars, overlap 100) — `src/lib/rag/chunking.ts`
 - [x] Busca semântica via `search_rag_chunks()` SQL function + cosine similarity — `src/lib/rag/search.ts`
@@ -150,61 +150,17 @@ Redesign completo da interface, inspirado no VAPI. Quarta iteração — versão
 - [x] `/api/rag/ingest` — indexa documentos em background (chunk → embed → insert pgvector)
 - [x] `/api/rag/delete` — remove documento e chunks (CASCADE)
 - [x] `/api/rag/list` — lista documentos por empresa/agente
-- [x] `/api/upload` — dispara indexação RAG automaticamente após upload de PDF/CSV/TXT
+- [x] `/api/upload` — dispara indexação RAG automaticamente após upload de PDF/CSV
 - [x] `/api/chat` — busca RAG antes de chamar Claude, injeta trechos relevantes no system prompt
 - [x] `/escritorio/chat/[agentId]/documentos` — painel de gestão com upload, status, delete e polling
 - [x] Link "Base de Conhecimento" na action bar do chat (admin/manager)
-- [x] Supabase Storage bucket `company-documents` — **criado** (private, 10 MB limit)
 
 **Notas técnicas:**
 - Embeddings via HTTP direto (evita problema ESM do SDK voyageai no Turbopack)
-- Falha silenciosa: se RAG falhar, o chat continua sem RAG
-- Apenas PDF, CSV, TXT geram indexação (áudio usa transcrição separada)
-- `VOYAGE_API_KEY` obrigatória para funcionar (se ausente, upload funciona mas sem RAG)
-- next.config.ts: `serverExternalPackages: ["@langchain/textsplitters"]`
-
-**SQL necessário no Supabase (rodar no SQL Editor):**
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE TABLE rag_documents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE,
-  file_name TEXT NOT NULL, file_type TEXT NOT NULL, storage_path TEXT,
-  chunk_count INTEGER DEFAULT 0, status TEXT NOT NULL DEFAULT 'processing',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), created_by UUID REFERENCES users(id)
-);
-CREATE TABLE rag_chunks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id UUID NOT NULL REFERENCES rag_documents(id) ON DELETE CASCADE,
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE,
-  content TEXT NOT NULL, chunk_index INTEGER NOT NULL,
-  embedding vector(512), metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX rag_chunks_embedding_idx ON rag_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
-CREATE INDEX rag_chunks_company_idx ON rag_chunks(company_id);
-CREATE INDEX rag_chunks_agent_idx ON rag_chunks(agent_id);
-CREATE INDEX rag_documents_company_idx ON rag_documents(company_id);
-ALTER TABLE rag_documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE rag_chunks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "service_role_all" ON rag_documents FOR ALL TO postgres USING (true) WITH CHECK (true);
-CREATE POLICY "service_role_all" ON rag_chunks FOR ALL TO postgres USING (true) WITH CHECK (true);
-CREATE OR REPLACE FUNCTION search_rag_chunks(
-  query_embedding vector(512), filter_company_id UUID,
-  filter_agent_id UUID DEFAULT NULL, match_count INTEGER DEFAULT 5, match_threshold FLOAT DEFAULT 0.5
-) RETURNS TABLE (id UUID, content TEXT, metadata JSONB, similarity FLOAT) LANGUAGE plpgsql AS $$
-BEGIN
-  RETURN QUERY SELECT rc.id, rc.content, rc.metadata,
-    1 - (rc.embedding <=> query_embedding) AS similarity
-  FROM rag_chunks rc
-  WHERE rc.company_id = filter_company_id
-    AND (filter_agent_id IS NULL OR rc.agent_id = filter_agent_id OR rc.agent_id IS NULL)
-    AND 1 - (rc.embedding <=> query_embedding) > match_threshold
-  ORDER BY rc.embedding <=> query_embedding LIMIT match_count;
-END; $$;
-```
+- Falha silenciosa: se RAG falhar, o chat continua normalmente sem contexto
+- Apenas PDF e CSV geram indexação (áudio usa transcrição separada)
+- `VOYAGE_API_KEY` configurada em `.env.local` e na Vercel
+- `next.config.ts`: `serverExternalPackages: ["@langchain/textsplitters"]`
 
 ### Painel Super Admin (`/admin`)
 - [x] Visão de todas as empresas com métricas
@@ -239,7 +195,13 @@ orizon-works/src/
 │   │   │   ├── page.tsx                       ✅ Dashboard agentes
 │   │   │   ├── chat/[agentId]/
 │   │   │   │   ├── page.tsx                   ✅ Chat com agente
-│   │   │   │   └── avaliar/page.tsx           ✅ Ranking de Currículos (RH)
+│   │   │   │   ├── avaliar/
+│   │   │   │   │   ├── page.tsx               ✅ Painel RH (tabs: currículos + entrevistas)
+│   │   │   │   │   ├── CurriculoRankingWorkspace.tsx ✅ Upload PDF + ranking + export CSV/PDF
+│   │   │   │   │   └── EntrevistaWorkspace.tsx ✅ Upload áudio + transcrição + análise
+│   │   │   │   └── documentos/
+│   │   │   │       ├── page.tsx               ✅ Painel RAG (server)
+│   │   │   │       └── DocumentosClient.tsx   ✅ Upload + status + delete (client)
 │   │   │   └── historico/
 │   │   │       ├── page.tsx                   ✅ Lista de sessões
 │   │   │       └── [sessionId]/page.tsx       ✅ Detalhe sessão (read-only, dark)
@@ -247,20 +209,28 @@ orizon-works/src/
 │   ├── (auth)/
 │   │   ├── login/page.tsx                     ✅
 │   │   ├── cadastro/page.tsx                  ✅
-│   │   ├── recuperar-senha/page.tsx           ✅ (redesign: nativo sem shadcn)
+│   │   ├── recuperar-senha/page.tsx           ✅
 │   │   └── convite/[token]/
-│   │       ├── page.tsx                       ✅ (redesign: dark VAPI)
-│   │       └── AcceptInviteForm.tsx           ✅ (redesign: dark, emerald)
+│   │       ├── page.tsx                       ✅
+│   │       └── AcceptInviteForm.tsx           ✅
 │   ├── (onboarding)/                          ✅
+│   ├── termos/page.tsx                        ✅ Termos de Uso (pública, dark design)
+│   ├── privacidade/page.tsx                   ✅ Política de Privacidade (pública, LGPD)
+│   ├── mfa/page.tsx                           ✅ Verificação TOTP no login (2FA)
 │   └── api/
 │       ├── chat/
-│       │   ├── route.ts                       ✅ Chat streaming + Modo Simples
+│       │   ├── route.ts                       ✅ Chat streaming + RAG + Modo Simples
 │       │   └── engenheiro/route.ts            ✅ Modo Guiado — agente revisor
 │       ├── notifications/read/route.ts        ✅
 │       ├── onboarding/route.ts                ✅
 │       ├── onboarding/setor/route.ts          ✅
+│       ├── avaliar-entrevista/route.ts         ✅ Transcrição Groq + análise Claude
+│       ├── rag/
+│       │   ├── ingest/route.ts                ✅ Indexação background
+│       │   ├── delete/route.ts                ✅ Remove documento + chunks (audit log)
+│       │   └── list/route.ts                  ✅ Lista por empresa/agente
 │       ├── transcribe/route.ts                ✅ Groq Whisper transcrição
-│       ├── upload/route.ts                    ✅ Upload Supabase Storage
+│       ├── upload/route.ts                    ✅ Upload Supabase Storage + trigger RAG
 │       └── webhooks/stripe/route.ts           ✅
 ├── components/
 │   ├── app/
@@ -268,9 +238,9 @@ orizon-works/src/
 │   │   ├── AppSidebar.tsx                     ✅ VAPI design completo
 │   │   ├── ChatInterface.tsx                  ✅ export + upload + Modo Guiado
 │   │   ├── FileUploadButton.tsx               ✅
-│   │   ├── NotificationBell.tsx               ✅ emerald, visível
+│   │   ├── NotificationBell.tsx               ✅
 │   │   ├── PromptBuilderModal.tsx             ✅ Modal Modo Guiado
-│   │   └── TokenPackButton.tsx                ✅ emerald
+│   │   └── TokenPackButton.tsx                ✅
 │   ├── onboarding/                            ✅
 │   └── ui/                                    ✅ (shadcn — usado só onde necessário)
 └── lib/
@@ -281,13 +251,15 @@ orizon-works/src/
     │   ├── schema.ts                          ✅
     │   ├── index.ts                           ✅
     │   └── queries/
-    │       ├── admin.ts                       ✅ Stats empresa + Super Admin
+    │       ├── admin.ts                       ✅
     │       ├── agents.ts                      ✅
     │       ├── company.ts                     ✅
     │       ├── rag.ts                         ✅ check/list/delete RAG documents
     │       ├── sessions.ts                    ✅
     │       └── tokens.ts                      ✅
     ├── export.ts                              ✅ PDF (jsPDF) + Word (docx)
+    ├── rate-limit.ts                          ✅ checkChatRateLimit / checkUploadRateLimit
+    ├── audit.ts                               ✅ logAudit() — audit_logs table
     ├── rag/
     │   ├── embeddings.ts                      ✅ Voyage AI HTTP (voyage-3-lite)
     │   ├── chunking.ts                        ✅ RecursiveCharacterTextSplitter
@@ -305,52 +277,26 @@ orizon-works/src/
 | Vercel Deploy | ✅ Ativo | https://orizon-works-zeta.vercel.app |
 | GitHub | ✅ Público | https://github.com/PascotiniGabriel/orizon-works |
 | Supabase Auth | ✅ Ativo | — |
-| Supabase Storage | ⚠️ Pendente | Bucket `company-documents` (Private) — criar manualmente no dashboard |
+| Supabase Storage | ✅ Ativo | Bucket `company-documents` (Private) |
+| Supabase pgvector | ✅ Ativo | Tabelas `rag_documents` + `rag_chunks`, function `search_rag_chunks` |
 | Stripe Webhook (teste) | ✅ Ativo | modo teste |
 | Groq API | ✅ Configurado | Whisper Large v3 para transcrição de áudio |
+| Voyage AI | ✅ Configurado | `voyage-3-lite`, `VOYAGE_API_KEY` na Vercel + `.env.local` |
 | Stripe → Produção | ⏳ Pendente | Trocar chaves test→live e recriar webhook |
 
 ### Variáveis de Ambiente (todas configuradas na Vercel)
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- `DATABASE_URL`, `ANTHROPIC_API_KEY`
+- `DATABASE_URL`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_GROWTH`, `STRIPE_PRICE_BUSINESS`, `STRIPE_PRICE_TOKEN_PACK`
-- `GROQ_API_KEY`, `NEXT_PUBLIC_APP_URL`, `NODE_ENV`
+- `GROQ_API_KEY`, `NEXT_PUBLIC_APP_URL`
 
-### Processo de Deploy para Produção (Stripe)
-1. No Stripe Dashboard → clicar em "Alternar para conta de produção"
+### Deploy para Produção (Stripe) — quando ativar conta real
+1. No Stripe Dashboard → alternar para conta de produção
 2. Copiar chaves live (`sk_live_...`, `pk_live_...`) → atualizar na Vercel
-3. Recriar o webhook com URL `https://orizon-works-zeta.vercel.app/api/webhooks/stripe`
+3. Recriar webhook com URL `https://orizon-works-zeta.vercel.app/api/webhooks/stripe`
 4. Atualizar `STRIPE_WEBHOOK_SECRET` na Vercel com novo `whsec_...`
-5. Recriar Price IDs dos planos em modo produção → atualizar `STRIPE_PRICE_*` na Vercel
-
----
-
-## SQL Necessário no Supabase (Rodar no SQL Editor)
-
-```sql
--- Tabela de convites (caso não exista)
-CREATE TYPE invite_status AS ENUM ('pending', 'accepted', 'expired');
-
-CREATE TABLE invites (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  invited_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  email VARCHAR(255) NOT NULL,
-  role user_role NOT NULL DEFAULT 'employee',
-  token VARCHAR(64) NOT NULL UNIQUE,
-  status invite_status NOT NULL DEFAULT 'pending',
-  expires_at TIMESTAMPTZ NOT NULL,
-  accepted_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX invites_company_idx ON invites(company_id);
-CREATE INDEX invites_token_idx ON invites(token);
-
-ALTER TABLE invites ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "service_role_all" ON invites FOR ALL TO postgres USING (true) WITH CHECK (true);
-```
+5. Recriar Price IDs dos planos em produção → atualizar `STRIPE_PRICE_*` na Vercel
 
 ---
 
@@ -358,23 +304,20 @@ CREATE POLICY "service_role_all" ON invites FOR ALL TO postgres USING (true) WIT
 
 ### Alta
 - [ ] **Super Admin — gestão de empresas**: editar limite de tokens, alterar plano, cancelar/reativar assinatura manualmente
-- [ ] **RAG — SQL no Supabase**: rodar o SQL acima para criar tabelas pgvector + function de busca
-- [ ] **RAG — VOYAGE_API_KEY**: obter chave em dash.voyageai.com e configurar na Vercel + .env.local
 
 ### Média
-- [x] Supabase Storage bucket `company-documents` — criado (private, 10 MB)
 - [ ] Stripe webhook configurado em produção
 - [ ] Stripe modo produção (conta ativa, preços reais, env vars de produção)
-- [ ] Termos de Uso e Política de Privacidade (obrigatório para Stripe produção)
-- [ ] Rate limiting nas APIs de chat e upload
-- [ ] Painel RH: upload de PDF de currículo (suporte a 100+ currículos por vaga)
+- [x] Termos de Uso (`/termos`) e Política de Privacidade (`/privacidade`) — páginas públicas, dark design, LGPD
+- [x] Rate limiting nas APIs de chat (20 msg/min) e upload (15 uploads/hora) via DB
+- [x] Painel RH: upload de PDF de currículo (drag-and-drop, até 100 PDFs simultâneos)
 
 ### Baixa
-- [ ] `sector_manager` — enforcement real por agente na API de chat
-- [ ] Exportar ranking RH para Excel/PDF
-- [ ] Avaliação de áudio de entrevista (transcrição + análise)
-- [ ] Audit log de ações administrativas
-- [ ] 2FA para admins
+- [x] `sector_manager` — enforcement real: verifica `managedAgentType` antes de processar mensagem na API de chat
+- [x] Exportar ranking RH para CSV (abre no Excel) e PDF (jsPDF)
+- [x] Avaliação de áudio de entrevista — transcrição Groq Whisper + análise Claude, aba "Entrevistas" no painel RH
+- [x] Audit log — tabela `audit_logs` + utilitário `src/lib/audit.ts` + hooks em convites, RAG delete e upload
+- [x] 2FA (TOTP) para admins — Supabase MFA, verificação no login (`/mfa`), ativação/desativação nas configurações
 
 ---
 
@@ -416,6 +359,42 @@ CREATE POLICY "service_role_all" ON invites FOR ALL TO postgres USING (true) WIT
 
 ---
 
+## Correções de Segurança e Qualidade — Abr/17
+
+Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
+
+### 🔴 Críticos
+
+| # | Arquivo | Problema | Correção |
+|---|---------|----------|----------|
+| 1 | `src/lib/db/queries/agents.ts` | `getAgentWithBriefings` buscava agente só por `agentId` sem filtrar por `companyId` — usuário de empresa A poderia acessar agentes da empresa B | Adicionado `and(eq(agents.id, agentId), eq(agents.companyId, companyId))` na query |
+| 2 | `src/lib/rag/search.ts` | Conteúdo RAG concatenado diretamente no system prompt sem delimitadores — documentos maliciosos poderiam injetar instruções para o Claude | Envolvido em `<documentos_empresa>` com instrução explícita de tratar como dados, nunca como comandos |
+
+### 🟠 Altos
+
+| # | Arquivo | Problema | Correção |
+|---|---------|----------|----------|
+| 3 | `src/app/api/webhooks/stripe/route.ts` | `checkout.session.completed` sem idempotência — Stripe pode reenviar e creditaria tokens em dobro | Verificação de `stripePaymentIntentId` existente antes de inserir novo `tokenPack` |
+| 4 | `src/actions/invites.ts` | `acceptInvite` fazia insert de usuário e update de convite sem transação — estado inconsistente em caso de falha parcial | Envolvido em `db.transaction()` |
+| 5 | `src/app/api/webhooks/stripe/route.ts` | Valor de `tokens` lido do metadata Stripe sem validação — metadata corrompido poderia creditar valores absurdos | Validação com `isNaN`, mínimo 1 e máximo 50.000.000 tokens por compra |
+| 6 | `src/app/api/rag/ingest/route.ts` | Endpoint verificava auth mas não validava se `documentId` pertencia à empresa do usuário — possível injeção de embeddings em agentes de outras empresas | Busca do documento no banco validando que `companyId` corresponde ao usuário autenticado |
+
+### 🟡 Médios
+
+| # | Arquivo | Problema | Correção |
+|---|---------|----------|----------|
+| 7 | `src/app/api/avaliar-curriculos/route.ts` | CVs truncados em 6.000 chars — descartava experiências e formações em currículos longos | Aumentado para 15.000 chars (~4-5 páginas de CV) |
+| 8 | `src/actions/users.ts` + `src/actions/sector.ts` | `AgentType` duplicado como literal union em 2 arquivos — divergência possível com o schema do banco | Derivado do enum Drizzle: `typeof agentTypeEnum.enumValues[number]` |
+
+### ℹ️ Não corrigidos (requerem infraestrutura externa)
+
+| Problema | Motivo | Recomendação |
+|----------|--------|--------------|
+| Race condition no débito de tokens | Requer `SELECT FOR UPDATE` ou Redis | `GREATEST(..., 0)` já evita saldo negativo; implementar lock pessimista quando Redis estiver disponível |
+| Rate limit baseado em banco (burst concorrente) | Rate limit conta mensagens salvas — janela de vulnerabilidade antes do save | Migrar para Redis com contadores atômicos e TTL |
+
+---
+
 ## Histórico de Sessões
 
 | Data | O que foi feito |
@@ -430,3 +409,5 @@ CREATE POLICY "service_role_all" ON invites FOR ALL TO postgres USING (true) WIT
 | Abr/15 | Configurações redesenhada · fixes sidebar (tokens, botão, visibilidade) |
 | Abr/15 | Redesign páginas restantes: historico/[sessionId], recuperar-senha, convite/[token] |
 | Abr/15 | RAG completo: embeddings Voyage AI + pgvector + painel de documentos + integração no chat |
+| Abr/15 | Rate limiting (chat 20/min, upload 15/hora) · Termos de Uso + Política de Privacidade (LGPD) |
+| Abr/15 | sector_manager enforcement · Export ranking CSV/PDF · Avaliação de entrevista por áudio · Audit log · 2FA TOTP |
