@@ -2,12 +2,12 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|Bash",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"LEMBRETE: Se você acabou de fazer uma mudança significativa no código (novo arquivo, bugfix, feature, deploy), atualize o arquivo PROGRESSO.md em c:/Users/gabri/Desktop/works/PROGRESSO.md com um resumo do que foi feito na seção Bugs Corrigidos ou Histórico de Sessões. Data de hoje: 2026-04-08.\"}}'",
-            "statusMessage": "Verificando PROGRESSO.md..."
+            "command": "node -e \"let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{ try{ const o=JSON.parse(d); const cmd=(o.tool_input||{}).command||''; if(cmd.includes('git commit')){ console.log(JSON.stringify({hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'OBRIGATÓRIO: Você acabou de fazer um git commit. Se ainda não fez, atualize agora o PROGRESSO.md — seção Bugs Corrigidos e/ou Histórico de Sessões — com o que foi feito nesta sessão. Sempre faça isso antes de encerrar.'}})); } }catch(e){} });\"",
+            "statusMessage": "Checando PROGRESSO.md pós-commit..."
           }
         ]
       }
