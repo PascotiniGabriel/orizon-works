@@ -411,3 +411,6 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/15 | RAG completo: embeddings Voyage AI + pgvector + painel de documentos + integração no chat |
 | Abr/15 | Rate limiting (chat 20/min, upload 15/hora) · Termos de Uso + Política de Privacidade (LGPD) |
 | Abr/15 | sector_manager enforcement · Export ranking CSV/PDF · Avaliação de entrevista por áudio · Audit log · 2FA TOTP |
+| Abr/17 | Fix convite (acceptInvite com listUsers Admin API) · Seletor de setor para sector_manager (AssignAgentSelector) |
+| Abr/17 | 8 correções de segurança: validação companyId agente, proteção RAG prompt injection, idempotência Stripe, transação acceptInvite, validação tokens Stripe, autorização RAG ingest, PDF currículo 6k→15k chars, AgentType centralizado |
+| Abr/17 | Configuração de lembrete automático: CLAUDE.md + hook PostToolUse (git commit) para garantir atualização do PROGRESSO.md |
