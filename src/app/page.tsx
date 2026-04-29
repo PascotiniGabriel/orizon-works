@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import {
   Users, Megaphone, TrendingUp, DollarSign, FolderOpen,
@@ -26,7 +28,11 @@ const PLANS = [
   { name: "Business", price: "R$ 1.497", tokens: "12M tokens",     agents: "5 agentes ativos",highlight: false },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect("/escritorio");
+
   return (
     <div style={{ background: "#0A0A0A", color: "#EBEBEB", minHeight: "100vh", fontFamily: "var(--font-geist-sans, sans-serif)" }}>
 

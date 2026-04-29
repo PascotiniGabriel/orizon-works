@@ -123,8 +123,8 @@ Redesign completo da interface, inspirado no VAPI. Quarta iteração — versão
 - [x] Cards rankeados expandíveis
 - [x] Débito de tokens por avaliação
 - [x] Upload de PDF de currículo (drag-and-drop, até 100 PDFs simultâneos)
-- [ ] Exportar ranking para Excel/PDF
-- [ ] Avaliação de áudio de entrevista
+- [x] Exportar ranking para Excel/PDF (CSV com BOM + PDF via jsPDF)
+- [x] Avaliação de áudio de entrevista (Groq Whisper + Claude)
 
 ### Sistema de Convites
 - [x] Tabela `invites` com token, expiração, status, role
@@ -371,6 +371,8 @@ orizon-works/src/
 | Abr/15 | Ícone sino invisível quando sem notificações | Cor `#3A3A3A` → `#666` |
 | Abr/15 | TokenPackButton ainda amber | `#E8A020` → `#10B981` |
 | Abr/15 | Configurações descentralizadas após redesign | `margin: "0 auto"` no container interno |
+| Abr/29 | /configuracoes crash 500 em produção | `onMouseEnter`/`onMouseLeave` em Server Component — substituído por `.ow-briefing-card:hover` CSS |
+| Abr/29 | Landing page inacessível sem login | `/` não estava em `PUBLIC_PATHS` do middleware; adicionado + redirect para `/escritorio` se logado |
 
 ---
 
@@ -438,3 +440,4 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/29 | Fix: ternário duplicado em CurriculoRankingWorkspace (erro TS pré-existente da sessão anterior) |
 | Abr/28 | **Workspace por setor**: WorkspaceShell (4 abas: Dashboard/Chat/Ferramentas/Documentos) · WorkspaceDashboard (KPIs calculados client-side para RH/Comercial/Marketing/Financeiro/Administrativo) · WorkspaceFerramentas (13 ferramentas de IA por setor: gerador vaga, PDI, proposta, objeções, calendário, copy, brief, DRE, fluxo caixa, break-even, ata, contrato, processos) · API /api/workspace (13 prompts especializados, debit de tokens) · page.tsx do chat substituído por WorkspaceShell · DocumentosClient com initialDocuments opcional + fetch on mount |
 | Abr/29 | **Metas configuráveis**: tabela workspace_kpis no Supabase (via SQL direto, drizzle-kit com bug no push) · queries upsert com onConflictDoUpdate · server actions loadWorkspaceGoals/saveWorkspaceGoals · GoalsPanel client-side no topo de cada dashboard (carrega DB, admins editam inline) · userRole propagado de page.tsx → WorkspaceShell → WorkspaceDashboard |
+| Abr/29 | Fix /configuracoes 500 (onMouseEnter em RSC) · Fix landing page pública (middleware) · middleware.ts + page.tsx atualizados · SQL workspace_kpis criado em produção |
