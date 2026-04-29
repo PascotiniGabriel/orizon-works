@@ -111,7 +111,7 @@ export default async function EscritorioPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "32px" }}>
 
               {/* Card 1 — Agentes */}
-              <div style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+              <div className="ow-stat-card" style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
                 <p style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Agentes</p>
                 <p style={{ color: "#10B981", fontSize: "26px", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, marginBottom: "5px", fontFamily: "var(--font-geist-mono)" }}>{agents.length}</p>
                 <p style={{ color: "#555", fontSize: "13px" }}>
@@ -122,7 +122,7 @@ export default async function EscritorioPage() {
               </div>
 
               {/* Card 2 — Créditos Restantes */}
-              <div style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+              <div className="ow-stat-card" style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
                 <p style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Créditos Restantes</p>
                 <p style={{ color: "#60A5FA", fontSize: "26px", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, marginBottom: "5px", fontFamily: "var(--font-geist-mono)" }}>{formatCredits(creditsRemaining)}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -134,7 +134,7 @@ export default async function EscritorioPage() {
               </div>
 
               {/* Card 3 — Atividade Hoje */}
-              <div style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+              <div className="ow-stat-card" style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
                 <p style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Atividade Hoje</p>
                 <p style={{ color: "#A78BFA", fontSize: "26px", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, marginBottom: "5px", fontFamily: "var(--font-geist-mono)" }}>{todayActivity.messages}</p>
                 <p style={{ color: "#555", fontSize: "13px" }}>
@@ -145,7 +145,7 @@ export default async function EscritorioPage() {
               </div>
 
               {/* Card 4 — Este Mês */}
-              <div style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+              <div className="ow-stat-card" style={{ padding: "18px", background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
                 <p style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Este Mês</p>
                 <p style={{ color: "#FBBF24", fontSize: "26px", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, marginBottom: "5px", fontFamily: "var(--font-geist-mono)" }}>{monthActivity.messages}</p>
                 <p style={{ color: "#555", fontSize: "13px" }}>

@@ -319,7 +319,7 @@ export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agent
                       <>
                         {msg.content === "" && streaming && i === messages.length - 1 ? (
                           <span style={{ display: "inline-flex", gap: "5px", padding: "4px 0" }}>
-                            {[0, 150, 300].map((d) => <span key={d} style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#3A3A3A", display: "inline-block", animation: `bounce 1s ${d}ms infinite` }} />)}
+                            {[0, 200, 400].map((d) => <span key={d} style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#10B981", display: "inline-block", animation: `bounce 1.2s ${d}ms infinite` }} />)}
                           </span>
                         ) : (
                           <AssistantMessage content={msg.content} />

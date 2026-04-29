@@ -170,3 +170,41 @@
 .ow-briefing-card:hover {
   border-color: rgba(16,185,129,0.3) !important;
 }
+
+/* Stat card entrance animation (G2) */
+@keyframes ow-fade-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ow-stat-card {
+  animation: ow-fade-slide-up 0.3s ease-out both;
+}
+.ow-stat-card:nth-child(1) { animation-delay: 0s;    }
+.ow-stat-card:nth-child(2) { animation-delay: 0.06s; }
+.ow-stat-card:nth-child(3) { animation-delay: 0.12s; }
+.ow-stat-card:nth-child(4) { animation-delay: 0.18s; }
+
+/* Active session pulsing dot (D1) */
+@keyframes ow-pulse-dot {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+.ow-active-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #10B981;
+  flex-shrink: 0;
+  animation: ow-pulse-dot 1.6s ease-in-out infinite;
+}
+
+/* Tooltip hint (E2) */
+.ow-tooltip { position: relative; display: inline-flex; align-items: center; }
+.ow-tooltip-content {
+  visibility: hidden; opacity: 0;
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: #1F1F1F; border: 1px solid rgba(255,255,255,0.1);
+  color: #888; font-size: 12px; line-height: 1.5; white-space: normal;
+  width: 220px; padding: 8px 10px; border-radius: 6px;
+  z-index: 50; pointer-events: none;
+  transition: opacity 0.15s;
+}
+.ow-tooltip:hover .ow-tooltip-content { visibility: visible; opacity: 1; }

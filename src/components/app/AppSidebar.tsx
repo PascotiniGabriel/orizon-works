@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutGrid, History, Users, Megaphone, TrendingUp, DollarSign,
   FolderOpen, Bot, Shield, Settings, LogOut, Zap, FileText,
@@ -38,8 +39,25 @@ interface AppSidebarProps {
 export function AppSidebar({ agents, role, notifications, fullName, tokenBalance, tokenLimit }: AppSidebarProps) {
   const pathname = usePathname();
   const pct = tokenLimit > 0 ? Math.min((tokenBalance / tokenLimit) * 100, 100) : 0;
-  const barColor = pct <= 0 ? "#EF4444" : pct <= 20 ? "#FBBF24" : "#10B981";
+  const barColor = pct <= 15 ? "#EF4444" : pct <= 30 ? "#F59E0B" : "#10B981";
   const initials = (fullName ?? "U").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
+  const [activeAgentIds, setActiveAgentIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let mounted = true;
+    async function poll() {
+      try {
+        const res = await fetch("/api/active-agents");
+        if (!res.ok || !mounted) return;
+        const data = await res.json();
+        setActiveAgentIds(new Set(data.activeAgentIds ?? []));
+      } catch { /* silently ignore */ }
+    }
+    poll();
+    const id = setInterval(poll, 30_000);
+    return () => { mounted = false; clearInterval(id); };
+  }, []);
 
   return (
     <aside className="flex h-full shrink-0 flex-col" style={{ width: "224px", background: "#0A0A0A", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
@@ -85,9 +103,11 @@ export function AppSidebar({ agents, role, notifications, fullName, tokenBalance
               const label = agent.customName ?? AGENT_LABELS[agent.type] ?? agent.type;
               const Icon = AGENT_ICONS[agent.type] ?? Bot;
               const dot = AGENT_DOT[agent.type] ?? "#666";
+              const isActiveSession = activeAgentIds.has(agent.id);
               return (
                 <NavItem key={agent.id} href={href} active={active} icon={Icon} label={label}
-                  dot={agent.briefingComplete ? dot : undefined} dotDim={!agent.briefingComplete} />
+                  dot={agent.briefingComplete ? dot : undefined} dotDim={!agent.briefingComplete}
+                  pulsing={isActiveSession} />
               );
             })}
           </>
@@ -147,9 +167,9 @@ function SectionLabel({ children, top }: { children: React.ReactNode; top?: bool
   );
 }
 
-function NavItem({ href, icon: Icon, label, active, badge, dot, dotDim }: {
+function NavItem({ href, icon: Icon, label, active, badge, dot, dotDim, pulsing }: {
   href: string; icon: React.ElementType; label: string; active: boolean;
-  badge?: string; dot?: string; dotDim?: boolean;
+  badge?: string; dot?: string; dotDim?: boolean; pulsing?: boolean;
 }) {
   return (
     <Link href={href} className="ow-nav" style={{ display: "flex", alignItems: "center", gap: "9px", padding: "7px 10px", borderRadius: "6px", background: active ? "rgba(255,255,255,0.06)" : "transparent", textDecoration: "none", transition: "background 0.12s" }}>
@@ -162,7 +182,10 @@ function NavItem({ href, icon: Icon, label, active, badge, dot, dotDim }: {
           {badge}
         </span>
       )}
-      {dot && <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: dotDim ? "rgba(255,255,255,0.12)" : dot, flexShrink: 0 }} />}
+      {pulsing
+        ? <div className="ow-active-dot" title="Sessão ativa" />
+        : dot && <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: dotDim ? "rgba(255,255,255,0.12)" : dot, flexShrink: 0 }} />
+      }
     </Link>
   );
 }
