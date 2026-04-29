@@ -165,3 +165,8 @@
 .ow-row:hover {
   background: rgba(255,255,255,0.025) !important;
 }
+
+/* Briefing card hover */
+.ow-briefing-card:hover {
+  border-color: rgba(16,185,129,0.3) !important;
+}

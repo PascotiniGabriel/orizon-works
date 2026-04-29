@@ -149,9 +149,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
 
           {/* === Briefing quick access === */}
           <Link href="/configuracoes/briefing" style={{ textDecoration: "none" }}>
-            <section style={{ ...CARD, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer", transition: "border-color 0.15s", border: "1px solid rgba(255,255,255,0.07)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(16,185,129,0.3)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
+            <section className="ow-briefing-card" style={{ ...CARD, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer", transition: "border-color 0.15s", border: "1px solid rgba(255,255,255,0.07)" }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                 <div style={{ width: "38px", height: "38px", borderRadius: "8px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
