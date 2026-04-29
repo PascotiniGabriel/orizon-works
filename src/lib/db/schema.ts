@@ -509,6 +509,32 @@ export const ragChunks = pgTable(
 );
 
 // ============================================================
+// WORKSPACE KPIs — Metas configuráveis por empresa/setor
+// ============================================================
+
+export const workspaceKpis = pgTable(
+  "workspace_kpis",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    agentType: agentTypeEnum("agent_type").notNull(),
+    metricKey: varchar("metric_key", { length: 64 }).notNull(),
+    metricLabel: text("metric_label").notNull(),
+    targetValue: text("target_value").notNull(),
+    unit: varchar("unit", { length: 20 }).notNull().default(""),
+    period: varchar("period", { length: 32 }).notNull().default("Mensal"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedBy: uuid("updated_by").references(() => users.id),
+  },
+  (table) => [
+    index("workspace_kpis_company_agent_idx").on(table.companyId, table.agentType),
+    unique("workspace_kpis_unique").on(table.companyId, table.agentType, table.metricKey),
+  ]
+);
+
+// ============================================================
 // TYPE EXPORTS
 // ============================================================
 
@@ -525,3 +551,5 @@ export type TokenPack = typeof tokenPacks.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type RagDocument = typeof ragDocuments.$inferSelect;
 export type RagChunk = typeof ragChunks.$inferSelect;
+export type WorkspaceKpi = typeof workspaceKpis.$inferSelect;
+export type NewWorkspaceKpi = typeof workspaceKpis.$inferInsert;

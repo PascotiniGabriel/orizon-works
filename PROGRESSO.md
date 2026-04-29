@@ -315,6 +315,10 @@ orizon-works/src/
 - [x] **Gestão de usuários**: desativar/reativar usuários na tela de configurações
 - [x] **Alertas de tokens**: in-app notification + e-mail Resend ao atingir 20% e 0%
 - [x] **Landing page**: página de marketing em /
+- [x] **Workspace por setor**: abas Dashboard / Chat / Ferramentas / Documentos por agente
+- [x] **KPIs client-side**: dashboards calculados no browser para todos os 5 setores
+- [x] **13 Ferramentas de IA**: gerador de vaga, PDI, proposta, objeções, calendário, copy, brief, DRE, fluxo de caixa, break-even, ata, resumo de contrato, mapeador de processo
+- [x] **Metas configuráveis (workspace_kpis)**: tabela DB + interface admin para definir metas por setor — GoalsPanel no topo de cada dashboard, admin edita inline, persiste no Supabase
 
 ### Média
 - [ ] Stripe webhook configurado em produção
@@ -433,3 +437,4 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/29 | debitTokens retorna tokenLimit; getCompanyUsers inclui isActive e retorna todos os usuários (ativos e inativos) |
 | Abr/29 | Fix: ternário duplicado em CurriculoRankingWorkspace (erro TS pré-existente da sessão anterior) |
 | Abr/28 | **Workspace por setor**: WorkspaceShell (4 abas: Dashboard/Chat/Ferramentas/Documentos) · WorkspaceDashboard (KPIs calculados client-side para RH/Comercial/Marketing/Financeiro/Administrativo) · WorkspaceFerramentas (13 ferramentas de IA por setor: gerador vaga, PDI, proposta, objeções, calendário, copy, brief, DRE, fluxo caixa, break-even, ata, contrato, processos) · API /api/workspace (13 prompts especializados, debit de tokens) · page.tsx do chat substituído por WorkspaceShell · DocumentosClient com initialDocuments opcional + fetch on mount |
+| Abr/29 | **Metas configuráveis**: tabela workspace_kpis no Supabase (via SQL direto, drizzle-kit com bug no push) · queries upsert com onConflictDoUpdate · server actions loadWorkspaceGoals/saveWorkspaceGoals · GoalsPanel client-side no topo de cada dashboard (carrega DB, admins editam inline) · userRole propagado de page.tsx → WorkspaceShell → WorkspaceDashboard |

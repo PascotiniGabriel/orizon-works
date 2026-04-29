@@ -41,6 +41,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
       agentAvatarUrl={agent.avatarUrl}
       canSeeDocumentos={canSeeDocumentos}
       companyId={info.companyId}
+      userRole={info.role}
     />
   );
 }

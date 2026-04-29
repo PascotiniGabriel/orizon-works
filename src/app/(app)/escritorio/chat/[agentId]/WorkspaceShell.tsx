@@ -16,6 +16,7 @@ interface WorkspaceShellProps {
   agentAvatarUrl: string | null;
   canSeeDocumentos: boolean;
   companyId: string;
+  userRole: string;
 }
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -26,7 +27,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 export function WorkspaceShell({
-  agentId, agentType, agentDisplayName, agentAvatarUrl, canSeeDocumentos, companyId,
+  agentId, agentType, agentDisplayName, agentAvatarUrl, canSeeDocumentos, companyId, userRole,
 }: WorkspaceShellProps) {
   const [active, setActive] = useState<Tab>("chat");
 
@@ -83,7 +84,7 @@ export function WorkspaceShell({
       <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
         {active === "dashboard" && (
           <div style={{ height: "100%", overflowY: "auto" }}>
-            <WorkspaceDashboard agentType={agentType} agentDisplayName={agentDisplayName} />
+            <WorkspaceDashboard agentType={agentType} agentDisplayName={agentDisplayName} userRole={userRole} />
           </div>
         )}
         {active === "chat" && (

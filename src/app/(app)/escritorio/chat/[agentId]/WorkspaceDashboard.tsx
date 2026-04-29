@@ -1,11 +1,216 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   Users, TrendingUp, TrendingDown, Target, DollarSign,
   Megaphone, FolderOpen, AlertCircle, CheckCircle2, Clock,
-  BarChart3, ArrowUpRight, ArrowDownRight, Minus,
+  BarChart3, ArrowUpRight, ArrowDownRight, Minus, Settings2, Loader2,
 } from "lucide-react";
+import { loadWorkspaceGoals, saveWorkspaceGoals } from "@/actions/workspace-goals";
+import type { KpiGoal } from "@/lib/db/queries/workspace-kpis";
+
+// ── Definição de metas por setor ─────────────────────────────────────────────
+
+interface MetricDef {
+  key: string;
+  label: string;
+  unit: string;
+  placeholder: string;
+  period: string;
+}
+
+const SECTOR_METRICS: Record<string, MetricDef[]> = {
+  rh: [
+    { key: "headcount_meta",         label: "Headcount alvo",              unit: "pessoas", placeholder: "50",   period: "Mensal"    },
+    { key: "turnover_meta",          label: "Turnover máximo",             unit: "%",       placeholder: "5",    period: "Mensal"    },
+    { key: "tempo_contratacao_meta", label: "Tempo médio contratação",     unit: "dias",    placeholder: "30",   period: "Mensal"    },
+    { key: "vagas_meta",             label: "Vagas abertas máx.",          unit: "vagas",   placeholder: "10",   period: "Mensal"    },
+  ],
+  comercial: [
+    { key: "receita_meta",   label: "Meta de receita mensal",  unit: "R$", placeholder: "100000", period: "Mensal" },
+    { key: "win_rate_meta",  label: "Win rate alvo",           unit: "%",  placeholder: "30",     period: "Mensal" },
+    { key: "pipeline_meta",  label: "Pipeline mínimo",         unit: "R$", placeholder: "300000", period: "Mensal" },
+    { key: "ticket_meta",    label: "Ticket médio alvo",       unit: "R$", placeholder: "5000",   period: "Mensal" },
+  ],
+  marketing: [
+    { key: "leads_meta",   label: "Meta de leads mensais", unit: "leads", placeholder: "200",   period: "Mensal" },
+    { key: "ctr_meta",     label: "CTR alvo",              unit: "%",     placeholder: "3",     period: "Mensal" },
+    { key: "cpl_meta",     label: "CPL máximo",            unit: "R$",    placeholder: "50",    period: "Mensal" },
+    { key: "budget_meta",  label: "Budget mensal",         unit: "R$",    placeholder: "10000", period: "Mensal" },
+  ],
+  financeiro: [
+    { key: "receita_meta",       label: "Meta de receita bruta",  unit: "R$", placeholder: "500000", period: "Mensal" },
+    { key: "margem_bruta_meta",  label: "Margem bruta alvo",      unit: "%",  placeholder: "40",     period: "Mensal" },
+    { key: "ebitda_meta",        label: "EBITDA alvo",            unit: "%",  placeholder: "20",     period: "Mensal" },
+    { key: "margem_liquida_meta",label: "Margem líquida alvo",    unit: "%",  placeholder: "15",     period: "Mensal" },
+  ],
+  administrativo: [
+    { key: "contratos_meta", label: "Contratos ativos alvo",     unit: "contratos", placeholder: "20",    period: "Mensal" },
+    { key: "tarefas_meta",   label: "Tarefas abertas máx.",      unit: "tarefas",   placeholder: "50",    period: "Mensal" },
+    { key: "custo_meta",     label: "Custo operacional máx.",    unit: "R$",        placeholder: "80000", period: "Mensal" },
+  ],
+};
+
+// ── GoalsPanel ────────────────────────────────────────────────────────────────
+
+function GoalsPanel({ agentType, isAdmin }: { agentType: string; isAdmin: boolean }) {
+  const [goals, setGoals] = useState<KpiGoal[]>([]);
+  const [editing, setEditing] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const [saveStatus, setSaveStatus] = useState<"success" | "error" | null>(null);
+
+  const metrics = SECTOR_METRICS[agentType] ?? [];
+
+  useEffect(() => {
+    loadWorkspaceGoals(agentType).then(({ goals: g }) => setGoals(g));
+  }, [agentType]);
+
+  function getGoalValue(key: string) {
+    return goals.find((g) => g.metricKey === key)?.targetValue ?? "";
+  }
+
+  function handleSave(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const updated: KpiGoal[] = metrics.map((m) => ({
+      metricKey: m.key,
+      metricLabel: m.label,
+      targetValue: (fd.get(m.key) as string) ?? "",
+      unit: m.unit,
+      period: m.period,
+    })).filter((g) => g.targetValue.trim() !== "");
+
+    setSaveStatus(null);
+    startTransition(async () => {
+      const res = await saveWorkspaceGoals(agentType, updated);
+      if (res.success) {
+        setGoals(updated);
+        setEditing(false);
+        setSaveStatus("success");
+        setTimeout(() => setSaveStatus(null), 3000);
+      } else {
+        setSaveStatus("error");
+      }
+    });
+  }
+
+  const hasGoals = goals.length > 0;
+
+  return (
+    <div style={{
+      background: "#161616",
+      border: "1px solid rgba(255,255,255,0.07)",
+      borderRadius: "10px",
+      overflow: "hidden",
+      marginBottom: "20px",
+    }}>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "14px 20px",
+        borderBottom: editing || hasGoals ? "1px solid rgba(255,255,255,0.06)" : "none",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Target style={{ width: "15px", height: "15px", color: "#10B981" }} strokeWidth={2} />
+          <span style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 600 }}>Metas do Setor</span>
+          {!hasGoals && !editing && (
+            <span style={{ color: "#444", fontSize: "12px" }}>— não configuradas</span>
+          )}
+        </div>
+        {isAdmin && !editing && (
+          <button
+            onClick={() => setEditing(true)}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "5px",
+              height: "28px", padding: "0 12px", borderRadius: "5px",
+              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)",
+              color: "#888", fontSize: "12px", cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            <Settings2 style={{ width: "11px", height: "11px" }} strokeWidth={2} />
+            {hasGoals ? "Editar metas" : "Configurar metas"}
+          </button>
+        )}
+        {saveStatus === "success" && (
+          <span style={{ color: "#10B981", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <CheckCircle2 style={{ width: "12px", height: "12px" }} strokeWidth={2} /> Salvo
+          </span>
+        )}
+      </div>
+
+      {/* Goals view */}
+      {hasGoals && !editing && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1px", background: "rgba(255,255,255,0.04)" }}>
+          {goals.map((g) => (
+            <div key={g.metricKey} style={{ background: "#161616", padding: "14px 16px" }}>
+              <p style={{ color: "#555", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>
+                {g.metricLabel}
+              </p>
+              <p style={{ color: "#EBEBEB", fontSize: "20px", fontWeight: 700, letterSpacing: "-0.03em" }}>
+                {Number(g.targetValue).toLocaleString("pt-BR")}
+                <span style={{ color: "#555", fontSize: "13px", fontWeight: 400, marginLeft: "4px" }}>{g.unit}</span>
+              </p>
+              <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{g.period}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Edit form (admin only) */}
+      {editing && (
+        <form onSubmit={handleSave} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
+            {metrics.map((m) => (
+              <div key={m.key}>
+                <label style={{ color: "#888", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "5px" }}>
+                  {m.label} ({m.unit})
+                </label>
+                <input
+                  name={m.key}
+                  defaultValue={getGoalValue(m.key)}
+                  placeholder={m.placeholder}
+                  style={{
+                    width: "100%", height: "34px", background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px",
+                    color: "#EBEBEB", fontSize: "14px", padding: "0 10px",
+                    outline: "none", boxSizing: "border-box", fontFamily: "var(--font-geist-mono)",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              type="submit"
+              disabled={pending}
+              style={{
+                height: "34px", padding: "0 18px", borderRadius: "6px",
+                background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px",
+                border: "none", cursor: pending ? "wait" : "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: "6px",
+              }}
+            >
+              {pending && <Loader2 style={{ width: "13px", height: "13px" }} className="animate-spin" />}
+              {pending ? "Salvando..." : "Salvar metas"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEditing(false); setSaveStatus(null); }}
+              style={{
+                height: "34px", padding: "0 14px", borderRadius: "6px",
+                background: "transparent", border: "1px solid rgba(255,255,255,0.08)",
+                color: "#555", fontSize: "13px", cursor: "pointer", fontFamily: "inherit",
+              }}
+            >
+              Cancelar
+            </button>
+            {saveStatus === "error" && <span style={{ color: "#F87171", fontSize: "12px" }}>Erro ao salvar.</span>}
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
 
 interface KpiCardProps {
   label: string;
@@ -549,18 +754,38 @@ function AdministrativoDashboard() {
 }
 
 // ── Dispatcher principal ──────────────────────────────────────────────────────
-export function WorkspaceDashboard({ agentType, agentDisplayName }: { agentType: string; agentDisplayName: string }) {
-  switch (agentType) {
-    case "rh":            return <RHDashboard />;
-    case "comercial":     return <ComercialDashboard />;
-    case "marketing":     return <MarketingDashboard />;
-    case "financeiro":    return <FinanceiroDashboard />;
-    case "administrativo": return <AdministrativoDashboard />;
-    default: return (
-      <div style={{ padding: "60px 24px", textAlign: "center", color: "#555" }}>
-        <BarChart3 style={{ width: "40px", height: "40px", margin: "0 auto 12px", opacity: 0.3 }} />
-        <p>Dashboard para {agentDisplayName} em breve.</p>
+export function WorkspaceDashboard({
+  agentType, agentDisplayName, userRole,
+}: {
+  agentType: string;
+  agentDisplayName: string;
+  userRole?: string;
+}) {
+  const isAdmin = ["company_admin", "sector_manager"].includes(userRole ?? "");
+
+  const sectorContent = (() => {
+    switch (agentType) {
+      case "rh":             return <RHDashboard />;
+      case "comercial":      return <ComercialDashboard />;
+      case "marketing":      return <MarketingDashboard />;
+      case "financeiro":     return <FinanceiroDashboard />;
+      case "administrativo": return <AdministrativoDashboard />;
+      default: return (
+        <div style={{ padding: "60px 24px", textAlign: "center", color: "#555" }}>
+          <BarChart3 style={{ width: "40px", height: "40px", margin: "0 auto 12px", opacity: 0.3 }} />
+          <p>Dashboard para {agentDisplayName} em breve.</p>
+        </div>
+      );
+    }
+  })();
+
+  return (
+    <div>
+      {/* Painel de metas — carrega do DB, admin pode editar */}
+      <div style={{ padding: "24px 24px 0" }}>
+        <GoalsPanel agentType={agentType} isAdmin={isAdmin} />
       </div>
-    );
-  }
+      {sectorContent}
+    </div>
+  );
 }
