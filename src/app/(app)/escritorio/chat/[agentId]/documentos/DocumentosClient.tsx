@@ -14,9 +14,9 @@ interface RagDocument {
 }
 
 interface DocumentosClientProps {
-  initialDocuments: RagDocument[];
+  initialDocuments?: RagDocument[];
   agentId: string;
-  companyId: string;
+  companyId?: string;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -54,7 +54,17 @@ function formatDate(dateStr: string): string {
 }
 
 export function DocumentosClient({ initialDocuments, agentId }: DocumentosClientProps) {
-  const [documents, setDocuments] = useState<RagDocument[]>(initialDocuments);
+  const [documents, setDocuments] = useState<RagDocument[]>(initialDocuments ?? []);
+
+  // Fetch on mount when no initialDocuments provided (e.g. when rendered inside WorkspaceShell)
+  useEffect(() => {
+    if (initialDocuments !== undefined) return;
+    fetch(`/api/rag/list?agentId=${agentId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setDocuments(data.documents ?? []); })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentId]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);

@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getAgentWithBriefings } from "@/lib/db/queries/agents";
-import { ChatInterface } from "@/components/app/ChatInterface";
-import { Trophy, BookOpen } from "lucide-react";
+import { WorkspaceShell } from "./WorkspaceShell";
 
 const AGENT_TYPE_LABELS: Record<string, string> = {
   rh:             "RH",
@@ -22,10 +20,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
   const { agentId } = await params;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const info = await getUserCompanyInfo(user.id);
@@ -35,61 +30,17 @@ export default async function ChatPage({ params }: ChatPageProps) {
   if (!data) notFound();
 
   const { agent } = data;
-  const agentDisplayName =
-    agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
-
-  // Mostrar action bar para RH (ranking) e para admin/manager (base de conhecimento)
-  const showActionBar = agent.type === "rh" || ["company_admin", "sector_manager"].includes(info.role);
+  const agentDisplayName = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
+  const canSeeDocumentos = ["company_admin", "sector_manager"].includes(info.role);
 
   return (
-    <div className="flex flex-col" style={{ height: "100vh" }}>
-      {/* Action bar */}
-      {showActionBar && (
-        <div
-          className="flex shrink-0 items-center justify-end gap-2 px-4 py-2"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#111111" }}
-        >
-          {/* Base de Conhecimento (admin/manager em qualquer agente) */}
-          {["company_admin", "sector_manager"].includes(info.role) && (
-            <Link
-              href={`/escritorio/chat/${agent.id}/documentos`}
-              className="inline-flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] font-semibold transition-all duration-150 hover:opacity-90"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#888",
-              }}
-            >
-              <BookOpen className="h-3.5 w-3.5" strokeWidth={2} />
-              Base de Conhecimento
-            </Link>
-          )}
-
-          {/* Ranking de Currículos (apenas RH) */}
-          {agent.type === "rh" && (
-            <Link
-              href={`/escritorio/chat/${agent.id}/avaliar`}
-              className="inline-flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] font-semibold transition-all duration-150 hover:opacity-90"
-              style={{
-                background: "rgba(16,185,129,0.1)",
-                border: "1px solid rgba(16,185,129,0.25)",
-                color: "#10B981",
-              }}
-            >
-              <Trophy className="h-3.5 w-3.5" strokeWidth={2} />
-              Ranking de Currículos
-            </Link>
-          )}
-        </div>
-      )}
-      <div className="flex-1 overflow-hidden">
-        <ChatInterface
-          agentId={agent.id}
-          agentDisplayName={agentDisplayName}
-          agentAvatarUrl={agent.avatarUrl}
-          agentType={agent.type}
-        />
-      </div>
-    </div>
+    <WorkspaceShell
+      agentId={agent.id}
+      agentType={agent.type}
+      agentDisplayName={agentDisplayName}
+      agentAvatarUrl={agent.avatarUrl}
+      canSeeDocumentos={canSeeDocumentos}
+      companyId={info.companyId}
+    />
   );
 }

@@ -83,6 +83,13 @@ Redesign completo da interface, inspirado no VAPI. Quarta iteração — versão
 - [x] Salva `compiledPrompt` no banco
 - [x] Redireciona para `/escritorio` após conclusão
 
+### Workspace por Setor (Abas)
+- [x] `WorkspaceShell` — 4 abas por agente: Dashboard · Chat · Ferramentas · Documentos
+- [x] `WorkspaceDashboard` — KPIs calculados client-side (sem DB): RH, Comercial, Marketing, Financeiro, Administrativo
+- [x] `WorkspaceFerramentas` — 13 ferramentas de IA com forms → resultado copiável
+- [x] `/api/workspace` — endpoint genérico com 13 prompts especializados por ferramenta
+- [x] Aba "Documentos" integrada ao RAG existente (DocumentosClient agora aceita fetch lazy)
+
 ### Escritório / Chat com Agentes
 - [x] Dashboard com lista de agentes (design VAPI)
 - [x] Chat com streaming em tempo real
@@ -425,3 +432,4 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/29 | Alertas de tokens: maybeFireTokenAlerts após cada chat (in-app notification + email Resend), cooldown 12h, alerta em 20% e 0% de saldo |
 | Abr/29 | debitTokens retorna tokenLimit; getCompanyUsers inclui isActive e retorna todos os usuários (ativos e inativos) |
 | Abr/29 | Fix: ternário duplicado em CurriculoRankingWorkspace (erro TS pré-existente da sessão anterior) |
+| Abr/28 | **Workspace por setor**: WorkspaceShell (4 abas: Dashboard/Chat/Ferramentas/Documentos) · WorkspaceDashboard (KPIs calculados client-side para RH/Comercial/Marketing/Financeiro/Administrativo) · WorkspaceFerramentas (13 ferramentas de IA por setor: gerador vaga, PDI, proposta, objeções, calendário, copy, brief, DRE, fluxo caixa, break-even, ata, contrato, processos) · API /api/workspace (13 prompts especializados, debit de tokens) · page.tsx do chat substituído por WorkspaceShell · DocumentosClient com initialDocuments opcional + fetch on mount |
