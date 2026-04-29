@@ -5,8 +5,48 @@ import { db } from "@/lib/db";
 import { users, agentTypeEnum } from "@/lib/db/schema";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { eq, and } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 type AgentType = (typeof agentTypeEnum.enumValues)[number];
+
+export async function setUserActiveStatus(
+  targetUserId: string,
+  isActive: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Não autenticado" };
+
+  const info = await getUserCompanyInfo(user.id);
+  if (!info) return { success: false, error: "Empresa não encontrada" };
+
+  if (info.role !== "company_admin" && info.role !== "super_admin") {
+    return { success: false, error: "Sem permissão" };
+  }
+
+  if (targetUserId === user.id) {
+    return { success: false, error: "Não é possível desativar sua própria conta" };
+  }
+
+  const [targetUser] = await db
+    .select({ id: users.id, role: users.role })
+    .from(users)
+    .where(and(eq(users.id, targetUserId), eq(users.companyId, info.companyId)))
+    .limit(1);
+
+  if (!targetUser) return { success: false, error: "Usuário não encontrado" };
+  if (targetUser.role === "super_admin") {
+    return { success: false, error: "Não é possível desativar super admins" };
+  }
+
+  await db
+    .update(users)
+    .set({ isActive, updatedAt: new Date() })
+    .where(eq(users.id, targetUserId));
+
+  revalidatePath("/configuracoes");
+  return { success: true };
+}
 
 export async function updateUserManagedAgent(
   targetUserId: string,

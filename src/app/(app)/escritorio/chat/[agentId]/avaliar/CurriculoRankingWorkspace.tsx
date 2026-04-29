@@ -665,7 +665,7 @@ export function CurriculoRankingWorkspace({
               </div>
             )}
           </div>
-        ) : activeTab === "curriculos" ? null : null}
+        )}
       </div>
 
       {/* Footer — só na aba currículos */}

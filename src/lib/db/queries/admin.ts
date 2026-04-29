@@ -88,6 +88,7 @@ export interface UserActivity {
   managedAgentType: string | null;
   lastSeenAt: Date | null;
   sessionCount: number;
+  isActive: boolean;
 }
 
 export async function getCompanyUsers(companyId: string): Promise<UserActivity[]> {
@@ -100,11 +101,12 @@ export async function getCompanyUsers(companyId: string): Promise<UserActivity[]
       managedAgentType: users.managedAgentType,
       lastSeenAt: users.lastSeenAt,
       sessionCount: count(sessions.id),
+      isActive: users.isActive,
     })
     .from(users)
     .leftJoin(sessions, eq(sessions.userId, users.id))
-    .where(and(eq(users.companyId, companyId), eq(users.isActive, true)))
-    .groupBy(users.id, users.fullName, users.email, users.role, users.managedAgentType, users.lastSeenAt)
+    .where(eq(users.companyId, companyId))
+    .groupBy(users.id, users.fullName, users.email, users.role, users.managedAgentType, users.lastSeenAt, users.isActive)
     .orderBy(desc(users.lastSeenAt));
 
   return rows;

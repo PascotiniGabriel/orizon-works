@@ -6,6 +6,7 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { checkTokenBalance, debitTokens } from "@/lib/db/queries/tokens";
 import { buildSystemPrompt } from "@/lib/claude/prompt-builder";
+import { maybeFireTokenAlerts } from "@/lib/token-alerts";
 import { getOrCreateSession, saveMessages } from "@/lib/db/queries/sessions";
 import { enrichSimpleMessage } from "@/lib/claude/prompt-engineer";
 import { checkCompanyHasRagDocuments } from "@/lib/db/queries/rag";
@@ -187,7 +188,7 @@ export async function POST(request: NextRequest) {
       // ── Pós-streaming: debitar tokens e salvar mensagens ────────────────
       const totalTokens = inputTokens + outputTokens;
 
-      await Promise.all([
+      const [debitResult] = await Promise.all([
         debitTokens(companyId, totalTokens),
         saveMessages(
           activeSessionId,
@@ -199,6 +200,9 @@ export async function POST(request: NextRequest) {
           MODEL
         ),
       ]);
+
+      // Disparar alertas de tokens de forma assíncrona (não bloqueia resposta)
+      void maybeFireTokenAlerts(companyId, debitResult.newBalance, debitResult.tokenLimit);
     },
   });
 

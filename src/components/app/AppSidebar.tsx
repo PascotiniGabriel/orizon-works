@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid, History, Users, Megaphone, TrendingUp, DollarSign,
-  FolderOpen, Bot, Shield, Settings, LogOut, Zap,
+  FolderOpen, Bot, Shield, Settings, LogOut, Zap, FileText,
 } from "lucide-react";
 import { signOut } from "@/actions/auth";
 import { NotificationBell } from "@/components/app/NotificationBell";
@@ -107,6 +107,7 @@ export function AppSidebar({ agents, role, notifications, fullName, tokenBalance
 
         <SectionLabel top>Gerenciar</SectionLabel>
         <NavItem href="/configuracoes" active={pathname === "/configuracoes"} icon={Settings} label="Configurações" />
+        <NavItem href="/configuracoes/briefing" active={pathname === "/configuracoes/briefing"} icon={FileText} label="Briefings" />
         {role === "super_admin" && (
           <NavItem href="/admin" active={pathname === "/admin"} icon={Shield} label="Super Admin" badge="Admin" />
         )}

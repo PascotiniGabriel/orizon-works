@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo, getCompanyInvites, getCompanyAgents } from "@/lib/db/queries/company";
 import { getCompanyStats, getCompanyUsers } from "@/lib/db/queries/admin";
@@ -6,6 +7,7 @@ import { InviteUserModal } from "@/components/app/InviteUserModal";
 import { CancelInviteButton } from "@/components/app/CancelInviteButton";
 import { AssignAgentSelector, type AgentOption } from "@/components/app/AssignAgentSelector";
 import { TokenPackButton } from "@/components/app/TokenPackButton";
+import { UserActionButtons } from "@/components/app/UserActionButtons";
 import { MfaSection } from "./MfaSection";
 import {
   Users,
@@ -17,6 +19,8 @@ import {
   CheckCircle2,
   XCircle,
   Zap,
+  FileText,
+  ChevronRight,
 } from "lucide-react";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -142,6 +146,29 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
       {/* Content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
         <div style={{ maxWidth: "860px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "20px" }}>
+
+          {/* === Briefing quick access === */}
+          <Link href="/configuracoes/briefing" style={{ textDecoration: "none" }}>
+            <section style={{ ...CARD, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer", transition: "border-color 0.15s", border: "1px solid rgba(255,255,255,0.07)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(16,185,129,0.3)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                <div style={{ width: "38px", height: "38px", borderRadius: "8px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <FileText style={{ width: "17px", height: "17px", color: "#10B981" }} strokeWidth={1.75} />
+                </div>
+                <div>
+                  <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, margin: 0, letterSpacing: "-0.01em" }}>
+                    Editar Briefings
+                  </p>
+                  <p style={{ color: "#555", fontSize: "13px", marginTop: "2px" }}>
+                    Personalidade, contexto e instruções dos agentes
+                  </p>
+                </div>
+              </div>
+              <ChevronRight style={{ width: "16px", height: "16px", color: "#3A3A3A", flexShrink: 0 }} strokeWidth={2} />
+            </section>
+          </Link>
 
           {/* === Token consumption === */}
           <section style={CARD}>
@@ -304,7 +331,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                       const badge = ROLE_BADGE[u.role] ?? ROLE_BADGE.employee;
                       const nameInitial = (u.fullName ?? u.email)[0].toUpperCase();
                       return (
-                        <div key={u.id} className="ow-row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 20px", ...(i > 0 ? DIVIDER : {}) }}>
+                        <div key={u.id} className="ow-row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 20px", ...(i > 0 ? DIVIDER : {}), opacity: u.isActive ? 1 : 0.5 }}>
                           {/* Avatar */}
                           <div style={{ width: "36px", height: "36px", flexShrink: 0, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "#888" }}>
                             {nameInitial}
@@ -314,6 +341,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 500, letterSpacing: "-0.01em", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {u.fullName ?? u.email}
+                              {!u.isActive && <span style={{ color: "#555", fontSize: "12px", marginLeft: "8px" }}>(inativo)</span>}
                             </p>
                             <p style={{ color: "#555", fontSize: "13px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {u.email}
@@ -341,6 +369,9 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                           <span style={{ flexShrink: 0, fontSize: "13px", color: "#444", fontFamily: "var(--font-geist-mono)" }}>
                             {u.sessionCount} sess.
                           </span>
+
+                          {/* Deactivate / Reactivate */}
+                          <UserActionButtons userId={u.id} isActive={u.isActive} />
                         </div>
                       );
                     })}

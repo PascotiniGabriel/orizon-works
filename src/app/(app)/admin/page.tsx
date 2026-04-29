@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getPlatformStats, getAllCompanies } from "@/lib/db/queries/admin";
+import { AdminCompanyActions } from "@/components/app/AdminCompanyActions";
 
 const PLAN_LABELS: Record<string, string> = {
   trial:      "Trial",
@@ -172,6 +173,7 @@ export default async function SuperAdminPage() {
                 <th style={{ ...TABLE_HEADER, textAlign: "right" }}>Tokens</th>
                 <th style={{ ...TABLE_HEADER, textAlign: "right" }}>Usuários</th>
                 <th style={TABLE_HEADER}>Cadastro</th>
+                <th style={TABLE_HEADER}></th>
               </tr>
             </thead>
             <tbody>
@@ -187,6 +189,7 @@ export default async function SuperAdminPage() {
                     style={{
                       borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : undefined,
                       transition: "background 0.1s",
+                      position: "relative",
                     }}
                   >
                     <td style={{ padding: "12px 16px", color: "#EBEBEB", fontWeight: 500 }}>
@@ -250,6 +253,13 @@ export default async function SuperAdminPage() {
                     <td style={{ padding: "12px 16px", color: "#3A3A3A", fontFamily: "var(--font-geist-mono)" }}>
                       {formatDate(c.createdAt)}
                     </td>
+                    <AdminCompanyActions
+                      companyId={c.id}
+                      currentPlan={c.plan}
+                      currentStatus={c.subscriptionStatus}
+                      currentTokenLimit={c.tokenLimit}
+                      currentMaxAgents={5}
+                    />
                   </tr>
                 );
               })}

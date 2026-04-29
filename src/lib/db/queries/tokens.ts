@@ -55,7 +55,7 @@ export async function checkTokenBalance(companyId: string, required: number): Pr
 export async function debitTokens(
   companyId: string,
   amount: number
-): Promise<{ success: boolean; newBalance: number; newUsed: number; status: TokenStatus }> {
+): Promise<{ success: boolean; newBalance: number; newUsed: number; tokenLimit: number; status: TokenStatus }> {
   const [updated] = await db
     .update(companies)
     .set({
@@ -71,13 +71,14 @@ export async function debitTokens(
     });
 
   if (!updated) {
-    return { success: false, newBalance: 0, newUsed: 0, status: "blocked" };
+    return { success: false, newBalance: 0, newUsed: 0, tokenLimit: 0, status: "blocked" };
   }
 
   return {
     success: true,
     newBalance: updated.tokenBalance,
     newUsed: updated.tokenUsed,
+    tokenLimit: updated.tokenLimit,
     status: resolveStatus(updated.tokenBalance, updated.tokenUsed, updated.tokenLimit),
   };
 }
