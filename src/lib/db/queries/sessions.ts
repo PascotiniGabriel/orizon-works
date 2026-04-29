@@ -92,6 +92,7 @@ export interface SessionHistoryItem {
   messageCount: number;
   userId: string;
   userName: string | null;
+  preview: string | null;
 }
 
 export async function getSessionsHistory(
@@ -114,6 +115,7 @@ export async function getSessionsHistory(
       agentAvatarUrl: agents.avatarUrl,
       userName: users.fullName,
       messageCount: count(messages.id),
+      preview: sql<string | null>`(SELECT content FROM messages m2 WHERE m2.session_id = ${sessions.id} AND m2.role = 'user' ORDER BY m2.created_at LIMIT 1)`,
     })
     .from(sessions)
     .innerJoin(agents, eq(sessions.agentId, agents.id))

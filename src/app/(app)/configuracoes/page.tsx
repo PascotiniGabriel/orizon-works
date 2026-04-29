@@ -9,6 +9,7 @@ import { AssignAgentSelector, type AgentOption } from "@/components/app/AssignAg
 import { TokenPackButton } from "@/components/app/TokenPackButton";
 import { UserActionButtons } from "@/components/app/UserActionButtons";
 import { MfaSection } from "./MfaSection";
+import { tokensToCredits, formatCredits } from "@/lib/utils/credits";
 import {
   Users,
   Megaphone,
@@ -173,7 +174,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <div>
                 <p style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.01em", margin: 0 }}>
-                  Consumo de Tokens
+                  Consumo de Créditos
                 </p>
                 <p style={{ color: "#555", fontSize: "13px", marginTop: "2px" }}>Período atual</p>
               </div>
@@ -185,17 +186,17 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
               <div style={{ marginBottom: "16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 500 }}>
-                    {formatNumber(tokensUsed)} usados
+                    {formatCredits(tokensToCredits(tokensUsed))} créditos usados
                   </span>
                   <span style={{ color: "#555", fontSize: "13px" }}>
-                    limite: {formatNumber(info.tokenLimit)}
+                    limite: {formatCredits(tokensToCredits(info.tokenLimit))} créditos
                   </span>
                 </div>
                 <div style={{ height: "3px", background: "rgba(255,255,255,0.07)", borderRadius: "2px", overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${Math.min(tokenPercent, 100)}%`, background: barColor, borderRadius: "2px", boxShadow: `0 0 8px ${barColor}50` }} />
                 </div>
                 <p style={{ color: "#555", fontSize: "13px", marginTop: "8px" }}>
-                  {formatNumber(info.tokenBalance)} tokens disponíveis ({percentRemaining}% restante)
+                  {formatCredits(tokensToCredits(info.tokenBalance))} créditos disponíveis ({percentRemaining}% restante)
                 </p>
               </div>
 
@@ -205,10 +206,10 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                   <CheckCircle2 style={{ width: "16px", height: "16px", color: "#10B981", flexShrink: 0 }} strokeWidth={2} />
                   <div>
                     <p style={{ color: "#10B981", fontSize: "14px", fontWeight: 600, margin: 0 }}>
-                      Token Pack adquirido com sucesso!
+                      Pacote de Créditos adquirido com sucesso!
                     </p>
                     <p style={{ color: "#4EDBA4", fontSize: "13px", marginTop: "2px" }}>
-                      2.000.000 tokens foram adicionados ao seu saldo.
+                      2.000 créditos foram adicionados ao seu saldo.
                     </p>
                   </div>
                 </div>
@@ -228,10 +229,10 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                   <p style={{ color: "#10B981", fontSize: "14px", fontWeight: 600, margin: 0 }}>
                     {info.tokenBalance < info.tokenLimit * 0.2
                       ? "Saldo abaixo de 20% — recarregue agora"
-                      : "Precisa de mais tokens?"}
+                      : "Precisa de mais créditos?"}
                   </p>
                   <p style={{ color: "#3A8A6A", fontSize: "13px", marginTop: "2px" }}>
-                    +2.000.000 tokens adicionados imediatamente ao seu saldo.
+                    +2.000 créditos adicionados imediatamente ao seu saldo.
                   </p>
                 </div>
                 <TokenPackButton />
@@ -250,7 +251,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                   {[
                     { label: "Sessões",           value: formatNumber(stats.totalSessions)   },
                     { label: "Mensagens",          value: formatNumber(stats.totalMessages)   },
-                    { label: "Tokens consumidos",  value: formatNumber(stats.totalTokensUsed) },
+                    { label: "Créditos consumidos", value: formatCredits(tokensToCredits(stats.totalTokensUsed)) },
                     { label: "Usuários ativos",    value: formatNumber(stats.activeUsers)     },
                   ].map((card) => (
                     <div key={card.label} style={{ ...CARD, padding: "16px 18px" }}>
@@ -291,7 +292,7 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                           <div style={{ textAlign: "right", flexShrink: 0 }}>
                             <p style={{ color: "#EBEBEB", fontSize: "14px", fontWeight: 500, margin: 0 }}>{a.sessions} sessões</p>
                             <p style={{ color: "#555", fontSize: "13px", marginTop: "1px", fontFamily: "var(--font-geist-mono)" }}>
-                              {formatNumber(a.tokens)} tokens
+                              {formatCredits(tokensToCredits(a.tokens))} créditos
                             </p>
                           </div>
                         </div>

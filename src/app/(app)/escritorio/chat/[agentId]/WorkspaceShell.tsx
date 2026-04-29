@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, MessageSquare, Wrench, BookOpen } from "lucide-react";
+import Link from "next/link";
+import { LayoutDashboard, MessageSquare, Wrench, BookOpen, AlertTriangle } from "lucide-react";
 import { ChatInterface } from "@/components/app/ChatInterface";
 import { WorkspaceDashboard } from "./WorkspaceDashboard";
 import { WorkspaceFerramentas } from "./WorkspaceFerramentas";
@@ -17,6 +18,7 @@ interface WorkspaceShellProps {
   canSeeDocumentos: boolean;
   companyId: string;
   userRole: string;
+  briefingComplete: boolean;
 }
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -27,7 +29,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 export function WorkspaceShell({
-  agentId, agentType, agentDisplayName, agentAvatarUrl, canSeeDocumentos, companyId, userRole,
+  agentId, agentType, agentDisplayName, agentAvatarUrl, canSeeDocumentos, companyId, userRole, briefingComplete,
 }: WorkspaceShellProps) {
   const [active, setActive] = useState<Tab>("chat");
 
@@ -88,12 +90,35 @@ export function WorkspaceShell({
           </div>
         )}
         {active === "chat" && (
-          <ChatInterface
-            agentId={agentId}
-            agentDisplayName={agentDisplayName}
-            agentAvatarUrl={agentAvatarUrl}
-            agentType={agentType}
-          />
+          briefingComplete ? (
+            <ChatInterface
+              agentId={agentId}
+              agentDisplayName={agentDisplayName}
+              agentAvatarUrl={agentAvatarUrl}
+              agentType={agentType}
+            />
+          ) : (
+            <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 40px", textAlign: "center" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "10px", background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
+                <AlertTriangle style={{ width: "22px", height: "22px", color: "#FBBF24" }} strokeWidth={1.75} />
+              </div>
+              <p style={{ color: "#EBEBEB", fontSize: "18px", fontWeight: 600, letterSpacing: "-0.02em", marginBottom: "10px" }}>
+                {agentDisplayName} ainda não está pronto
+              </p>
+              <p style={{ color: "#555", fontSize: "15px", lineHeight: "1.6", maxWidth: "360px", marginBottom: "6px" }}>
+                Complete o briefing para que o agente conheça a sua empresa e entregue resultados precisos.
+              </p>
+              <p style={{ color: "#3A3A3A", fontSize: "13px", marginBottom: "28px" }}>
+                Sem briefing, as respostas serão genéricas.
+              </p>
+              <Link
+                href="/configuracoes/briefing"
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "11px 22px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "14px", borderRadius: "7px", textDecoration: "none" }}
+              >
+                Configurar briefing agora →
+              </Link>
+            </div>
+          )
         )}
         {active === "ferramentas" && (
           <div style={{ height: "100%", overflowY: "auto" }}>

@@ -33,6 +33,8 @@ export default async function ChatPage({ params }: ChatPageProps) {
   const agentDisplayName = agent.customName ?? AGENT_TYPE_LABELS[agent.type] ?? agent.type;
   const canSeeDocumentos = ["company_admin", "sector_manager"].includes(info.role);
 
+  const briefingComplete = data.agentBriefing?.isComplete ?? false;
+
   return (
     <WorkspaceShell
       agentId={agent.id}
@@ -42,6 +44,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
       canSeeDocumentos={canSeeDocumentos}
       companyId={info.companyId}
       userRole={info.role}
+      briefingComplete={briefingComplete}
     />
   );
 }

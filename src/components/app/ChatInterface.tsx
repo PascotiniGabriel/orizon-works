@@ -203,7 +203,7 @@ export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agent
       if (newSessionId) setSessionId(newSessionId);
       if (res.status === 402) {
         setTokenBlocked(true);
-        setMessages((prev) => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: "Tokens esgotados. Entre em contato com o administrador para adquirir um Token Pack." }; return u; });
+        setMessages((prev) => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: "Créditos esgotados. Entre em contato com o administrador para adquirir mais créditos." }; return u; });
         return;
       }
       if (!res.ok || !res.body) throw new Error("Erro na resposta");
@@ -343,7 +343,7 @@ export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agent
         <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           {tokenBlocked ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "14px 16px", borderRadius: "8px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", fontSize: "15px" }}>
-              Tokens esgotados — contate o administrador para continuar
+              Créditos esgotados — contate o administrador para continuar
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>

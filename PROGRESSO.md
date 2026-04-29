@@ -265,6 +265,8 @@ orizon-works/src/
     │       ├── sessions.ts                    ✅
     │       └── tokens.ts                      ✅
     ├── export.ts                              ✅ PDF (jsPDF) + Word (docx)
+    ├── utils/
+    │   └── credits.ts                         ✅ tokensToCredits + formatCredits (1 crédito = 1.000 tokens)
     ├── rate-limit.ts                          ✅ checkChatRateLimit / checkUploadRateLimit
     ├── audit.ts                               ✅ logAudit() — audit_logs table
     ├── rag/
@@ -441,3 +443,5 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/28 | **Workspace por setor**: WorkspaceShell (4 abas: Dashboard/Chat/Ferramentas/Documentos) · WorkspaceDashboard (KPIs calculados client-side para RH/Comercial/Marketing/Financeiro/Administrativo) · WorkspaceFerramentas (13 ferramentas de IA por setor: gerador vaga, PDI, proposta, objeções, calendário, copy, brief, DRE, fluxo caixa, break-even, ata, contrato, processos) · API /api/workspace (13 prompts especializados, debit de tokens) · page.tsx do chat substituído por WorkspaceShell · DocumentosClient com initialDocuments opcional + fetch on mount |
 | Abr/29 | **Metas configuráveis**: tabela workspace_kpis no Supabase (via SQL direto, drizzle-kit com bug no push) · queries upsert com onConflictDoUpdate · server actions loadWorkspaceGoals/saveWorkspaceGoals · GoalsPanel client-side no topo de cada dashboard (carrega DB, admins editam inline) · userRole propagado de page.tsx → WorkspaceShell → WorkspaceDashboard |
 | Abr/29 | Fix /configuracoes 500 (onMouseEnter em RSC) · Fix landing page pública (middleware) · middleware.ts + page.tsx atualizados · SQL workspace_kpis criado em produção |
+| Abr/29 | Renomear tokens → créditos (1 crédito = 1.000 tokens, somente camada de apresentação): `src/lib/utils/credits.ts` (tokensToCredits + formatCredits) · AppSidebar, escritorio/page, configuracoes/page, TokenPackButton, ChatInterface, landing page plans atualizados |
+| Abr/29 | Redesign densidade visual A+B+C: 4 stat cards (Agentes/Créditos/Atividade Hoje/Este Mês) · lista de agentes rica com micro-métricas e estado "Configurando" com link · seção Atividade Recente (5 últimas sessões) · B1 empty state escritório com personalidade · B2 empty state histórico melhorado · B3 estado "briefing incompleto" na aba Chat do workspace (WorkspaceShell + ChatPage) · C histórico com busca, filtro por agente, agrupamento por data e preview da primeira mensagem (HistoricoClient.tsx) |

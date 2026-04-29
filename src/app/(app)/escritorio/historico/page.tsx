@@ -3,23 +3,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getSessionsHistory } from "@/lib/db/queries/sessions";
-import { Clock, Bot, ChevronRight } from "lucide-react";
-
-const AGENT_TYPE_LABELS: Record<string, string> = {
-  rh: "RH", marketing: "Marketing", comercial: "Comercial",
-  financeiro: "Financeiro", administrativo: "Administrativo",
-};
-const AGENT_DOT: Record<string, string> = {
-  rh: "#A78BFA", marketing: "#FB7185", comercial: "#60A5FA",
-  financeiro: "#10B981", administrativo: "#FBBF24",
-};
-
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-  }).format(new Date(date));
-}
+import { Clock } from "lucide-react";
+import { HistoricoClient } from "./HistoricoClient";
 
 export default async function HistoricoPage() {
   const supabase = await createClient();
@@ -50,63 +35,23 @@ export default async function HistoricoPage() {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "28px 30px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 30px" }}>
         {sessoes.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 40px", textAlign: "center", border: "1px dashed rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 40px", textAlign: "center", border: "1px dashed rgba(255,255,255,0.07)", borderRadius: "8px", maxWidth: "480px", margin: "0 auto" }}>
             <Clock style={{ width: "36px", height: "36px", color: "#2A2A2A", marginBottom: "18px" }} strokeWidth={1.25} />
             <p style={{ color: "#888", fontSize: "16px", fontWeight: 500, marginBottom: "8px" }}>Nenhuma conversa ainda</p>
-            <p style={{ color: "#3A3A3A", fontSize: "14px" }}>As conversas com os agentes aparecerão aqui.</p>
-            <Link href="/escritorio" style={{ display: "inline-flex", alignItems: "center", gap: "7px", marginTop: "26px", padding: "10px 20px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "14px", borderRadius: "6px", textDecoration: "none" }}>
-              Ir ao Escritório
+            <p style={{ color: "#444", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
+              Entre em qualquer agente e comece — seu histórico aparecerá aqui.
+            </p>
+            <Link href="/escritorio" style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "10px 20px", background: "rgba(255,255,255,0.05)", color: "#888", fontWeight: 500, fontSize: "14px", borderRadius: "6px", textDecoration: "none", border: "1px solid rgba(255,255,255,0.08)" }}>
+              Ir ao Escritório →
             </Link>
           </div>
         ) : (
-          <div style={{ border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", overflow: "hidden" }}>
-            {sessoes.map((s, i) => {
-              const agentLabel = s.agentName ?? AGENT_TYPE_LABELS[s.agentType] ?? s.agentType;
-              const dot = AGENT_DOT[s.agentType] ?? "#555";
-              return (
-                <Link
-                  key={s.id}
-                  href={`/escritorio/historico/${s.id}`}
-                  className="ow-row"
-                  style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px 20px", textDecoration: "none", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined, transition: "background 0.12s" }}
-                >
-                  {/* Avatar */}
-                  {s.agentAvatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={s.agentAvatarUrl} alt={agentLabel} style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.07)", flexShrink: 0 }} />
-                  ) : (
-                    <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Bot style={{ width: "18px", height: "18px", color: dot }} strokeWidth={1.5} />
-                    </div>
-                  )}
-
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "4px" }}>
-                      <span style={{ color: "#EBEBEB", fontSize: "15px", fontWeight: 500, letterSpacing: "-0.01em" }}>{agentLabel}</span>
-                      <span style={{ background: "rgba(255,255,255,0.05)", color: "#555", fontSize: "10px", fontWeight: 700, padding: "2px 6px", borderRadius: "3px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                        {AGENT_TYPE_LABELS[s.agentType] ?? s.agentType}
-                      </span>
-                    </div>
-                    <div style={{ color: "#3A3A3A", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>
-                      {formatDate(s.updatedAt)}
-                      <span style={{ margin: "0 6px", color: "#2A2A2A" }}>·</span>
-                      {s.messageCount} msgs
-                      <span style={{ margin: "0 6px", color: "#2A2A2A" }}>·</span>
-                      {s.tokensUsed.toLocaleString("pt-BR")} tokens
-                      {info.role !== "employee" && s.userName && (
-                        <><span style={{ margin: "0 6px", color: "#2A2A2A" }}>·</span>{s.userName}</>
-                      )}
-                    </div>
-                  </div>
-
-                  <ChevronRight style={{ width: "15px", height: "15px", color: "#2A2A2A", flexShrink: 0 }} strokeWidth={2} />
-                </Link>
-              );
-            })}
-          </div>
+          <HistoricoClient
+            sessions={sessoes}
+            showUserName={info.role !== "employee"}
+          />
         )}
       </div>
     </div>

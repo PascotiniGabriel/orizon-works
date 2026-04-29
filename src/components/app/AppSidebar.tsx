@@ -9,6 +9,7 @@ import {
 import { signOut } from "@/actions/auth";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import type { AgentSummary } from "@/lib/db/queries/company";
+import { tokensToCredits, formatCredits } from "@/lib/utils/credits";
 
 const AGENT_ICONS: Record<string, React.ElementType> = {
   rh: Users, marketing: Megaphone, comercial: TrendingUp,
@@ -33,15 +34,6 @@ interface AppSidebarProps {
   tokenBalance: number; tokenLimit: number;
 }
 
-function formatTokens(n: number) {
-  if (n >= 1_000_000) {
-    // floor to 2 decimal places to avoid misleading rounding (e.g. 3,498,905 → "3.49M" not "3.5M")
-    const val = Math.floor(n / 10_000) / 100;
-    return `${val}M`;
-  }
-  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
-  return String(n);
-}
 
 export function AppSidebar({ agents, role, notifications, fullName, tokenBalance, tokenLimit }: AppSidebarProps) {
   const pathname = usePathname();
@@ -118,8 +110,8 @@ export function AppSidebar({ agents, role, notifications, fullName, tokenBalance
         {/* Token meter */}
         <div style={{ padding: "4px 10px 10px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
-            <span style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em" }}>Tokens</span>
-            <span style={{ color: barColor, fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{formatTokens(tokenBalance)}</span>
+            <span style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em" }}>Créditos</span>
+            <span style={{ color: barColor, fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{formatCredits(tokensToCredits(tokenBalance))}</span>
           </div>
           <div style={{ height: "2px", background: "rgba(255,255,255,0.07)", borderRadius: "1px", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: "1px", transition: "width 0.6s ease" }} />
@@ -134,7 +126,7 @@ export function AppSidebar({ agents, role, notifications, fullName, tokenBalance
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
         >
           <Zap style={{ width: "13px", height: "13px" }} fill="currentColor" />
-          Comprar tokens
+          Comprar créditos
         </Link>
 
         {/* Notifications + remaining */}

@@ -22,10 +22,10 @@ const FEATURES = [
 ];
 
 const PLANS = [
-  { name: "Trial",    price: "Grátis",   tokens: "250k tokens",    agents: "Até 5 agentes",  highlight: false },
-  { name: "Starter",  price: "R$ 197",   tokens: "1,5M tokens",    agents: "1 agente ativo",  highlight: false },
-  { name: "Growth",   price: "R$ 697",   tokens: "5M tokens",      agents: "3 agentes ativos",highlight: true  },
-  { name: "Business", price: "R$ 1.497", tokens: "12M tokens",     agents: "5 agentes ativos",highlight: false },
+  { name: "Trial",    price: "Grátis",   tokens: "250 créditos",    agents: "Até 5 agentes",  highlight: false },
+  { name: "Starter",  price: "R$ 197",   tokens: "1.500 créditos",  agents: "1 agente ativo",  highlight: false },
+  { name: "Growth",   price: "R$ 697",   tokens: "5.000 créditos",  agents: "3 agentes ativos",highlight: true  },
+  { name: "Business", price: "R$ 1.497", tokens: "12.000 créditos", agents: "5 agentes ativos",highlight: false },
 ];
 
 export default async function LandingPage() {

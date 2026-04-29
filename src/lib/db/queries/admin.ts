@@ -9,6 +9,47 @@ import {
 } from "@/lib/db/schema";
 import { eq, desc, sql, count, and, gte } from "drizzle-orm";
 
+export async function getTodayActivity(companyId: string) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [sess] = await db.select({ count: count() }).from(sessions)
+    .where(and(eq(sessions.companyId, companyId), gte(sessions.createdAt, today)));
+  const [msgs] = await db.select({ count: count() }).from(messages)
+    .where(and(eq(messages.companyId, companyId), gte(messages.createdAt, today)));
+  return { sessions: sess?.count ?? 0, messages: msgs?.count ?? 0 };
+}
+
+export async function getMonthActivity(companyId: string) {
+  const firstOfMonth = new Date();
+  firstOfMonth.setDate(1);
+  firstOfMonth.setHours(0, 0, 0, 0);
+  const [sess] = await db.select({ count: count() }).from(sessions)
+    .where(and(eq(sessions.companyId, companyId), gte(sessions.createdAt, firstOfMonth)));
+  const [msgs] = await db.select({ count: count() }).from(messages)
+    .where(and(eq(messages.companyId, companyId), gte(messages.createdAt, firstOfMonth)));
+  return { sessions: sess?.count ?? 0, messages: msgs?.count ?? 0 };
+}
+
+export async function getAgentStats(companyId: string): Promise<{ agentId: string; sessions30d: number; lastActivity: Date | null }[]> {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const rows = await db
+    .select({
+      agentId: agents.id,
+      sessions30d: sql<number>`COUNT(${sessions.id}) FILTER (WHERE ${sessions.createdAt} >= ${thirtyDaysAgo})`,
+      lastActivity: sql<Date | null>`MAX(${sessions.updatedAt})`,
+    })
+    .from(agents)
+    .leftJoin(sessions, eq(sessions.agentId, agents.id))
+    .where(eq(agents.companyId, companyId))
+    .groupBy(agents.id);
+  return rows.map((r) => ({
+    agentId: r.agentId,
+    sessions30d: Number(r.sessions30d ?? 0),
+    lastActivity: r.lastActivity ?? null,
+  }));
+}
+
 // ============================================================
 // PAINEL ADMIN DA EMPRESA
 // ============================================================

@@ -39,7 +39,7 @@ export function TokenPackButton() {
       ) : (
         <Zap className="h-3.5 w-3.5" />
       )}
-      {loading ? "Aguarde..." : "+ 2M tokens — R$79"}
+      {loading ? "Aguarde..." : "+ 2.000 créditos — R$79"}
     </button>
   );
 }
