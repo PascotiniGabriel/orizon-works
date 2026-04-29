@@ -303,7 +303,11 @@ orizon-works/src/
 ## Pendências por Prioridade
 
 ### Alta
-- [ ] **Super Admin — gestão de empresas**: editar limite de tokens, alterar plano, cancelar/reativar assinatura manualmente
+- [x] **Super Admin — gestão de empresas**: editar limite de tokens, alterar plano, cancelar/reativar assinatura manualmente
+- [x] **Editar briefings após onboarding**: página /configuracoes/briefing, campos empresa e agentes
+- [x] **Gestão de usuários**: desativar/reativar usuários na tela de configurações
+- [x] **Alertas de tokens**: in-app notification + e-mail Resend ao atingir 20% e 0%
+- [x] **Landing page**: página de marketing em /
 
 ### Média
 - [ ] Stripe webhook configurado em produção
@@ -414,3 +418,10 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/17 | Fix convite (acceptInvite com listUsers Admin API) · Seletor de setor para sector_manager (AssignAgentSelector) |
 | Abr/17 | 8 correções de segurança: validação companyId agente, proteção RAG prompt injection, idempotência Stripe, transação acceptInvite, validação tokens Stripe, autorização RAG ingest, PDF currículo 6k→15k chars, AgentType centralizado |
 | Abr/17 | Configuração de lembrete automático: CLAUDE.md + hook PostToolUse (git commit) para garantir atualização do PROGRESSO.md |
+| Abr/29 | Editar briefings: página /configuracoes/briefing com abas empresa/agentes, server actions updateCompanyBriefing/updateAgentBriefing, link na sidebar |
+| Abr/29 | Gestão de usuários: desativar/reativar via UserActionButtons, setUserActiveStatus action, usuários inativos visíveis com opacidade reduzida |
+| Abr/29 | Super Admin ações: AdminCompanyActions dropdown por empresa — alterar plano, adicionar tokens, mudar status de assinatura (server actions em src/actions/admin.ts) |
+| Abr/29 | Landing page: hero com posicionamento de produto, grade dos 5 agentes, features, pricing com 4 planos, CTA e footer |
+| Abr/29 | Alertas de tokens: maybeFireTokenAlerts após cada chat (in-app notification + email Resend), cooldown 12h, alerta em 20% e 0% de saldo |
+| Abr/29 | debitTokens retorna tokenLimit; getCompanyUsers inclui isActive e retorna todos os usuários (ativos e inativos) |
+| Abr/29 | Fix: ternário duplicado em CurriculoRankingWorkspace (erro TS pré-existente da sessão anterior) |
