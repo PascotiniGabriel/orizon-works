@@ -22,6 +22,7 @@ export interface UserCompanyInfo {
   tokenLimit: number;
   onboardingCompleted: boolean;
   maxAgents: number;
+  hourlyRate: string;
 }
 
 export async function getCompanyAgents(companyId: string): Promise<AgentSummary[]> {
@@ -88,6 +89,7 @@ export async function getUserCompanyInfo(userId: string): Promise<UserCompanyInf
       tokenLimit: companies.tokenLimit,
       onboardingCompleted: companies.onboardingCompleted,
       maxAgents: companies.maxAgents,
+      hourlyRate: companies.hourlyRate,
     })
     .from(users)
     .innerJoin(companies, eq(companies.id, users.companyId))

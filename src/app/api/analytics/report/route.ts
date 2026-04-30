@@ -15,7 +15,6 @@ const MONTHS_PT = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
-const HOURLY_RATE = 35;
 const MINS_PER_SESSION = 15;
 
 export async function GET(req: NextRequest) {
@@ -34,9 +33,10 @@ export async function GET(req: NextRequest) {
   const year = parseInt(searchParams.get("year") ?? String(now.getFullYear()), 10);
   const month = parseInt(searchParams.get("month") ?? String(now.getMonth() + 1), 10);
 
+  const hourlyRate = parseFloat(info.hourlyRate ?? "35");
   const analytics = await getMonthlyAnalytics(info.companyId, year, month);
   const hoursSaved = (analytics.totalSessions * MINS_PER_SESSION) / 60;
-  const valueEstimated = hoursSaved * HOURLY_RATE;
+  const valueEstimated = hoursSaved * hourlyRate;
 
   // Gerar resumo executivo com Claude Haiku
   let summary = "";

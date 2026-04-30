@@ -37,7 +37,6 @@ const AGENT_COLORS: Record<string, string> = {
   financeiro: "#10B981", administrativo: "#FBBF24",
 };
 
-const HOURLY_RATE = 35;
 const MINS_PER_SESSION = 15;
 
 const CARD: React.CSSProperties = {
@@ -136,7 +135,7 @@ function StatCard({ label, value, sub, subColor, icon }: {
 
 // ─── History table row ────────────────────────────────────────────────────────
 
-function HistoryRow({ row, isCurrent, isLast }: { row: MonthHistory; isCurrent: boolean; isLast: boolean }) {
+function HistoryRow({ row, isCurrent, isLast, hourlyRate }: { row: MonthHistory; isCurrent: boolean; isLast: boolean; hourlyRate: number }) {
   const hrs = (row.sessions * MINS_PER_SESSION) / 60;
   return (
     <tr style={{ borderBottom: isLast ? undefined : "1px solid rgba(255,255,255,0.04)", background: isCurrent ? "rgba(16,185,129,0.04)" : undefined }}>
@@ -147,7 +146,7 @@ function HistoryRow({ row, isCurrent, isLast }: { row: MonthHistory; isCurrent: 
       <td style={{ padding: "12px 20px", color: "#888", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{row.sessions.toLocaleString("pt-BR")}</td>
       <td style={{ padding: "12px 20px", color: "#888", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{formatCredits(tokensToCredits(row.tokensUsed))}</td>
       <td style={{ padding: "12px 20px", color: "#888", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{hrs.toFixed(0)}h</td>
-      <td style={{ padding: "12px 20px", color: "#888", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{fmtBRL(hrs * HOURLY_RATE)}</td>
+      <td style={{ padding: "12px 20px", color: "#888", fontSize: "13px", fontFamily: "var(--font-geist-mono)" }}>{fmtBRL(hrs * hourlyRate)}</td>
     </tr>
   );
 }
@@ -179,8 +178,9 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     getTopUsers(info.companyId, year, month),
   ]);
 
+  const hourlyRate = parseFloat(info.hourlyRate ?? "35");
   const hoursSaved = (analytics.totalSessions * MINS_PER_SESSION) / 60;
-  const valueEstimated = hoursSaved * HOURLY_RATE;
+  const valueEstimated = hoursSaved * hourlyRate;
 
   const sessionDiff = analytics.prevMonthSessions > 0
     ? ((analytics.totalSessions - analytics.prevMonthSessions) / analytics.prevMonthSessions) * 100
@@ -362,6 +362,7 @@ export default async function AnalyticsPage({ searchParams }: Props) {
                       row={row}
                       isCurrent={row.year === year && row.month === month}
                       isLast={i === sixMonthHistory.length - 1}
+                      hourlyRate={hourlyRate}
                     />
                   ))}
                 </tbody>

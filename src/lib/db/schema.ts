@@ -12,6 +12,7 @@ import {
   unique,
   jsonb,
   date,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 // ============================================================
@@ -102,6 +103,9 @@ export const companies = pgTable("companies", {
 
   // Onboarding
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+
+  // ROI
+  hourlyRate: numeric("hourly_rate", { precision: 8, scale: 2 }).notNull().default("35.00"),
 
   // LGPD
   dataRegion: varchar("data_region", { length: 50 })

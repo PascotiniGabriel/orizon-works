@@ -8,6 +8,7 @@ import { CancelInviteButton } from "@/components/app/CancelInviteButton";
 import { AssignAgentSelector, type AgentOption } from "@/components/app/AssignAgentSelector";
 import { TokenPackButton } from "@/components/app/TokenPackButton";
 import { UserActionButtons } from "@/components/app/UserActionButtons";
+import { HourlyRateInput } from "@/components/app/HourlyRateInput";
 import { MfaSection } from "./MfaSection";
 import { tokensToCredits, formatCredits } from "@/lib/utils/credits";
 import {
@@ -172,8 +173,9 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
 
           {/* === ROI Impact Widget (admin only) === */}
           {isAdmin && stats && (() => {
+            const rate = parseFloat(info.hourlyRate ?? "35");
             const hoursSaved = Math.round((stats.totalSessions * 15) / 60);
-            const valueEstimated = hoursSaved * 35;
+            const valueEstimated = hoursSaved * rate;
             return (
               <section style={{ ...CARD, border: "1px solid rgba(16,185,129,0.18)", background: "rgba(16,185,129,0.03)" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px" }}>
@@ -200,6 +202,10 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
                     <BarChart2 style={{ width: "14px", height: "14px" }} strokeWidth={2} />
                     Ver relatório completo →
                   </Link>
+                </div>
+                <div style={{ padding: "12px 20px 16px", borderTop: "1px solid rgba(16,185,129,0.1)", display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span style={{ color: "#555", fontSize: "13px", flexShrink: 0 }}>Custo/hora estimado:</span>
+                  <HourlyRateInput initialRate={rate} />
                 </div>
               </section>
             );
