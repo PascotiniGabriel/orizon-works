@@ -68,7 +68,8 @@ ${context}`,
       });
 
       const rawText = response.content[0].type === "text" ? response.content[0].text.trim() : "{}";
-      const parsed = JSON.parse(rawText) as { focoDoDia: string; dicaRapida: string; perguntaDoDia: string };
+      const cleanText = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      const parsed = JSON.parse(cleanText) as { focoDoDia: string; dicaRapida: string; perguntaDoDia: string };
       const tokensUsed = (response.usage.input_tokens ?? 0) + (response.usage.output_tokens ?? 0);
 
       await db.insert(dailyBriefings).values({
