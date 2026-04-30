@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo, getCompanyAgents } from "@/lib/db/queries/company";
 import { getTodayActivity, getMonthActivity, getAgentStats } from "@/lib/db/queries/admin";
 import { getSessionsHistory } from "@/lib/db/queries/sessions";
-import { Bot, Zap, Plus, ChevronRight, AlertTriangle } from "lucide-react";
+import { getPendingTasks } from "@/lib/db/queries/tasks";
+import { Bot, Zap, Plus, ChevronRight, AlertTriangle, CheckSquare, Circle } from "lucide-react";
 import { AgentCardGrid } from "@/components/app/AgentCommandList";
 import { tokensToCredits, formatCredits } from "@/lib/utils/credits";
 
@@ -64,11 +65,12 @@ export default async function EscritorioPage() {
   const now = new Date();
   const dateStr = now.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
 
-  const [todayActivity, monthActivity, agentStats, recentSessions] = await Promise.all([
+  const [todayActivity, monthActivity, agentStats, recentSessions, pendingTasks] = await Promise.all([
     getTodayActivity(info.companyId),
     getMonthActivity(info.companyId),
     getAgentStats(info.companyId),
     getSessionsHistory(info.companyId, info.userId, info.role),
+    getPendingTasks(info.companyId),
   ]);
 
   const agentStatsMap = new Map(agentStats.map((s) => [s.agentId, s]));
@@ -220,6 +222,31 @@ export default async function EscritorioPage() {
             </div>
 
             {/* === Atividade Recente === */}
+            {/* === Tarefas Pendentes (B2) === */}
+            {pendingTasks.length > 0 && (
+              <>
+                <p style={{ color: "#3A3A3A", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
+                  Tarefas pendentes
+                </p>
+                <div style={{ border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", overflow: "hidden", marginBottom: "28px" }}>
+                  {pendingTasks.map((task, i) => (
+                    <div
+                      key={task.id}
+                      style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 18px", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined }}
+                    >
+                      <Circle style={{ width: "14px", height: "14px", color: "#3A3A3A", flexShrink: 0 }} strokeWidth={1.75} />
+                      <span style={{ flex: 1, color: "#888", fontSize: "14px" }}>{task.title}</span>
+                      {task.dueDate && (
+                        <span style={{ color: "#3A3A3A", fontSize: "12px", fontFamily: "var(--font-geist-mono)", flexShrink: 0 }}>
+                          {new Date(task.dueDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
             {recentFive.length > 0 && (
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>

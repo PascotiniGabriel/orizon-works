@@ -11,6 +11,7 @@ import {
   index,
   unique,
   jsonb,
+  date,
 } from "drizzle-orm/pg-core";
 
 // ============================================================
@@ -60,7 +61,10 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "subscription_expiring",
   "subscription_canceled",
   "payment_failed",
+  "weekly_summary",
 ]);
+
+export const taskStatusEnum = pgEnum("task_status", ["pending", "done"]);
 
 // ============================================================
 // COMPANIES
@@ -535,6 +539,51 @@ export const workspaceKpis = pgTable(
 );
 
 // ============================================================
+// DAILY BRIEFINGS — Geradas pelo cron às 8h BRT em dias úteis
+// ============================================================
+
+export const dailyBriefings = pgTable(
+  "daily_briefings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    focoDoDia: text("foco_do_dia").notNull(),
+    dicaRapida: text("dica_rapida").notNull(),
+    perguntaDoDia: text("pergunta_do_dia").notNull(),
+    tokensUsed: integer("tokens_used").notNull().default(0),
+    generatedAt: timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("daily_briefings_agent_date_idx").on(table.agentId, table.date),
+    unique("daily_briefings_agent_date_unique").on(table.agentId, table.date),
+  ]
+);
+
+// ============================================================
+// AGENT TASKS — Tarefas criadas pelos usuários durante o chat
+// ============================================================
+
+export const agentTasks = pgTable(
+  "agent_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    dueDate: date("due_date"),
+    status: taskStatusEnum("status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("agent_tasks_agent_idx").on(table.agentId),
+    index("agent_tasks_company_idx").on(table.companyId),
+  ]
+);
+
+// ============================================================
 // TYPE EXPORTS
 // ============================================================
 
@@ -553,3 +602,5 @@ export type RagDocument = typeof ragDocuments.$inferSelect;
 export type RagChunk = typeof ragChunks.$inferSelect;
 export type WorkspaceKpi = typeof workspaceKpis.$inferSelect;
 export type NewWorkspaceKpi = typeof workspaceKpis.$inferInsert;
+export type DailyBriefing = typeof dailyBriefings.$inferSelect;
+export type AgentTask = typeof agentTasks.$inferSelect;

@@ -46,6 +46,48 @@ export async function sendTokenWarningEmail(opts: {
   });
 }
 
+export async function sendWeeklySummaryEmail(opts: {
+  toEmail: string;
+  companyName: string;
+  summaryHtml: string;
+  weekLabel: string;
+}): Promise<void> {
+  if (!resend) return;
+  const { toEmail, companyName, summaryHtml, weekLabel } = opts;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://orizon-works-zeta.vercel.app";
+
+  await resend.emails.send({
+    from: FROM,
+    to: toEmail,
+    subject: `📊 Resumo semanal — ${companyName} · ${weekLabel}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0A0A0A;color:#EBEBEB;border-radius:10px;overflow:hidden;border:1px solid #222">
+        <div style="background:#161616;padding:20px 24px;border-bottom:1px solid #222">
+          <div style="display:inline-flex;align-items:center;gap:8px">
+            <div style="width:22px;height:22px;background:#10B981;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#000">O</div>
+            <span style="font-weight:700;font-size:15px">Orizon Works</span>
+          </div>
+        </div>
+        <div style="padding:28px 24px">
+          <p style="color:#10B981;font-weight:700;font-size:16px;margin:0 0 4px">📊 Resumo da semana</p>
+          <p style="color:#555;font-size:13px;margin:0 0 20px">${weekLabel} · ${companyName}</p>
+          <div style="background:#141414;border-radius:8px;padding:20px;color:#C8C8C8;font-size:15px;line-height:1.7">
+            ${summaryHtml}
+          </div>
+          <div style="margin-top:20px">
+            <a href="${appUrl}/escritorio" style="display:inline-block;background:#10B981;color:#000;font-weight:700;font-size:14px;padding:10px 22px;border-radius:6px;text-decoration:none">
+              Ver escritório →
+            </a>
+          </div>
+        </div>
+        <div style="padding:14px 24px;border-top:1px solid #1A1A1A">
+          <p style="color:#3A3A3A;font-size:12px;margin:0">Você está recebendo este e-mail porque é administrador da empresa ${companyName} na Orizon Works.</p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 export async function sendTokenBlockedEmail(opts: {
   toEmail: string;
   companyName: string;

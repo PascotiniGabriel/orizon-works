@@ -8,18 +8,28 @@ import { Button } from "@/components/ui/button";
 import { exportToPDF, exportToWord } from "@/lib/export";
 import { PromptBuilderModal } from "@/components/app/PromptBuilderModal";
 import { FileUploadButton, type UploadedFile } from "@/components/app/FileUploadButton";
+import { createAgentTask } from "@/actions/tasks";
 import {
   Bot, Sparkles, Paperclip, X, ClipboardList, Search, MessageCircle,
   Calendar, Smartphone, Mail, FileText, Target, Phone, BarChart2,
-  Lightbulb, TrendingUp, Calculator, FolderOpen,
+  Lightbulb, TrendingUp, Calculator, FolderOpen, Sun, CheckSquare, Plus,
 } from "lucide-react";
 
 interface Message { role: "user" | "assistant"; content: string; }
+
+export type DailyBriefingCard = {
+  id: string;
+  focoDoDia: string;
+  dicaRapida: string;
+  perguntaDoDia: string;
+};
+
 interface ChatInterfaceProps {
   agentId: string;
   agentDisplayName: string;
   agentAvatarUrl: string | null;
   agentType: string;
+  dailyBriefing?: DailyBriefingCard | null;
 }
 
 const AGENT_TYPE_LABELS: Record<string, string> = {
@@ -104,16 +114,50 @@ function AssistantMessage({ content }: { content: string }) {
 }
 
 /* ── Empty state ── */
-function EmptyState({ agentName, agentType, onSuggest, onGuided }: {
+function EmptyState({ agentName, agentType, onSuggest, onGuided, dailyBriefing }: {
   agentName: string; agentType: string;
   onSuggest: (text: string) => void; onGuided: () => void;
+  dailyBriefing?: DailyBriefingCard | null;
 }) {
   const prompts: PromptItem[] = SUGGESTED_PROMPTS[agentType] ?? DEFAULT_PROMPTS;
   return (
     <div style={{ display: "flex", height: "100%", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
       <div style={{ width: "100%", maxWidth: "600px" }}>
+
+        {/* ── Daily briefing card (B1) ── */}
+        {dailyBriefing && (
+          <div style={{ marginBottom: "24px", padding: "18px 20px", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.12)", borderRadius: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+              <Sun style={{ width: "14px", height: "14px", color: "#10B981" }} strokeWidth={2} />
+              <span style={{ color: "#10B981", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                Briefing do dia
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "14px" }}>
+              <div>
+                <span style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Foco do dia</span>
+                <p style={{ color: "#EBEBEB", fontSize: "14px", lineHeight: "1.5", marginTop: "3px" }}>{dailyBriefing.focoDoDia}</p>
+              </div>
+              <div>
+                <span style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Dica rápida</span>
+                <p style={{ color: "#888", fontSize: "14px", lineHeight: "1.5", marginTop: "3px" }}>{dailyBriefing.dicaRapida}</p>
+              </div>
+              <div>
+                <span style={{ color: "#3A3A3A", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pergunta do dia</span>
+                <p style={{ color: "#888", fontSize: "14px", lineHeight: "1.5", fontStyle: "italic", marginTop: "3px" }}>{dailyBriefing.perguntaDoDia}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onSuggest(dailyBriefing.perguntaDoDia)}
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "7px 14px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "6px", color: "#10B981", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              Responder →
+            </button>
+          </div>
+        )}
+
         {/* Heading */}
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
           <p style={{ fontSize: "22px", fontWeight: 700, color: "#EBEBEB", letterSpacing: "-0.03em", marginBottom: "8px" }}>
             Como posso ajudar, hoje?
           </p>
@@ -164,8 +208,49 @@ function EmptyState({ agentName, agentType, onSuggest, onGuided }: {
   );
 }
 
+/* ── Task form (B2) ── */
+function TaskForm({ agentId, onDone }: { agentId: string; onDone: () => void }) {
+  const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setSaving(true);
+    await createAgentTask(agentId, title, dueDate || null);
+    setSaving(false);
+    onDone();
+  }
+
+  return (
+    <form onSubmit={submit} style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "10px 14px", background: "#161616", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "8px" }}>
+      <CheckSquare style={{ width: "14px", height: "14px", color: "#10B981", flexShrink: 0 }} strokeWidth={2} />
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Título da tarefa..."
+        autoFocus
+        style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#EBEBEB", fontSize: "14px", fontFamily: "inherit" }}
+      />
+      <input
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+        style={{ background: "none", border: "none", outline: "none", color: "#555", fontSize: "13px", fontFamily: "inherit", width: "130px", cursor: "pointer" }}
+      />
+      <button type="submit" disabled={saving || !title.trim()} style={{ padding: "5px 12px", background: "#10B981", color: "#000", fontWeight: 700, fontSize: "13px", borderRadius: "5px", border: "none", cursor: saving || !title.trim() ? "not-allowed" : "pointer", opacity: saving || !title.trim() ? 0.5 : 1, fontFamily: "inherit", flexShrink: 0 }}>
+        Salvar
+      </button>
+      <button type="button" onClick={onDone} style={{ background: "none", border: "none", cursor: "pointer", color: "#555", display: "flex", padding: "4px" }}>
+        <X style={{ width: "14px", height: "14px" }} strokeWidth={2} />
+      </button>
+    </form>
+  );
+}
+
 /* ── Main component ── */
-export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agentType }: ChatInterfaceProps) {
+export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agentType, dailyBriefing }: ChatInterfaceProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -175,6 +260,7 @@ export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agent
   const [exporting, setExporting] = useState(false);
   const [showGuided, setShowGuided] = useState(false);
   const [pendingFile, setPendingFile] = useState<UploadedFile | null>(null);
+  const [showTaskForm, setShowTaskForm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -297,43 +383,67 @@ export function ChatInterface({ agentId, agentDisplayName, agentAvatarUrl, agent
         {/* ── Messages ── */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {isEmpty ? (
-            <EmptyState agentName={agentDisplayName} agentType={agentType} onSuggest={handleSuggest} onGuided={() => setShowGuided(true)} />
+            <EmptyState agentName={agentDisplayName} agentType={agentType} onSuggest={handleSuggest} onGuided={() => setShowGuided(true)} dailyBriefing={dailyBriefing} />
           ) : (
             <div style={{ padding: "28px 24px", display: "flex", flexDirection: "column", gap: "24px" }}>
-              {messages.map((msg, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                  {msg.role === "assistant" && (
-                    <div style={{ marginRight: "12px", marginTop: "4px", flexShrink: 0 }}>
-                      {agentAvatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={agentAvatarUrl} alt={agentDisplayName} style={{ width: "28px", height: "28px", borderRadius: "6px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.08)" }} />
-                      ) : (
-                        <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <Bot style={{ width: "15px", height: "15px", color: "#10B981" }} strokeWidth={2} />
+              {messages.map((msg, i) => {
+                const isLastAssistant = msg.role === "assistant" && i === messages.length - 1 && !streaming;
+                return (
+                  <div key={i}>
+                    <div style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+                      {msg.role === "assistant" && (
+                        <div style={{ marginRight: "12px", marginTop: "4px", flexShrink: 0 }}>
+                          {agentAvatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={agentAvatarUrl} alt={agentDisplayName} style={{ width: "28px", height: "28px", borderRadius: "6px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.08)" }} />
+                          ) : (
+                            <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Bot style={{ width: "15px", height: "15px", color: "#10B981" }} strokeWidth={2} />
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
-                  )}
-                  <div style={{ maxWidth: "76%", borderRadius: "12px", padding: "14px 18px", fontSize: "16px", lineHeight: "1.7", ...(msg.role === "user" ? { background: "#10B981", color: "#000", borderBottomRightRadius: "4px", fontWeight: 500 } : { background: "#181818", border: "1px solid rgba(255,255,255,0.07)", borderBottomLeftRadius: "4px" }) }}>
-                    {msg.role === "assistant" ? (
-                      <>
-                        {msg.content === "" && streaming && i === messages.length - 1 ? (
-                          <span style={{ display: "inline-flex", gap: "5px", padding: "4px 0" }}>
-                            {[0, 200, 400].map((d) => <span key={d} style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#10B981", display: "inline-block", animation: `bounce 1.2s ${d}ms infinite` }} />)}
-                          </span>
+                      <div style={{ maxWidth: "76%", borderRadius: "12px", padding: "14px 18px", fontSize: "16px", lineHeight: "1.7", ...(msg.role === "user" ? { background: "#10B981", color: "#000", borderBottomRightRadius: "4px", fontWeight: 500 } : { background: "#181818", border: "1px solid rgba(255,255,255,0.07)", borderBottomLeftRadius: "4px" }) }}>
+                        {msg.role === "assistant" ? (
+                          <>
+                            {msg.content === "" && streaming && i === messages.length - 1 ? (
+                              <span style={{ display: "inline-flex", gap: "5px", padding: "4px 0" }}>
+                                {[0, 200, 400].map((d) => <span key={d} style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#10B981", display: "inline-block", animation: `bounce 1.2s ${d}ms infinite` }} />)}
+                              </span>
+                            ) : (
+                              <AssistantMessage content={msg.content} />
+                            )}
+                            {streaming && i === messages.length - 1 && msg.content !== "" && (
+                              <span style={{ display: "inline-block", width: "2px", height: "16px", borderRadius: "1px", background: "#10B981", marginLeft: "2px", verticalAlign: "middle", animation: "pulse 1s infinite" }} />
+                            )}
+                          </>
                         ) : (
-                          <AssistantMessage content={msg.content} />
+                          <span style={{ whiteSpace: "pre-wrap" }}>{msg.content}</span>
                         )}
-                        {streaming && i === messages.length - 1 && msg.content !== "" && (
-                          <span style={{ display: "inline-block", width: "2px", height: "16px", borderRadius: "1px", background: "#10B981", marginLeft: "2px", verticalAlign: "middle", animation: "pulse 1s infinite" }} />
+                      </div>
+                    </div>
+
+                    {/* ── Task button after last assistant message (B2) ── */}
+                    {isLastAssistant && (
+                      <div style={{ paddingLeft: "40px", marginTop: "6px" }}>
+                        {showTaskForm ? (
+                          <TaskForm agentId={agentId} onDone={() => setShowTaskForm(false)} />
+                        ) : (
+                          <button
+                            onClick={() => setShowTaskForm(true)}
+                            style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 10px", background: "none", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "5px", color: "#3A3A3A", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s" }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(16,185,129,0.25)"; (e.currentTarget as HTMLElement).style.color = "#10B981"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLElement).style.color = "#3A3A3A"; }}
+                          >
+                            <Plus style={{ width: "12px", height: "12px" }} strokeWidth={2.5} />
+                            Criar tarefa
+                          </button>
                         )}
-                      </>
-                    ) : (
-                      <span style={{ whiteSpace: "pre-wrap" }}>{msg.content}</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={bottomRef} />
             </div>
           )}

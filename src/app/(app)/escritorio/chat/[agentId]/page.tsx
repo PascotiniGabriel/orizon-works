@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserCompanyInfo } from "@/lib/db/queries/company";
 import { getAgentWithBriefings } from "@/lib/db/queries/agents";
+import { getTodayBriefing, type DailyBriefingCard } from "@/lib/db/queries/briefings";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 const AGENT_TYPE_LABELS: Record<string, string> = {
@@ -34,6 +35,9 @@ export default async function ChatPage({ params }: ChatPageProps) {
   const canSeeDocumentos = ["company_admin", "sector_manager"].includes(info.role);
 
   const briefingComplete = data.agentBriefing?.isComplete ?? false;
+  const dailyBriefing: DailyBriefingCard | null = briefingComplete
+    ? await getTodayBriefing(agent.id)
+    : null;
 
   return (
     <WorkspaceShell
@@ -45,6 +49,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
       companyId={info.companyId}
       userRole={info.role}
       briefingComplete={briefingComplete}
+      dailyBriefing={dailyBriefing}
     />
   );
 }

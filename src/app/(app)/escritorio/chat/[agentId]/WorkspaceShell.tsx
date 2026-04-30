@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LayoutDashboard, MessageSquare, Wrench, BookOpen, AlertTriangle } from "lucide-react";
-import { ChatInterface } from "@/components/app/ChatInterface";
+import { ChatInterface, type DailyBriefingCard } from "@/components/app/ChatInterface";
 import { WorkspaceDashboard } from "./WorkspaceDashboard";
 import { WorkspaceFerramentas } from "./WorkspaceFerramentas";
 import { DocumentosClient } from "./documentos/DocumentosClient";
@@ -19,6 +19,7 @@ interface WorkspaceShellProps {
   companyId: string;
   userRole: string;
   briefingComplete: boolean;
+  dailyBriefing: DailyBriefingCard | null;
 }
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -29,7 +30,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 export function WorkspaceShell({
-  agentId, agentType, agentDisplayName, agentAvatarUrl, canSeeDocumentos, companyId, userRole, briefingComplete,
+  agentId, agentType, agentDisplayName, agentAvatarUrl, canSeeDocumentos, companyId, userRole, briefingComplete, dailyBriefing,
 }: WorkspaceShellProps) {
   const [active, setActive] = useState<Tab>("chat");
 
@@ -96,6 +97,7 @@ export function WorkspaceShell({
               agentDisplayName={agentDisplayName}
               agentAvatarUrl={agentAvatarUrl}
               agentType={agentType}
+              dailyBriefing={dailyBriefing}
             />
           ) : (
             <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 40px", textAlign: "center" }}>
