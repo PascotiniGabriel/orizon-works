@@ -449,3 +449,4 @@ Análise minuciosa do codebase identificou 8 problemas corrigidos abaixo.
 | Abr/29 | **B1 Morning Briefing**: tabelas daily_briefings + agent_tasks no schema · cron `/api/cron/daily-briefing` (8h BRT dias úteis) via Claude Haiku · card "Briefing do dia" no empty state do chat (Foco/Dica/Pergunta + botão Responder) · vercel.json com ambos os crons |
 | Abr/29 | **B2 Agent Tasks**: server action createAgentTask/markTaskDone · botão "Criar tarefa" após última msg do assistente → inline form (título + prazo) · widget "Tarefas pendentes" no escritório |
 | Abr/29 | **B3 Weekly Summary**: cron `/api/cron/weekly-summary` (17h BRT sextas) · Claude Haiku gera resumo executivo por empresa · notification in-app + email Resend sendWeeklySummaryEmail · notification_type enum + weekly_summary value |
+| Abr/30 | Fix cron daily-briefing: strip markdown code blocks do JSON retornado pelo Claude antes do JSON.parse · testado via Hoppscotch → generated: 1, errors: 0 ✓ |
