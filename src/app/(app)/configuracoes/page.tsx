@@ -22,6 +22,7 @@ import {
   Zap,
   FileText,
   ChevronRight,
+  BarChart2,
 } from "lucide-react";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -168,6 +169,41 @@ export default async function ConfiguracoesPage({ searchParams }: ConfiguracoesP
               <ChevronRight style={{ width: "16px", height: "16px", color: "#3A3A3A", flexShrink: 0 }} strokeWidth={2} />
             </section>
           </Link>
+
+          {/* === ROI Impact Widget (admin only) === */}
+          {isAdmin && stats && (() => {
+            const hoursSaved = Math.round((stats.totalSessions * 15) / 60);
+            const valueEstimated = hoursSaved * 35;
+            return (
+              <section style={{ ...CARD, border: "1px solid rgba(16,185,129,0.18)", background: "rgba(16,185,129,0.03)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                    <div style={{ width: "38px", height: "38px", borderRadius: "8px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Zap style={{ width: "17px", height: "17px", color: "#10B981" }} strokeWidth={1.75} fill="#10B981" />
+                    </div>
+                    <div>
+                      <p style={{ color: "#10B981", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
+                        Impacto este mês
+                      </p>
+                      <p style={{ color: "#EBEBEB", fontSize: "15px", margin: 0, letterSpacing: "-0.01em" }}>
+                        <strong style={{ color: "#EBEBEB" }}>{hoursSaved}h economizadas</strong>
+                        <span style={{ color: "#555", margin: "0 8px" }}>·</span>
+                        {stats.totalSessions} interações
+                        <span style={{ color: "#555", margin: "0 8px" }}>·</span>
+                        <span style={{ color: "#10B981", fontWeight: 600 }}>
+                          ≈ R${valueEstimated.toLocaleString("pt-BR")}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/analytics" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#10B981", fontSize: "13px", fontWeight: 600, textDecoration: "none", flexShrink: 0 }}>
+                    <BarChart2 style={{ width: "14px", height: "14px" }} strokeWidth={2} />
+                    Ver relatório completo →
+                  </Link>
+                </div>
+              </section>
+            );
+          })()}
 
           {/* === Token consumption === */}
           <section style={CARD}>

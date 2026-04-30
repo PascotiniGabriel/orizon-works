@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  LayoutGrid, History, Users, Megaphone, TrendingUp, DollarSign,
+  LayoutGrid, History, BarChart2, Users, Megaphone, TrendingUp, DollarSign,
   FolderOpen, Bot, Shield, Settings, LogOut, Zap, FileText,
 } from "lucide-react";
 import { signOut } from "@/actions/auth";
@@ -116,6 +116,9 @@ export function AppSidebar({ agents, role, notifications, fullName, tokenBalance
         <SectionLabel top>Plataforma</SectionLabel>
         <NavItem href="/escritorio" active={pathname === "/escritorio"} icon={LayoutGrid} label="Escritório" />
         <NavItem href="/escritorio/historico" active={pathname.startsWith("/escritorio/historico")} icon={History} label="Histórico" />
+        {(role === "company_admin" || role === "super_admin") && (
+          <NavItem href="/analytics" active={pathname.startsWith("/analytics")} icon={BarChart2} label="Analytics" />
+        )}
 
         <SectionLabel top>Gerenciar</SectionLabel>
         <NavItem href="/configuracoes" active={pathname === "/configuracoes"} icon={Settings} label="Configurações" />
